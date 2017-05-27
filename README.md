@@ -15,12 +15,17 @@ Deploy, undeploy template
 ## How to :
 
 ```shell
-usage: config_nifi [OPTIONS]
- -b,--branch <arg>   branch to begin (must begin by root) : root > my group > my subgroup 						 	 (default root)
- -c,--conf <arg>     mandatory : adresse configuration repository
- -h,--help           Usage description
- -m,--mode <arg>     mandatory : updateConfig/extractConfig/
- -n,--nifi <arg>     mandatory : Nifi api adress http (ex : http://localhost:8080/nifi-api)
+usage: nifi-deploy-config [OPTIONS]
+ -accessFromTicket <arg>   Access via Kerberos ticket exchange / SPNEGO negotiation
+ -b,--branch <arg>         branch to begin (must begin by root) : root > my group > my sub group (default root)
+ -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
+ -h,--help                 Usage description
+ -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
+ -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
+ -noVerifySsl <arg>        turn off ssl verification certificat
+ -password <arg>           password for access via username/password, then user is mandatory
+ -user <arg>               user name for access via username/password, then password is mandatory
+
 ```
 
 ### Sample
@@ -28,7 +33,7 @@ usage: config_nifi [OPTIONS]
 ####  Sample extract configuration
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -38,7 +43,7 @@ java nifi-config.jar \
 ####  Sample update configuration
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -47,7 +52,7 @@ java nifi-config.jar \
 #### Sample deploy Template 
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/my_template.xml \
@@ -57,7 +62,7 @@ java nifi-config.jar \
 #### Sample undeploy
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -m undeploy
@@ -66,7 +71,7 @@ java nifi-config.jar \
 #### Sample access via username/password
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -user my_username \
   -password my_password \
   -nifi http://ip-nifi-prod:8080/nifi-api \
@@ -78,7 +83,7 @@ java nifi-config.jar \
 #### Sample access via Kerberos ticket exchange / SPNEGO negotiation
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -accessFromTicket \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
@@ -99,7 +104,7 @@ and export it
 Extract a sample configuration
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>My Group>My Subgroup" \
   -conf /tmp/config.json \
@@ -111,7 +116,7 @@ java nifi-config.jar \
 undeploy the old version
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -m undeploy
@@ -120,7 +125,7 @@ java nifi-config.jar \
 deploy the template
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/my_template.xml \
@@ -130,7 +135,7 @@ java nifi-config.jar \
 update the production configuration
 
 ```shell
-java nifi-config.jar \
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/PROD_config.json \
