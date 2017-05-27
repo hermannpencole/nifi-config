@@ -3,10 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.hermannpencole</groupId>
     <artifactId>nifi-deploy-config</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Deploy Nifi Configuration</name>
-    <url>http://maven.apache.org</url>
+    <url>https://github.com/hermannpencole/nifi-config</url>
+	<description>Automatically deploy and configure Template on Nifi</description>
+ 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
