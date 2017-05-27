@@ -79,6 +79,68 @@ java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -mode updateConfig
 ```
 
+## What can I configure
+
+All !
+
+You can find all properties in your extraction. Now configure it with the production properties and update your production.
+
+sample :
+```json
+{
+  "processors": [
+    {
+      "name": "TheListFile",
+      "config": {
+        "properties": {
+          "Input Directory": "c:\\temp",
+          "Recurse Subdirectories": "false",
+          "Input Directory Location": "Local",
+          "File Filter": "[^\\.].*",
+          "Minimum File Age": "0 sec",
+          "Minimum File Size": "0 B",
+          "Ignore Hidden Files": "true"
+        },
+        "schedulingPeriod": "0 sec",
+        "schedulingStrategy": "TIMER_DRIVEN",
+        "executionNode": "ALL",
+        "penaltyDuration": "30 sec",
+        "yieldDuration": "1 sec",
+        "bulletinLevel": "WARN",
+        "runDurationMillis": 0,
+        "concurrentlySchedulableTaskCount": 1,
+        "autoTerminatedRelationships": [],
+        "comments": "",
+        "lossTolerant": false
+      }
+    }
+  ],
+  "groupProcessorsEntity": [
+    {
+      "processors": [
+        {
+          "name": "ConnectWebSocket",
+          "config": {
+            "properties": {},
+            "schedulingPeriod": "0 sec",
+            "schedulingStrategy": "TIMER_DRIVEN",
+            "executionNode": "ALL",
+            "penaltyDuration": "30 sec",
+            "yieldDuration": "1 sec",
+            "bulletinLevel": "WARN",
+            "runDurationMillis": 0,
+            "concurrentlySchedulableTaskCount": 1,
+            "autoTerminatedRelationships": [],
+            "comments": "",
+            "lossTolerant": false
+          }
+        }
+      ],
+      "name": "test"
+    }
+  ]
+}
+```
 ### Sample
 
 #### Sample extract configuration
@@ -142,8 +204,6 @@ java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -conf /tmp/test2.json \
   -m updateConfig
 ```
-
-## 
 
 # TODO
 
