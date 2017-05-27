@@ -1,16 +1,16 @@
 
 
-# Nifi configuration 
-
+# Nifi : deploy and configure Template 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config)
 Update, Extract Nifi Configuration
 
 Deploy, undeploy template
 
 ## Which version
 
-| version              | version NIFI    |
-| -------------------- | --------------- |
-| version 1.1.0 (last) | for nifi  1.1.0 |
+| version                                  | version NIFI    |
+| ---------------------------------------- | --------------- |
+| version 1.1.0 (last) [download it from Maven Central](http://central.maven.org/maven2/com/github/hermannpencole/nifi-deploy-config/) | for nifi  1.1.0 |
 
 ## How to :
 
@@ -28,9 +28,60 @@ usage: nifi-deploy-config [OPTIONS]
 
 ```
 
+## Strep by Step
+
+### Prepare your nifi development
+
+Create a template on nifi : 
+
+![template](/docs/template.png)
+
+and export it
+
+Extract a sample configuration with the command
+
+```shell
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
+  -nifi http://ip-nifi-dev:8080/nifi-api \
+  -branch "root>My Group>My Subgroup" \
+  -conf /tmp/config.json \
+  -mode extractConfig
+```
+
+### Deploy it on production
+
+undeploy the old version with the command
+
+```shell
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
+  -nifi http://ip-nifi-prod:8080/nifi-api \
+  -branch "root>My group>My Subgroup" \
+  -m undeploy
+```
+
+deploy the template with the command
+
+```shell
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
+  -nifi http://ip-nifi-prod:8080/nifi-api \
+  -branch "root>My group>My Subgroup" \
+  -conf /tmp/my_template.xml \
+  -m deployTemplate
+```
+
+update the production configuration with the command
+
+```shell
+java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
+  -nifi http://ip-nifi-prod:8080/nifi-api \
+  -branch "root>My group>My Subgroup" \
+  -conf /tmp/PROD_config.json \
+  -mode updateConfig
+```
+
 ### Sample
 
-####  Sample extract configuration
+#### Sample extract configuration
 
 ```shell
 java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
@@ -40,7 +91,7 @@ java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -mode extractConfig
 ```
 
-####  Sample update configuration
+#### Sample update configuration
 
 ```shell
 java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
@@ -49,7 +100,8 @@ java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -conf /tmp/test2.json \
   -mode updateConfig
 ```
-#### Sample deploy Template 
+
+#### Sample deploy Template
 
 ```shell
 java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
@@ -91,58 +143,7 @@ java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
   -m updateConfig
 ```
 
-## Strep by Step
-
-### Prepare your nifi development
-
-Create a template on nifi : 
-
-![template](/docs/template.png)
-
-and export it
-
-Extract a sample configuration
-
-```shell
-java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
-  -nifi http://ip-nifi-dev:8080/nifi-api \
-  -branch "root>My Group>My Subgroup" \
-  -conf /tmp/config.json \
-  -mode extractConfig
-```
-
-### Deploy it on production
-
-undeploy the old version
-
-```shell
-java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
-  -nifi http://ip-nifi-prod:8080/nifi-api \
-  -branch "root>My group>My Subgroup" \
-  -m undeploy
-```
-
-deploy the template
-
-```shell
-java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
-  -nifi http://ip-nifi-prod:8080/nifi-api \
-  -branch "root>My group>My Subgroup" \
-  -conf /tmp/my_template.xml \
-  -m deployTemplate
-```
-
-update the production configuration
-
-```shell
-java -jar nifi-deploy-config-1.1.0-jar-with-dependencies.jar \
-  -nifi http://ip-nifi-prod:8080/nifi-api \
-  -branch "root>My group>My Subgroup" \
-  -conf /tmp/PROD_config.json \
-  -mode updateConfig
-```
-
-
+## 
 
 # TODO
 

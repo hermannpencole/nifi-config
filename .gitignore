@@ -1,3 +1,4 @@
 /target
 /configure-nifi.iml
 /.idea
+/nifi-deploy-config.iml
