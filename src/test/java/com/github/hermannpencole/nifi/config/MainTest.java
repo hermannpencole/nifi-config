@@ -59,7 +59,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy"});
         verify(templateServiceMock).undeploy(Arrays.asList("root","N2"));
@@ -75,7 +75,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","https://localhost:8080/nifi-api","-branch","\"root>N2\"","-m","undeploy","noVerifySsl"});
         verify(templateServiceMock).undeploy(Arrays.asList("root","N2"));
@@ -91,7 +91,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","deployTemplate"});
         verify(templateServiceMock).installOnBranch(Arrays.asList("root","N2"), "adr");
@@ -107,7 +107,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig"});
         verify(updateProcessorServiceMock).updateByBranch(Arrays.asList("root","N2"), "adr");
@@ -123,7 +123,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","extractConfig"});
         verify(extractProcessorServiceMock).extractByBranch(Arrays.asList("root","N2"), "adr");
@@ -168,7 +168,7 @@ public class MainTest {
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector((Module[]) any())).thenReturn(injector);
+        Mockito.when(Guice.createInjector()).thenReturn(injector);
         doThrow(new ApiException()).when(accessServiceMock).addTokenOnConfiguration(false, null ,null);
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy"});
 
