@@ -91,11 +91,7 @@ public class Main {
 
 
                 setConfiguration(adresseNifi, !cmd.hasOption("noVerifySsl"));
-                Injector injector = Guice.createInjector(new AbstractModule() {
-                    protected void configure() {
-                        bind(String.class).annotatedWith(Names.named("adresseNifi")).toInstance(adresseNifi);
-                    }
-                });
+                Injector injector = Guice.createInjector();
                 AccessService accessService = injector.getInstance(AccessService.class);
                 accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
                 if ("updateConfig".equals(cmd.getOptionValue("m"))) {
