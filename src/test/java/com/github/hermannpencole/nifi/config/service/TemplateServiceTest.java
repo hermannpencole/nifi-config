@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TemplateTestService {
+public class TemplateServiceTest {
     @Mock
     private ProcessGroupService processGroupServiceMock;
     @Mock
