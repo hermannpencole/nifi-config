@@ -102,6 +102,7 @@ public class TemplateServiceTest {
         String fileName = "test";
         Optional<ProcessGroupFlowDTO> processGroupFlow = Optional.empty();
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
+        templateService.undeploy(branch);
         verify(flowApiMock, never()).getTemplates();
     }
 }
