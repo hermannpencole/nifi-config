@@ -48,7 +48,7 @@ public class ExtractProcessorService {
         ProcessGroupFlowDTO componentSearch = processGroupService.changeDirectory(branch)
                 .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
-        GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
+        GroupProcessorsEntity result = extractJsonFromComponent(componentSearch.getId());
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             gson.toJson(result, writer);
@@ -56,22 +56,20 @@ public class ExtractProcessorService {
     }
 
     /**
-     * new
      * extract from component
      *
-     * @param component
+     * @param idComponent
      * @return
      * @throws ApiException
      */
-    private GroupProcessorsEntity extractJsonFromComponent(ProcessGroupFlowDTO component) throws ApiException {
+    private GroupProcessorsEntity extractJsonFromComponent(String idComponent) throws ApiException {
         GroupProcessorsEntity result = new GroupProcessorsEntity();
-        FlowDTO flow = flowapi.getFlow(component.getId()).getProcessGroupFlow().getFlow();
-        flow.getProcessors()
+        ProcessGroupFlowDTO processGroupFlow = flowapi.getFlow(idComponent).getProcessGroupFlow();
+        result.setName(processGroupFlow.getBreadcrumb().getBreadcrumb().getName());
+        processGroupFlow.getFlow().getProcessors()
                 .forEach(processor -> result.getProcessors().add(extractProcessor(processor.getComponent())));
-        for (ProcessGroupEntity processGroups : flow.getProcessGroups()) {
-            GroupProcessorsEntity extractCompoennt = extractJsonFromComponent(flowapi.getFlow(processGroups.getId()).getProcessGroupFlow());
-            extractCompoennt.setName(processGroups.getComponent().getName());
-            result.getGroupProcessorsEntity().add(extractCompoennt);
+        for (ProcessGroupEntity processGroups : processGroupFlow.getFlow().getProcessGroups()) {
+            result.getGroupProcessorsEntity().add(extractJsonFromComponent(processGroups.getId()));
         }
         if (result.getGroupProcessorsEntity().isEmpty()) {
             result.setGroupProcessorsEntity(null);

@@ -46,6 +46,7 @@ public class MainTest {
 
     @Before
     public void init() {
+        Main main = new Main();
         MockitoAnnotations.initMocks(this);
     }
 
