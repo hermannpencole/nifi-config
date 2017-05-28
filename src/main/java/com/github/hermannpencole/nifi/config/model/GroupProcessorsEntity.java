@@ -1,4 +1,4 @@
-package com.obs.utils.nifi.model;
+package com.github.hermannpencole.nifi.config.model;
 
 import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
 import com.google.gson.annotations.SerializedName;

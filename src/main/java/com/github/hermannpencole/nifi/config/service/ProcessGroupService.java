@@ -1,4 +1,4 @@
-package com.obs.utils.nifi.service;
+package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;

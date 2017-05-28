@@ -1,5 +1,6 @@
-package com.obs.utils.nifi;
+package com.github.hermannpencole.nifi.config;
 
+import com.github.hermannpencole.nifi.config.service.ExtractProcessorService;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.Configuration;
@@ -8,9 +9,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
-import com.obs.utils.nifi.service.ExtractProcessorService;
-import com.obs.utils.nifi.service.TemplateService;
-import com.obs.utils.nifi.service.UpdateProcessorService;
+import com.github.hermannpencole.nifi.config.service.TemplateService;
+import com.github.hermannpencole.nifi.config.service.UpdateProcessorService;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

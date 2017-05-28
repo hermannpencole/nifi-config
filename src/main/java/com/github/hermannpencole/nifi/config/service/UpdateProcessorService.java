@@ -1,11 +1,11 @@
-package com.obs.utils.nifi.service;
+package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
-import com.obs.utils.nifi.model.GroupProcessorsEntity;
+import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
