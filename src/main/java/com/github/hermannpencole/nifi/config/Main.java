@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.service.AccessService;
 import com.github.hermannpencole.nifi.config.service.ExtractProcessorService;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
@@ -67,56 +68,54 @@ public class Main {
             if (cmd.hasOption("h")) {
                 printUsage(options);
                 System.exit(1);
-            }
-            if (!cmd.hasOption("n") || (!cmd.hasOption("c") && !cmd.getOptionValue("m").equals("undeploy") )) {
+            } else if (!cmd.hasOption("n") || (!cmd.hasOption("c") && !cmd.getOptionValue("m").equals("undeploy") )) {
                 printUsage(options);
                 System.exit(1);
-            }
-            if (!"updateConfig".equals(cmd.getOptionValue("m")) && !"extractConfig".equals(cmd.getOptionValue("m"))
+            } else if (!"updateConfig".equals(cmd.getOptionValue("m")) && !"extractConfig".equals(cmd.getOptionValue("m"))
                     && !"deployTemplate".equals(cmd.getOptionValue("m")) && !"undeploy".equals(cmd.getOptionValue("m")) ) {
                 printUsage(options);
                 System.exit(1);
-            }
-            if ( (cmd.hasOption("user") || cmd.hasOption("password")) && (!cmd.hasOption("user") || !cmd.hasOption("user")) ) {
+            } else if ( (cmd.hasOption("user") || cmd.hasOption("password")) && (!cmd.hasOption("user") || !cmd.hasOption("password")) ) {
                 printUsage(options);
                 System.exit(1);
-            }
-
-            String adresseNifi = cmd.getOptionValue("n");
-            String fileConfiguration = cmd.getOptionValue("c");
-
-            String branch = "root";
-            if (cmd.hasOption("b")) {
-                branch = cmd.getOptionValue("b");
-            }
-            List<String> branchList = Arrays.stream(branch.split(">")).map(String::trim).collect(Collectors.toList());
-
-
-            setConfiguration(adresseNifi, !cmd.hasOption("noVerifySsl"));
-            Injector injector = Guice.createInjector(new AbstractModule() {
-                protected void configure() {
-                    bind(String.class).annotatedWith(Names.named("adresseNifi")).toInstance(adresseNifi);
-                }
-            });
-            AccessService accessService = injector.getInstance(AccessService.class);
-            accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
-            if ("updateConfig".equals(cmd.getOptionValue("m"))) {
-                //Get an instance of the bean from the context
-                UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);
-                processorService.updateByBranch(branchList, fileConfiguration);
-            } else if ("extractConfig".equals(cmd.getOptionValue("m"))) {
-                //Get an instance of the bean from the context
-                ExtractProcessorService processorService = injector.getInstance(ExtractProcessorService.class);
-                processorService.extractByBranch(branchList, fileConfiguration);
-            } else if ("deployTemplate".equals(cmd.getOptionValue("m"))) {
-                TemplateService templateService = injector.getInstance(TemplateService.class);
-                templateService.installOnBranch(branchList, fileConfiguration);
             } else {
-                TemplateService templateService = injector.getInstance(TemplateService.class);
-                templateService.undeploy(branchList);
+
+                String adresseNifi = cmd.getOptionValue("n");
+                String fileConfiguration = cmd.getOptionValue("c");
+
+                String branch = "root";
+                if (cmd.hasOption("b")) {
+                    branch = cmd.getOptionValue("b");
+                }
+                List<String> branchList = Arrays.stream(branch.split(">")).map(String::trim).collect(Collectors.toList());
+
+
+                setConfiguration(adresseNifi, !cmd.hasOption("noVerifySsl"));
+                Injector injector = Guice.createInjector(new AbstractModule() {
+                    protected void configure() {
+                        bind(String.class).annotatedWith(Names.named("adresseNifi")).toInstance(adresseNifi);
+                    }
+                });
+                AccessService accessService = injector.getInstance(AccessService.class);
+                accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
+                if ("updateConfig".equals(cmd.getOptionValue("m"))) {
+                    //Get an instance of the bean from the context
+                    UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);
+                    processorService.updateByBranch(branchList, fileConfiguration);
+                } else if ("extractConfig".equals(cmd.getOptionValue("m"))) {
+                    //Get an instance of the bean from the context
+                    ExtractProcessorService processorService = injector.getInstance(ExtractProcessorService.class);
+                    processorService.extractByBranch(branchList, fileConfiguration);
+                } else if ("deployTemplate".equals(cmd.getOptionValue("m"))) {
+                    TemplateService templateService = injector.getInstance(TemplateService.class);
+                    templateService.installOnBranch(branchList, fileConfiguration);
+                } else {
+                    TemplateService templateService = injector.getInstance(TemplateService.class);
+                    templateService.undeploy(branchList);
+                }
             }
         } catch (ApiException e) {
-            throw new RuntimeException(e.getMessage() + ": " + e.getResponseBody(), e);
+            throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
         }
     }
 

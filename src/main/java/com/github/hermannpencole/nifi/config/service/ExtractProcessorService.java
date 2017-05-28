@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.FlowDTO;
@@ -45,7 +46,7 @@ public class ExtractProcessorService {
         File file = new File(fileConfiguration);
 
         ProcessGroupFlowDTO componentSearch = processGroupService.changeDirectory(branch)
-                .orElseThrow(() -> new RuntimeException(("cannot find " + Arrays.toString(branch.toArray()))));
+                .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
         GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

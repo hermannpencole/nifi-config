@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
@@ -61,7 +62,7 @@ public class UpdateProcessorService {
         try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
             GroupProcessorsEntity configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
             ProcessGroupFlowDTO componentSearch = processGroupService.changeDirectory(branch)
-                    .orElseThrow(() -> new RuntimeException(("cannot find " + Arrays.toString(branch.toArray()))));
+                    .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
             //Stop branch
             processGroupService.setState(componentSearch.getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
@@ -85,7 +86,7 @@ public class UpdateProcessorService {
         configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
             ProcessGroupEntity processorGroupToUpdate = ProcessGroupService.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
-                    .orElseThrow(() -> new RuntimeException(("cannot find " + procGroupInConf.getName())));
+                    .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
             updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()).getProcessGroupFlow());
         }
     }
@@ -109,7 +110,7 @@ public class UpdateProcessorService {
             //nifiService.updateProcessorProperties(toUpdate, componentToPutInProc.getString("id"));
             LOG.info("Updated : " + componentToPutInProc.getName());
         } catch (ApiException e) {
-            throw new RuntimeException(e.getMessage() + ": " + e.getResponseBody(), e);
+            throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
         }
     }
 
@@ -117,7 +118,7 @@ public class UpdateProcessorService {
     public static ProcessorEntity findProcByComponentName(List<ProcessorEntity> listGroup, String name) {
         return listGroup.stream()
                 .filter(item -> item.getComponent().getName().trim().equals(name.trim()))
-                .findFirst().orElseThrow(() -> new RuntimeException(("cannot find " + name)));
+                .findFirst().orElseThrow(() -> new ConfigException(("cannot find " + name)));
     }
 
 }

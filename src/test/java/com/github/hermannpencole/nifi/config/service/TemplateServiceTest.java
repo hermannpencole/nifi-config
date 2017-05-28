@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TemplateServiceTest{
+public class TemplateServiceTest {
     @Mock
     private ProcessGroupService processGroupServiceMock;
     @Mock
@@ -39,16 +39,15 @@ public class TemplateServiceTest{
 
     /**
      * Creates a token for accessing the REST API via username/password
-     *
+     * <p>
      * The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header in the format &#39;Authorization: Bearer &lt;token&gt;&#39;.
      *
-     * @throws ApiException
-     *          if the Api call fails
+     * @throws ApiException if the Api call fails
      */
     @Test
     public void createAccessTokenTest() throws ApiException, IOException, URISyntaxException {
-        List<String> branch = Arrays.asList("root","elt1");
-        String fileName= "test";
+        List<String> branch = Arrays.asList("root", "elt1");
+        String fileName = "test";
         ProcessGroupFlowDTO processGroupFlow = new ProcessGroupFlowDTO();
         processGroupFlow.setId("idProcessGroupFlow");
         when(processGroupServiceMock.createDirectory(branch)).thenReturn(processGroupFlow);
@@ -65,15 +64,15 @@ public class TemplateServiceTest{
         instantiateTemplate.setOriginY(0d);
 
         verify(processGroupServiceMock).createDirectory(branch);
-        verify(processGroupsApiMock).uploadTemplate(processGroupFlow.getId(),new File(fileName));
+        verify(processGroupsApiMock).uploadTemplate(processGroupFlow.getId(), new File(fileName));
         verify(processGroupsApiMock).instantiateTemplate(processGroupFlow.getId(), instantiateTemplate);
     }
 
 
     @Test
     public void undeployTest() throws ApiException {
-        List<String> branch = Arrays.asList("root","elt1");
-        String fileName= "test";
+        List<String> branch = Arrays.asList("root", "elt1");
+        String fileName = "test";
         Optional<ProcessGroupFlowDTO> processGroupFlow = Optional.of(new ProcessGroupFlowDTO());
         processGroupFlow.get().setId("idProcessGroupFlow");
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
@@ -94,6 +93,15 @@ public class TemplateServiceTest{
 
         templateService.undeploy(branch);
         verify(templatesApiMock).removeTemplate(template.getId());
-        verify(processGroupsApiMock).removeProcessGroup(processGroup.getId(), "100", null );
+        verify(processGroupsApiMock).removeProcessGroup(processGroup.getId(), "100", null);
+    }
+
+    @Test
+    public void undeployNoExistTest() throws ApiException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        String fileName = "test";
+        Optional<ProcessGroupFlowDTO> processGroupFlow = Optional.empty();
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
+        verify(flowApiMock, never()).getTemplates();
     }
 }
