@@ -3,7 +3,7 @@
 # Nifi : deploy and configure Template 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config)
 [![Build Status](https://travis-ci.org/hermannpencole/nifi-swagger-client.svg?branch=master)](https://travis-ci.org/hermannpencole/nifi-deploy-config/)
-[![Coverage Status](https://coveralls.io/repos/hermannpencole/nifi-deploy-config//badge.svg?branch=master&service=github)](https://coveralls.io/github/hermannpencole/nifi-deploy-config/?branch=master)
+[![codecov](https://codecov.io/gh/hermannpencole/nifi-config/branch/master/graph/badge.svg)](https://codecov.io/gh/hermannpencole/nifi-config)
 
 Update, Extract Nifi Configuration
 
