@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config;
 
+import com.github.hermannpencole.nifi.config.service.AccessService;
 import com.github.hermannpencole.nifi.config.service.ExtractProcessorService;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
@@ -90,14 +91,15 @@ public class Main {
             }
             List<String> branchList = Arrays.stream(branch.split(">")).map(String::trim).collect(Collectors.toList());
 
+
+            setConfiguration(adresseNifi, !cmd.hasOption("noVerifySsl"));
             Injector injector = Guice.createInjector(new AbstractModule() {
                 protected void configure() {
                     bind(String.class).annotatedWith(Names.named("adresseNifi")).toInstance(adresseNifi);
                 }
             });
-            setConfiguration(adresseNifi, cmd.hasOption("accessFromTicket"),
-                    cmd.getOptionValue("user"), cmd.getOptionValue("password"),
-                    cmd.hasOption("noVerifySsl"));
+            AccessService accessService = injector.getInstance(AccessService.class);
+            accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
             if ("updateConfig".equals(cmd.getOptionValue("m"))) {
                 //Get an instance of the bean from the context
                 UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);
@@ -119,19 +121,9 @@ public class Main {
     }
 
 
-    public static void setConfiguration(String basePath, boolean accessFromTicket, String username, String password, boolean verifySsl) throws ApiException {
+    public static void setConfiguration(String basePath, boolean verifySsl) throws ApiException {
+
         ApiClient client = new ApiClient().setBasePath(basePath).setVerifyingSsl(verifySsl);
-        AccessApi apiInstance = new AccessApi(client);
-
-        if (accessFromTicket) {
-            String token = apiInstance.createAccessTokenFromTicket();
-            client.setAccessToken(token);
-        } else if (username != null) {
-            String token = apiInstance.createAccessToken(username, password);
-            client.setAccessToken(token);
-        }
-
         Configuration.setDefaultApiClient(client);
-
     }
 }

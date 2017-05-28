@@ -1,18 +1,23 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
+import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
+import com.github.hermannpencole.nifi.swagger.client.TemplatesApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
 
@@ -20,11 +25,15 @@ import static org.mockito.Mockito.*;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class TemplateServiceTest {
+public class TemplateServiceTest{
     @Mock
     private ProcessGroupService processGroupServiceMock;
     @Mock
     private ProcessGroupsApi processGroupsApiMock;
+    @Mock
+    private TemplatesApi templatesApiMock;
+    @Mock
+    private FlowApi flowApiMock;
     @InjectMocks
     private TemplateService templateService;
 
@@ -59,7 +68,32 @@ public class TemplateServiceTest {
         verify(processGroupsApiMock).uploadTemplate(processGroupFlow.getId(),new File(fileName));
         verify(processGroupsApiMock).instantiateTemplate(processGroupFlow.getId(), instantiateTemplate);
     }
-    
 
-    
+
+    @Test
+    public void undeployTest() throws ApiException {
+        List<String> branch = Arrays.asList("root","elt1");
+        String fileName= "test";
+        Optional<ProcessGroupFlowDTO> processGroupFlow = Optional.of(new ProcessGroupFlowDTO());
+        processGroupFlow.get().setId("idProcessGroupFlow");
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
+
+        ProcessGroupEntity processGroup = new ProcessGroupEntity();
+        RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(100L);
+        processGroup.setId(processGroupFlow.get().getId());
+        processGroup.setRevision(revision);
+        when(processGroupsApiMock.getProcessGroup(processGroupFlow.get().getId())).thenReturn(processGroup);
+        TemplatesEntity templates = new TemplatesEntity();
+        TemplateEntity template = new TemplateEntity();
+        template.setId("templateId");
+        template.setTemplate(new TemplateDTO());
+        template.getTemplate().setGroupId(processGroup.getId());
+        templates.addTemplatesItem(template);
+        when(flowApiMock.getTemplates()).thenReturn(templates);
+
+        templateService.undeploy(branch);
+        verify(templatesApiMock).removeTemplate(template.getId());
+        verify(processGroupsApiMock).removeProcessGroup(processGroup.getId(), "100", null );
+    }
 }
