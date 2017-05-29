@@ -10,6 +10,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import org.apache.commons.cli.UnrecognizedOptionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,7 +79,7 @@ public class MainTest {
         PowerMockito.mockStatic(Guice.class);
         Mockito.when(Guice.createInjector()).thenReturn(injector);
 
-        Main.main(new String[]{"-nifi","https://localhost:8080/nifi-api","-branch","\"root>N2\"","-m","undeploy","noVerifySsl"});
+        Main.main(new String[]{"-nifi","https://localhost:8080/nifi-api","-branch","\"root>N2\"","-m","undeploy","-noVerifySsl"});
         verify(templateServiceMock).undeploy(Arrays.asList("root","N2"));
     }
 
@@ -126,7 +127,7 @@ public class MainTest {
         PowerMockito.mockStatic(Guice.class);
         Mockito.when(Guice.createInjector()).thenReturn(injector);
 
-        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","extractConfig"});
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","extractConfig", "-accessFromTicket"});
         verify(extractProcessorServiceMock).extractByBranch(Arrays.asList("root","N2"), "adr");
     }
 
@@ -157,6 +158,11 @@ public class MainTest {
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy","-user","user"});
         PowerMockito.verifyStatic();
         System.exit(1);
+    }
+
+    @Test(expected = UnrecognizedOptionException.class)
+    public void mainPrintUsage5Test() throws Exception {
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api", "-branch","\"root>N2\"","-conf","adr","-m","undeploy", "-userErr","user"});
     }
 
     @Test(expected = ConfigException.class)

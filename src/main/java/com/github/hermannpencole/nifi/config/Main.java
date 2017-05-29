@@ -60,15 +60,15 @@ public class Main {
             options.addOption("m", "mode", true, "mandatory : updateConfig/extractConfig/deployTemplate/undeploy");
             options.addOption("user", true, "user name for access via username/password, then password is mandatory");
             options.addOption("password", true, "password for access via username/password, then user is mandatory");
-            options.addOption("accessFromTicket", true, "Access via Kerberos ticket exchange / SPNEGO negotiation");
-            options.addOption("noVerifySsl", true, "turn off ssl verification certificat");
+            options.addOption("accessFromTicket", false, "Access via Kerberos ticket exchange / SPNEGO negotiation");
+            options.addOption("noVerifySsl", false, "turn off ssl verification certificat");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
             if (cmd.hasOption("h")) {
                 printUsage(options);
                 System.exit(1);
-            } else if (!cmd.hasOption("n") || (!cmd.hasOption("c") && !cmd.getOptionValue("m").equals("undeploy") )) {
+            } else if (!cmd.hasOption("n") || (!cmd.hasOption("c") && cmd.hasOption("m") && !cmd.getOptionValue("m").equals("undeploy") )) {
                 printUsage(options);
                 System.exit(1);
             } else if (!"updateConfig".equals(cmd.getOptionValue("m")) && !"extractConfig".equals(cmd.getOptionValue("m"))
@@ -122,7 +122,6 @@ public class Main {
 
 
     public static void setConfiguration(String basePath, boolean verifySsl) throws ApiException {
-
         ApiClient client = new ApiClient().setBasePath(basePath).setVerifyingSsl(verifySsl);
         Configuration.setDefaultApiClient(client);
     }
