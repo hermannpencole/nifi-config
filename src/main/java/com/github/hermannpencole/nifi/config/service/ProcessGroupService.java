@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Class that offer service for nifi processor
+ * Class that offer service for process group
  * <p>
  * Created by SFRJ on 01/04/2017.
  */
@@ -27,11 +27,6 @@ public class ProcessGroupService {
      */
     private final static Logger LOG = LoggerFactory.getLogger(ProcessGroupService.class);
 
-    /**
-     * The service nifi.
-     */
-//    @Inject
-//    private NifiService nifiService;
     @Inject
     private FlowApi flowapi;
 
@@ -45,7 +40,7 @@ public class ProcessGroupService {
      * @return
      * @throws ApiException
      */
-    public Optional<ProcessGroupFlowDTO> changeDirectory(List<String> branch) throws ApiException {
+    public Optional<ProcessGroupFlowEntity> changeDirectory(List<String> branch) throws ApiException {
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
             Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
@@ -54,7 +49,7 @@ public class ProcessGroupService {
             }
             flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
         }
-        return Optional.of(flowEntity.getProcessGroupFlow());
+        return Optional.of(flowEntity);
     }
 
     //can static => utils
@@ -80,7 +75,7 @@ public class ProcessGroupService {
      * @return
      * @throws ApiException
      */
-    public ProcessGroupFlowDTO createDirectory(List<String> branch) throws ApiException {
+    public ProcessGroupFlowEntity createDirectory(List<String> branch) throws ApiException {
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
             Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
@@ -98,7 +93,7 @@ public class ProcessGroupService {
                 flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
             }
         }
-        return flowEntity.getProcessGroupFlow();
+        return flowEntity;
     }
 
     public PositionDTO getNextPosition(ProcessGroupFlowEntity flowEntity) {

@@ -61,16 +61,16 @@ public class UpdateProcessorService {
         Gson gson = new Gson();
         try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
             GroupProcessorsEntity configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
-            ProcessGroupFlowDTO componentSearch = processGroupService.changeDirectory(branch)
+            ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
                     .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
             //Stop branch
-            processGroupService.setState(componentSearch.getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+            processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
             LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
             updateComponent(configuration, componentSearch);
 
             //Run all nifi processors
-            processGroupService.setState(componentSearch.getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
+            processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
             LOG.info(Arrays.toString(branch.toArray()) + " is running");
         }
 
@@ -81,13 +81,13 @@ public class UpdateProcessorService {
      * @param componentSearch
      * @throws ApiException
      */
-    private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowDTO componentSearch) throws ApiException {
-        FlowDTO flow = flowapi.getFlow(componentSearch.getId()).getProcessGroupFlow().getFlow();
+    private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch) throws ApiException {
+        FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
         configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
             ProcessGroupEntity processorGroupToUpdate = ProcessGroupService.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
-            updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()).getProcessGroupFlow());
+            updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()));
         }
     }
 

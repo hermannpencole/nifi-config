@@ -3,7 +3,6 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.AccessApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
@@ -13,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -56,20 +54,15 @@ public class ExtractServiceTest {
     public void extractEmptyBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");
         File temp = File.createTempFile("tempfile", ".tmp");
-        ProcessGroupFlowDTO componentSearch = new ProcessGroupFlowDTO();
-        componentSearch.setId("idComponent");
-        componentSearch.setBreadcrumb(new FlowBreadcrumbEntity());
-        componentSearch.getBreadcrumb().setBreadcrumb(new FlowBreadcrumbDTO());
-        componentSearch.getBreadcrumb().getBreadcrumb().setName("nameComponent");
 
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(componentSearch));
-        FlowDTO flow = new FlowDTO();
-        ProcessGroupFlowEntity response = new ProcessGroupFlowEntity();
-        response.setProcessGroupFlow(componentSearch);
-        response.getProcessGroupFlow().setFlow(flow);
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
 
-        when(flowapiMock.getFlow(componentSearch.getId())).thenReturn(response);
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
         extractService.extractByBranch(branch, temp.getAbsolutePath());
+
+        //evaluate response
         Gson gson = new Gson();
         try (Reader reader = new InputStreamReader(new FileInputStream(temp), "UTF-8")) {
             GroupProcessorsEntity result = gson.fromJson(reader, GroupProcessorsEntity.class);
@@ -85,44 +78,18 @@ public class ExtractServiceTest {
     public void extractBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");
         File temp = File.createTempFile("tempfile", ".tmp");
-        ProcessGroupFlowDTO componentSearch = new ProcessGroupFlowDTO();
-        componentSearch.setId("idComponent");
-        componentSearch.setBreadcrumb(new FlowBreadcrumbEntity());
-        componentSearch.getBreadcrumb().setBreadcrumb(new FlowBreadcrumbDTO());
-        componentSearch.getBreadcrumb().getBreadcrumb().setName("nameComponent");
 
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(componentSearch));
-        FlowDTO flow = new FlowDTO();
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
+        response.getProcessGroupFlow().getFlow()
+                .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
-        ProcessGroupFlowEntity response = new ProcessGroupFlowEntity();
-        response.setProcessGroupFlow(componentSearch);
-        response.getProcessGroupFlow().setFlow(flow);
-        ProcessorEntity proc = new ProcessorEntity();
-        ProcessorDTO procDTO = new ProcessorDTO();
-        procDTO.setName("nameProc");
-        procDTO.setConfig(new ProcessorConfigDTO());
-        proc.setComponent(procDTO);
-        flow.getProcessors().add(proc);
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
 
-        ProcessGroupEntity processGroupEntity = new ProcessGroupEntity();
-        processGroupEntity.setId("idSubGroup");
-        ProcessGroupDTO processGroupDTO = new ProcessGroupDTO();
-        processGroupDTO.setName("nameSubGroup");
-        processGroupEntity.setComponent(processGroupDTO);
-        flow.getProcessGroups().add(processGroupEntity);
-        when(flowapiMock.getFlow(componentSearch.getId())).thenReturn(response);
-
-        ProcessGroupFlowDTO subGroup = new ProcessGroupFlowDTO();
-        subGroup.setId("idSubGroup");
-        subGroup.setBreadcrumb(new FlowBreadcrumbEntity());
-        subGroup.getBreadcrumb().setBreadcrumb(new FlowBreadcrumbDTO());
-        subGroup.getBreadcrumb().getBreadcrumb().setName("nameSubGroup");
-        flow = new FlowDTO();
-        response = new ProcessGroupFlowEntity();
-        response.setProcessGroupFlow(subGroup);
-        response.getProcessGroupFlow().setFlow(flow);
-        when(flowapiMock.getFlow(subGroup.getId())).thenReturn(response);
-
+        ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
+        when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
 
         extractService.extractByBranch(branch, temp.getAbsolutePath());
         Gson gson = new Gson();

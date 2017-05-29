@@ -3,10 +3,7 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.model.FlowDTO;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowDTO;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
@@ -45,10 +42,10 @@ public class ExtractProcessorService {
     public void extractByBranch(List<String> branch, String fileConfiguration) throws IOException, ApiException {
         File file = new File(fileConfiguration);
 
-        ProcessGroupFlowDTO componentSearch = processGroupService.changeDirectory(branch)
+        ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
                 .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
-        GroupProcessorsEntity result = extractJsonFromComponent(componentSearch.getId());
+        GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             gson.toJson(result, writer);
@@ -62,14 +59,14 @@ public class ExtractProcessorService {
      * @return
      * @throws ApiException
      */
-    private GroupProcessorsEntity extractJsonFromComponent(String idComponent) throws ApiException {
+    private GroupProcessorsEntity extractJsonFromComponent(ProcessGroupFlowEntity idComponent) throws ApiException {
         GroupProcessorsEntity result = new GroupProcessorsEntity();
-        ProcessGroupFlowDTO processGroupFlow = flowapi.getFlow(idComponent).getProcessGroupFlow();
+        ProcessGroupFlowDTO processGroupFlow = idComponent.getProcessGroupFlow();
         result.setName(processGroupFlow.getBreadcrumb().getBreadcrumb().getName());
         processGroupFlow.getFlow().getProcessors()
                 .forEach(processor -> result.getProcessors().add(extractProcessor(processor.getComponent())));
         for (ProcessGroupEntity processGroups : processGroupFlow.getFlow().getProcessGroups()) {
-            result.getGroupProcessorsEntity().add(extractJsonFromComponent(processGroups.getId()));
+            result.getGroupProcessorsEntity().add(extractJsonFromComponent(flowapi.getFlow(processGroups.getId())));
         }
         if (result.getGroupProcessorsEntity().isEmpty()) {
             result.setGroupProcessorsEntity(null);

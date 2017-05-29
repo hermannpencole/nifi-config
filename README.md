@@ -37,6 +37,8 @@ usage: java -jar nifi-deploy-config-1.1.0.jar [OPTIONS]
 
 Create a template on nifi : 
 
+with this rules : each processor on a group **must** have a unique name
+
 ![template](/docs/template.png)
 
 and export it
@@ -87,6 +89,8 @@ java -jar nifi-deploy-config-1.1.0.jar \
 All !
 
 You can find all properties in your extraction. Now configure it with the production properties and update your production.
+
+Configuration work with name, don't forget that each processor on a group **must** have a unique name
 
 sample :
 ```json

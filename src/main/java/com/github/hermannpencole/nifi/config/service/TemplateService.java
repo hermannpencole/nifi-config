@@ -58,7 +58,7 @@ public class TemplateService {
      * @throws ApiException
      */
     public void installOnBranch(List<String> branch, String fileConfiguration) throws ApiException {
-        ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch);
+        ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch).getProcessGroupFlow();
         File file = new File(fileConfiguration);
         String name = FilenameUtils.getBaseName(file.getName());
         //must we force resintall template ?
@@ -76,18 +76,18 @@ public class TemplateService {
     }
 
     public void undeploy(List<String> branch) throws ApiException {
-        Optional<ProcessGroupFlowDTO> processGroupFlow = processGroupService.changeDirectory(branch);
+        Optional<ProcessGroupFlowEntity> processGroupFlow = processGroupService.changeDirectory(branch);
         if (!processGroupFlow.isPresent()) {
             LOG.warn("cannot find " + Arrays.toString(branch.toArray()));
             return;
         }
-        ProcessGroupEntity processGroup = processGroupsApi.getProcessGroup(processGroupFlow.get().getId());
         TemplatesEntity templates = flowApi.getTemplates();
-        Stream<TemplateEntity> templatesInGroup = templates.getTemplates().stream().filter(templateParse -> templateParse.getTemplate().getGroupId().equals(processGroup.getId()));
+        Stream<TemplateEntity> templatesInGroup = templates.getTemplates().stream()
+                .filter(templateParse -> templateParse.getTemplate().getGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId()));
         for (TemplateEntity templateInGroup : templatesInGroup.collect(Collectors.toList())) {
             templatesApi.removeTemplate(templateInGroup.getId());
         }
-        processGroupsApi.removeProcessGroup(processGroup.getId(),processGroup.getRevision().getVersion().toString(),null);
+        processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "0",null);
 
     }
 
