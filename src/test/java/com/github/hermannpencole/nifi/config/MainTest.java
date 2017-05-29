@@ -9,7 +9,6 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import org.apache.commons.cli.UnrecognizedOptionException;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +16,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -26,7 +23,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 
 /**
@@ -37,13 +35,13 @@ import static org.mockito.Mockito.*;
 @PowerMockIgnore("javax.net.ssl.*")
 public class MainTest {
     @Mock
-    AccessService accessServiceMock;
+    private AccessService accessServiceMock;
     @Mock
-    TemplateService templateServiceMock;
+    private TemplateService templateServiceMock;
     @Mock
-    UpdateProcessorService updateProcessorServiceMock;
+    private UpdateProcessorService updateProcessorServiceMock;
     @Mock
-    ExtractProcessorService extractProcessorServiceMock;
+    private ExtractProcessorService extractProcessorServiceMock;
 
     @Before
     public void init() {

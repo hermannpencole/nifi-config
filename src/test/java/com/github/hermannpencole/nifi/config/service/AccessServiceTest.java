@@ -2,22 +2,14 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.AccessApi;
-import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
-import com.github.hermannpencole.nifi.swagger.client.TemplatesApi;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 

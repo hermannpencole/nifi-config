@@ -14,7 +14,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -68,7 +70,6 @@ public class TemplateServiceTest {
     @Test
     public void undeployTest() throws ApiException {
         List<String> branch = Arrays.asList("root", "elt1");
-        String fileName = "test";
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idProcessGroupFlow", "nameProcessGroupFlow");
         Optional<ProcessGroupFlowEntity> processGroupFlow = Optional.of(response);
 

@@ -48,7 +48,7 @@ public class TemplateService {
     private FlowApi flowApi;
 
     @Inject
-    TemplatesApi templatesApi;
+    private TemplatesApi templatesApi;
 
     /**
      * @param branch
@@ -60,9 +60,10 @@ public class TemplateService {
     public void installOnBranch(List<String> branch, String fileConfiguration) throws ApiException {
         ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch).getProcessGroupFlow();
         File file = new File(fileConfiguration);
-        String name = FilenameUtils.getBaseName(file.getName());
+
         //must we force resintall template ?
         /*TemplatesEntity templates = flowApi.getTemplates();
+        String name = FilenameUtils.getBaseName(file.getName());
         Optional<TemplateEntity> template = templates.getTemplates().stream().filter(templateParse -> templateParse.getTemplate().getName().equals(name)).findFirst();
         if (!template.isPresent()) {
             template = Optional.of(processGroupsApi.uploadTemplate(processGroupFlow.getId(), file));

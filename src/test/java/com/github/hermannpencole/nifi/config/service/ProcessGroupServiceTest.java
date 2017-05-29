@@ -1,6 +1,5 @@
 package com.github.hermannpencole.nifi.config.service;
 
-import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -11,16 +10,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.*;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * API tests for AccessApi
@@ -46,7 +45,7 @@ public class ProcessGroupServiceTest {
         when(flowapiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
 
         Optional<ProcessGroupFlowEntity> response = processGroupService.changeDirectory(branch);
-        assertTrue(!response.isPresent());
+        assertFalse(response.isPresent());
      }
 
     @Test
@@ -134,8 +133,8 @@ public class ProcessGroupServiceTest {
             processGroup.setPosition(position);
         }
         PositionDTO result = processGroupService.getNextPosition(responseRoot);
-        assertEquals(0d, result.getX().doubleValue(), 0);
-        assertEquals(200d, result.getY().doubleValue(), 0);
+        assertEquals(0d, result.getX(), 0);
+        assertEquals(200d, result.getY(), 0);
     }
 
 

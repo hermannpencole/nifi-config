@@ -10,13 +10,23 @@ import javax.inject.Singleton;
 
 /**
  * Created by SFRJ2737 on 2017-05-28.
+ *
+ * @author hermann pencolé
  */
 @Singleton
 public class AccessService {
 
     @Inject
-    AccessApi apiInstance;
+    private AccessApi apiInstance;
 
+    /**
+     * add token on http client. The token is ask to nifi.
+     *
+     * @param accessFromTicket
+     * @param username
+     * @param password
+     * @throws ApiException
+     */
     public void addTokenOnConfiguration(boolean accessFromTicket, String username, String password) throws ApiException {
         ApiClient client = Configuration.getDefaultApiClient();
         if (accessFromTicket) {

@@ -1,12 +1,15 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,15 +33,19 @@ public class ExtractProcessorService {
      */
     private final static Logger LOG = LoggerFactory.getLogger(ExtractProcessorService.class);
 
-    /**
-     * The processGroupService nifi.
-     */
     @Inject
     private ProcessGroupService processGroupService;
 
     @Inject
     private FlowApi flowapi;
 
+    /**
+     *
+     * @param branch
+     * @param fileConfiguration
+     * @throws IOException
+     * @throws ApiException
+     */
     public void extractByBranch(List<String> branch, String fileConfiguration) throws IOException, ApiException {
         File file = new File(fileConfiguration);
 
@@ -47,6 +54,7 @@ public class ExtractProcessorService {
 
         GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        LOG.debug("saving in file {}", fileConfiguration);
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             gson.toJson(result, writer);
         }

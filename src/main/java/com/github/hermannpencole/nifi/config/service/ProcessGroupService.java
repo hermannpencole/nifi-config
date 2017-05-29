@@ -116,6 +116,7 @@ public class ProcessGroupService {
                 nextPosition.setX(nextPosition.getX() + 400);
             }
         }
+        LOG.debug("nest postion {},{}", nextPosition.getX(), nextPosition.getY());
         return nextPosition;
     }
 }

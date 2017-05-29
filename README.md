@@ -4,6 +4,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config)
 [![Build Status](https://travis-ci.org/hermannpencole/nifi-swagger-client.svg?branch=master)](https://travis-ci.org/hermannpencole/nifi-deploy-config/)
 [![codecov](https://codecov.io/gh/hermannpencole/nifi-config/branch/master/graph/badge.svg)](https://codecov.io/gh/hermannpencole/nifi-config)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/c165156aaa3242bc9a41dc6225e19706)](https://www.codacy.com/app/hermannpencole/nifi-config?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=hermannpencole/nifi-config&amp;utm_campaign=Badge_Grade)
 
 Update, Extract Nifi Configuration
 
@@ -213,7 +214,7 @@ java -jar nifi-deploy-config-1.1.0.jar \
 
 # TODO
 
-add version management that undeploy the old version automatically
+add version management that undeploy the old version automatically (maybe in 1.2.X with component version http://bryanbende.com/development/2017/05/10/apache-nifi-1-2-0-component-versioning)
 
 All idea are welcome. 
 
