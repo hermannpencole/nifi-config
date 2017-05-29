@@ -2,3 +2,4 @@
 /configure-nifi.iml
 /.idea
 /nifi-deploy-config.iml
+/dependency-reduced-pom.xml
