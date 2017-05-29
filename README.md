@@ -11,39 +11,38 @@ Deploy, undeploy template
 
 ## Which version
 
-| version                                  | version NIFI    |
-| ---------------------------------------- | --------------- |
-| version 1.1.0 (last) [download it from Maven Central](http://central.maven.org/maven2/com/github/hermannpencole/nifi-deploy-config/) | for nifi  1.1.0 |
+| version                                  | version NIFI                             |
+| ---------------------------------------- | ---------------------------------------- |
+| version 1.1.X  [download it from Maven Central](http://central.maven.org/maven2/com/github/hermannpencole/nifi-deploy-config/) | Build with api nifi  1.1.0 (compatibility 1.0 & 1.2 ?) |
 
 ## How to :
 
 ```shell
 usage: java -jar nifi-deploy-config-1.1.0.jar [OPTIONS]
- -accessFromTicket <arg>   Access via Kerberos ticket exchange / SPNEGO negotiation
  -b,--branch <arg>         branch to begin (must begin by root) : root > my group > my sub group (default root)
  -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
  -h,--help                 Usage description
  -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
  -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
- -noVerifySsl <arg>        turn off ssl verification certificat
  -password <arg>           password for access via username/password, then user is mandatory
  -user <arg>               user name for access via username/password, then password is mandatory
-
+ -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
+ -noVerifySsl              turn off ssl verification certificat
 ```
 
-## Strep by Step
+## Step by Step : use in real live
 
 ### Prepare your nifi development
 
-Create a template on nifi : 
+1 ) Create a template on nifi : 
 
-with this rules : each processor on a group **must** have a unique name
+with this rule : each processor in a group **must** have a unique name
 
 ![template](/docs/template.png)
 
-and export it
+2) and download it
 
-Extract a sample configuration with the command
+3) Extract a sample configuration with the command
 
 ```shell
 java -jar nifi-deploy-config-1.1.0.jar \
@@ -55,7 +54,7 @@ java -jar nifi-deploy-config-1.1.0.jar \
 
 ### Deploy it on production
 
-undeploy the old version with the command
+1a) undeploy the old version with the command
 
 ```shell
 java -jar nifi-deploy-config-1.1.0.jar \
@@ -64,7 +63,7 @@ java -jar nifi-deploy-config-1.1.0.jar \
   -m undeploy
 ```
 
-deploy the template with the command
+1b) deploy the template with the command
 
 ```shell
 java -jar nifi-deploy-config-1.1.0.jar \
@@ -74,7 +73,7 @@ java -jar nifi-deploy-config-1.1.0.jar \
   -m deployTemplate
 ```
 
-update the production configuration with the command
+2) update the production configuration with the command
 
 ```shell
 java -jar nifi-deploy-config-1.1.0.jar \
@@ -88,9 +87,9 @@ java -jar nifi-deploy-config-1.1.0.jar \
 
 All !
 
-You can find all properties in your extraction. Now configure it with the production properties and update your production.
+You can find all properties in your extraction file. Now just configure it with the production properties and update your production with the mode updateConfig.
 
-Configuration work with name, don't forget that each processor on a group **must** have a unique name
+Configuration work with the name, remember that each processor in a group **must** have a unique name.
 
 sample :
 ```json
