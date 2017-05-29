@@ -26,14 +26,17 @@ public class TestUtils {
         processGroupEntity.setId(id);
         ProcessGroupDTO processGroupDTO = new ProcessGroupDTO();
         processGroupDTO.setName(name);
+        processGroupDTO.setId(id);
         processGroupEntity.setComponent(processGroupDTO);
         return processGroupEntity;
     }
 
     public static ProcessorEntity createProcessorEntity(String id, String name) {
         ProcessorEntity proc = new ProcessorEntity();
+        proc.setId(id);
         ProcessorDTO procDTO = new ProcessorDTO();
         procDTO.setName(name);
+        procDTO.setId(id);
         procDTO.setConfig(new ProcessorConfigDTO());
         proc.setComponent(procDTO);
         return proc;

@@ -1,0 +1,54 @@
+{
+  "name" : "nameComponent" ,
+  "processors": [
+    {
+      "name": "nameProc",
+      "config": {
+        "properties": {
+          "Input Directory": "c:\\temp",
+          "Recurse Subdirectories": "false",
+          "Input Directory Location": "Local",
+          "File Filter": "[^\\.].*",
+          "Minimum File Age": "0 sec",
+          "Minimum File Size": "0 B",
+          "Ignore Hidden Files": "true"
+        },
+        "schedulingPeriod": "0 sec",
+        "schedulingStrategy": "TIMER_DRIVEN",
+        "executionNode": "ALL",
+        "penaltyDuration": "30 sec",
+        "yieldDuration": "1 sec",
+        "bulletinLevel": "WARN",
+        "runDurationMillis": 0,
+        "concurrentlySchedulableTaskCount": 1,
+        "autoTerminatedRelationships": [],
+        "comments": "",
+        "lossTolerant": false
+      }
+    }
+  ],
+  "groupProcessorsEntity": [
+    {
+      "processors": [
+        {
+          "name": "nameProc2",
+          "config": {
+            "properties": {},
+            "schedulingPeriod": "0 sec",
+            "schedulingStrategy": "TIMER_DRIVEN",
+            "executionNode": "ALL",
+            "penaltyDuration": "30 sec",
+            "yieldDuration": "1 sec",
+            "bulletinLevel": "WARN",
+            "runDurationMillis": 0,
+            "concurrentlySchedulableTaskCount": 1,
+            "autoTerminatedRelationships": [],
+            "comments": "",
+            "lossTolerant": false
+          }
+        }
+      ],
+      "name": "nameSubGroup"
+    }
+  ]
+}

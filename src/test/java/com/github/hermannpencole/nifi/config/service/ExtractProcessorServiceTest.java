@@ -25,7 +25,7 @@ import static org.junit.Assert.*;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ExtractServiceTest {
+public class ExtractProcessorServiceTest {
     @Mock
     private ProcessGroupService processGroupServiceMock;
 
@@ -35,13 +35,6 @@ public class ExtractServiceTest {
     @InjectMocks
     private ExtractProcessorService extractService;
 
-    /**
-     * Creates a token for accessing the REST API via username/password
-     * <p>
-     * The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header in the format &#39;Authorization: Bearer &lt;token&gt;&#39;.
-     *
-     * @throws ApiException if the Api call fails
-     */
     @Test(expected = ConfigException.class)
     public void extractNotExitingBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");

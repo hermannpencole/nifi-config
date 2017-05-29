@@ -31,9 +31,6 @@ public class UpdateProcessorService {
      */
     private final static Logger LOG = LoggerFactory.getLogger(UpdateProcessorService.class);
 
-    /**
-     * The processGroupService nifi.
-     */
     @Inject
     private ProcessGroupService processGroupService;
 

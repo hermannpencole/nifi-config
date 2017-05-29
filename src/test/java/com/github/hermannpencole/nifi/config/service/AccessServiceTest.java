@@ -51,6 +51,11 @@ public class AccessServiceTest {
         verify(accessApiMock).createAccessToken("user","pwd");
     }
 
+    @Test
+    public void createAccessNohtingTest() throws ApiException, IOException, URISyntaxException {
+        accessService.addTokenOnConfiguration(false,  null,null);
+        verify(accessApiMock, never()).createAccessToken(anyString(), anyString());
+    }
 
 
 }
