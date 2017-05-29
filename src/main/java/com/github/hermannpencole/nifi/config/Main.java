@@ -98,19 +98,24 @@ public class Main {
                     //Get an instance of the bean from the context
                     UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);
                     processorService.updateByBranch(branchList, fileConfiguration);
+                    LOG.info("The group configuration {} is updated with the file {}.", branch, fileConfiguration);
                 } else if ("extractConfig".equals(cmd.getOptionValue("m"))) {
                     //Get an instance of the bean from the context
                     ExtractProcessorService processorService = injector.getInstance(ExtractProcessorService.class);
                     processorService.extractByBranch(branchList, fileConfiguration);
+                    LOG.info("The group configuration {} is extrated on file {}", branch, fileConfiguration);
                 } else if ("deployTemplate".equals(cmd.getOptionValue("m"))) {
                     TemplateService templateService = injector.getInstance(TemplateService.class);
                     templateService.installOnBranch(branchList, fileConfiguration);
+                    LOG.info("Template {} is installed on the group {}", fileConfiguration, branch);
                 } else {
                     TemplateService templateService = injector.getInstance(TemplateService.class);
                     templateService.undeploy(branchList);
+                    LOG.info("The group {} is deleted", branch);
                 }
             }
         } catch (ApiException e) {
+            LOG.error(e.getMessage(), e);
             throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
         }
     }

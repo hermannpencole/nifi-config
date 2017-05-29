@@ -70,6 +70,27 @@ public class UpdateProcessorServiceTest {
         verify(processorsApiMock).updateProcessor(eq("idProc2"), any());
     }
 
+    @Test(expected = ConfigException.class)
+    public void updateErrorBranchTest() throws ApiException, IOException, URISyntaxException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc", "nameProc"));
+        response.getProcessGroupFlow().getFlow()
+                .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
+
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+
+        ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
+        subGroupResponse.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2", "nameProc2"));
+        when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
+
+        when(processorsApiMock.updateProcessor(any(), any())).thenThrow(new ApiException());
+        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath());
+
+    }
+
 
 
 
