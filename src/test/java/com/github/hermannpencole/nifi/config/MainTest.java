@@ -98,7 +98,7 @@ public class MainTest {
     }
 
     @Test
-    public void mainUpdateTest() throws Exception {
+    public void mainUpdateWithPasswordTest() throws Exception {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
@@ -109,7 +109,7 @@ public class MainTest {
         PowerMockito.mockStatic(Guice.class);
         Mockito.when(Guice.createInjector()).thenReturn(injector);
 
-        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig"});
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig","-u","user","-p","password"});
         verify(updateProcessorServiceMock).updateByBranch(Arrays.asList("root","N2"), "adr");
     }
 

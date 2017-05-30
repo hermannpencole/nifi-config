@@ -214,7 +214,7 @@ java -jar nifi-deploy-config-1.1.0.jar \
 
 # TODO
 
-add version management that undeploy the old version automatically (maybe in 1.2.X with component version http://bryanbende.com/development/2017/05/10/apache-nifi-1-2-0-component-versioning)
+add version management that undeploy the old version automatically (with a version # in comment?)
 
 All idea are welcome. 
 
