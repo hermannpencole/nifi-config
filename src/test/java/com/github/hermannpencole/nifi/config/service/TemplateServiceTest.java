@@ -97,7 +97,6 @@ public class TemplateServiceTest {
     @Test
     public void undeployNoExistTest() throws ApiException {
         List<String> branch = Arrays.asList("root", "elt1");
-        String fileName = "test";
         Optional<ProcessGroupFlowEntity> processGroupFlow = Optional.empty();
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
         templateService.undeploy(branch);

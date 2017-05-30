@@ -114,7 +114,7 @@ public class MainTest {
     }
 
     @Test
-    public void mainExtractTest() throws Exception {
+    public void mainExtractWithoutBranchTest() throws Exception {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
@@ -125,8 +125,8 @@ public class MainTest {
         PowerMockito.mockStatic(Guice.class);
         Mockito.when(Guice.createInjector()).thenReturn(injector);
 
-        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","extractConfig", "-accessFromTicket"});
-        verify(extractProcessorServiceMock).extractByBranch(Arrays.asList("root","N2"), "adr");
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-conf","adr","-m","extractConfig", "-accessFromTicket"});
+        verify(extractProcessorServiceMock).extractByBranch(Arrays.asList("root"), "adr");
     }
 
     @Test
@@ -136,24 +136,49 @@ public class MainTest {
         PowerMockito.verifyStatic();
         System.exit(1);
     }
+
     @Test
-    public void mainPrintUsage2Test() throws Exception {
+    public void mainPrintUsageMandatoryTest() throws Exception {
         PowerMockito.mockStatic(System.class);
         Main.main(new String[]{});
         PowerMockito.verifyStatic();
         System.exit(1);
     }
+
     @Test
-    public void mainPrintUsage3Test() throws Exception {
+    public void mainPrintUsageMandatoryWithoutModeTest() throws Exception {
+        PowerMockito.mockStatic(System.class);
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api"});
+        PowerMockito.verifyStatic();
+        System.exit(1);
+    }
+
+    @Test
+    public void mainPrintUsageMandatoryWithoutConfFileTest() throws Exception {
+        PowerMockito.mockStatic(System.class);
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api", "-m","extractConfig"});
+        PowerMockito.verifyStatic();
+        System.exit(1);
+    }
+
+    @Test
+    public void mainPrintUsageModeUnknowTest() throws Exception {
         PowerMockito.mockStatic(System.class);
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","autre"});
         PowerMockito.verifyStatic();
         System.exit(1);
     }
     @Test
-    public void mainPrintUsage4Test() throws Exception {
+    public void mainPrintUsageWithoutPasswordTest() throws Exception {
         PowerMockito.mockStatic(System.class);
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy","-user","user"});
+        PowerMockito.verifyStatic();
+        System.exit(1);
+    }
+    @Test
+    public void mainPrintUsageWithoutUserTest() throws Exception {
+        PowerMockito.mockStatic(System.class);
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy","-password","pass"});
         PowerMockito.verifyStatic();
         System.exit(1);
     }

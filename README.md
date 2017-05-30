@@ -20,7 +20,7 @@ Deploy, undeploy template
 
 ```shell
 usage: java -jar nifi-deploy-config-1.1.0.jar [OPTIONS]
- -b,--branch <arg>         branch to begin (must begin by root) : root > my group > my sub group (default root)
+ -b,--branch <arg>         process group to begin (must begin by root) : root > my group > my sub group (default root)
  -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
  -h,--help                 Usage description
  -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
@@ -37,7 +37,7 @@ usage: java -jar nifi-deploy-config-1.1.0.jar [OPTIONS]
 
 1 ) Create a template on nifi : 
 
-with this rule : each processor in a group **must** have a unique name
+with this rule : each processor in a process group **must** have a unique name
 
 ![template](/docs/template.png)
 
