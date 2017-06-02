@@ -43,6 +43,15 @@ public class ExtractProcessorServiceTest {
         extractService.extractByBranch(branch, temp.getAbsolutePath());
     }
 
+    @Test(expected = FileNotFoundException.class)
+    public void extractErrorFileBranchTest() throws ApiException, IOException, URISyntaxException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+        extractService.extractByBranch(branch,"::");
+    }
+
     @Test
     public void extractEmptyBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");

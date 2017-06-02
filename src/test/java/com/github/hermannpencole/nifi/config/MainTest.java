@@ -109,7 +109,7 @@ public class MainTest {
         PowerMockito.mockStatic(Guice.class);
         Mockito.when(Guice.createInjector()).thenReturn(injector);
 
-        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig","-u","user","-p","password"});
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig","-user","user","-password","password"});
         verify(updateProcessorServiceMock).updateByBranch(Arrays.asList("root","N2"), "adr");
     }
 

@@ -72,7 +72,7 @@ public class Main {
                     && !"deployTemplate".equals(cmd.getOptionValue("m")) && !"undeploy".equals(cmd.getOptionValue("m")) ) {
                 printUsage(options);
                 System.exit(1);
-            } else if ( (cmd.hasOption("user") || cmd.hasOption("password")) && (!cmd.hasOption("user") || !cmd.hasOption("password")) ) {
+            } else if ( (cmd.hasOption("user") && !cmd.hasOption("password")) || (cmd.hasOption("password") && !cmd.hasOption("user")) ) {
                 printUsage(options);
                 System.exit(1);
             } else {
