@@ -49,7 +49,8 @@ public class ExtractProcessorServiceTest {
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
         when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
-        extractService.extractByBranch(branch,"non:\\not_found###//////");
+        File temp = File.createTempFile("tempfile", ".tmp");
+        extractService.extractByBranch(branch, temp.getParent());
     }
 
     @Test
