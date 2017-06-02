@@ -57,6 +57,8 @@ public class ExtractProcessorService {
         LOG.debug("saving in file {}", fileConfiguration);
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
             gson.toJson(result, writer);
+        } finally {
+            LOG.debug("extractByBranch end");
         }
     }
 

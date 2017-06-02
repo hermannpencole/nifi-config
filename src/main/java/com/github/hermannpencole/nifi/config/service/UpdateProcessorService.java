@@ -69,6 +69,8 @@ public class UpdateProcessorService {
             //Run all nifi processors
             processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
             LOG.info(Arrays.toString(branch.toArray()) + " is running");
+        } finally {
+            LOG.debug("updateByBranch end");
         }
 
     }
