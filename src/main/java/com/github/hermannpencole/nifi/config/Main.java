@@ -1,10 +1,7 @@
 package com.github.hermannpencole.nifi.config;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.config.service.AccessService;
-import com.github.hermannpencole.nifi.config.service.ExtractProcessorService;
-import com.github.hermannpencole.nifi.config.service.TemplateService;
-import com.github.hermannpencole.nifi.config.service.UpdateProcessorService;
+import com.github.hermannpencole.nifi.config.service.*;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.Configuration;
@@ -29,6 +26,8 @@ public class Main {
      */
     private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
+    private final static String version = Main.class.getPackage().getImplementationVersion();
+
     /**
      * Print to the console the usage.
      *
@@ -36,7 +35,7 @@ public class Main {
      */
     private static void printUsage(Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("config_nifi [OPTIONS]", options);
+        formatter.printHelp("java -jar nifi-deploy-config-" + version +".jar [OPTIONS]", options);
     }
 
     /**
@@ -76,8 +75,8 @@ public class Main {
                 printUsage(options);
                 System.exit(1);
             } else {
-
-                String adresseNifi = cmd.getOptionValue("n");
+                LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
+                String addressNifi = cmd.getOptionValue("n");
                 String fileConfiguration = cmd.getOptionValue("c");
 
                 String branch = "root";
@@ -87,10 +86,15 @@ public class Main {
                 List<String> branchList = Arrays.stream(branch.split(">")).map(String::trim).collect(Collectors.toList());
 
 
-                setConfiguration(adresseNifi, !cmd.hasOption("noVerifySsl"));
+                setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"));
                 Injector injector = Guice.createInjector();
                 AccessService accessService = injector.getInstance(AccessService.class);
                 accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
+
+                InformationService infoService = injector.getInstance(InformationService.class);
+                String nifiVersion =  infoService.getVersion();
+                LOG.info(String.format("Communicate with nifi %s", nifiVersion));
+
                 if ("updateConfig".equals(cmd.getOptionValue("m"))) {
                     //Get an instance of the bean from the context
                     UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);

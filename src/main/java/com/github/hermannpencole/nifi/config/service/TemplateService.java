@@ -69,7 +69,7 @@ public class TemplateService {
         }*/
         Optional<TemplateEntity> template = Optional.of(processGroupsApi.uploadTemplate(processGroupFlow.getId(), file));
         InstantiateTemplateRequestEntity instantiateTemplate = new InstantiateTemplateRequestEntity(); // InstantiateTemplateRequestEntity | The instantiate template request.
-        instantiateTemplate.setTemplateId(template.get().getId());
+        instantiateTemplate.setTemplateId(template.get().getTemplate().getId());
         instantiateTemplate.setOriginX(0d);
         instantiateTemplate.setOriginY(0d);
         processGroupsApi.instantiateTemplate(processGroupFlow.getId(), instantiateTemplate);

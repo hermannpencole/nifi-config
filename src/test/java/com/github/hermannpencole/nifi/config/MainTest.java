@@ -1,10 +1,7 @@
 package com.github.hermannpencole.nifi.config;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.config.service.AccessService;
-import com.github.hermannpencole.nifi.config.service.ExtractProcessorService;
-import com.github.hermannpencole.nifi.config.service.TemplateService;
-import com.github.hermannpencole.nifi.config.service.UpdateProcessorService;
+import com.github.hermannpencole.nifi.config.service.*;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -42,6 +39,8 @@ public class MainTest {
     private UpdateProcessorService updateProcessorServiceMock;
     @Mock
     private ExtractProcessorService extractProcessorServiceMock;
+    @Mock
+    private InformationService informationServiceMock;
 
     @Before
     public void init() {
@@ -54,6 +53,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
             }
         });
@@ -70,6 +70,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
             }
         });
@@ -86,6 +87,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
             }
         });
@@ -102,6 +104,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(UpdateProcessorService.class).toInstance(updateProcessorServiceMock);
             }
         });
@@ -118,6 +121,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(ExtractProcessorService.class).toInstance(extractProcessorServiceMock);
             }
         });
@@ -193,6 +197,7 @@ public class MainTest {
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
+                bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
             }
         });
