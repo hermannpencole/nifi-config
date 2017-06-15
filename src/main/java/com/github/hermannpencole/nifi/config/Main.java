@@ -84,7 +84,9 @@ public class Main {
                     branch = cmd.getOptionValue("b");
                 }
                 List<String> branchList = Arrays.stream(branch.split(">")).map(String::trim).collect(Collectors.toList());
-
+                if (!branchList.get(0).equals("root")) {
+                    throw new ConfigException("The branch address must begin with the element 'root' ( sample : root > branch > sub-branch)");
+                }
 
                 setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"));
                 Injector injector = Guice.createInjector();

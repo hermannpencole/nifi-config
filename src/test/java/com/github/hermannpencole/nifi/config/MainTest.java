@@ -141,6 +141,12 @@ public class MainTest {
         System.exit(1);
     }
 
+    @Test(expected = ConfigException.class)
+    public void mainPrintUsageErrorBranchNotRootTest() throws Exception {
+        Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\nifi/branch\"","-conf","adr","-m","undeploy"});
+    }
+
+
     @Test
     public void mainPrintUsageMandatoryTest() throws Exception {
         PowerMockito.mockStatic(System.class);
