@@ -19,7 +19,7 @@ Deploy, undeploy template
 ## How to :
 
 ```shell
-usage: java -jar nifi-deploy-config-1.1.2.jar [OPTIONS]
+usage: java -jar nifi-deploy-config-1.1.3.jar [OPTIONS]
  -b,--branch <arg>         process group to begin (must begin by root) : root > my group > my sub group (default root)
  -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
  -h,--help                 Usage description
@@ -48,7 +48,7 @@ with this rule : each processor in a process group **must** have a unique name
 3) Extract a sample configuration with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>My Group>My Subgroup" \
   -conf /tmp/config.json \
@@ -60,7 +60,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 1a) undeploy the old version with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -m undeploy
@@ -69,7 +69,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 1b) deploy the template with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/my_template.xml \
@@ -79,7 +79,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 2) update the production configuration with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/PROD_config.json \
@@ -155,7 +155,7 @@ sample :
 #### Sample extract configuration
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -165,7 +165,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 #### Sample update configuration
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -175,7 +175,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 #### Sample deploy Template
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/my_template.xml \
@@ -185,7 +185,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 #### Sample undeploy
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -m undeploy
@@ -194,7 +194,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 #### Sample access via username/password
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -user my_username \
   -password my_password \
   -nifi http://ip-nifi-prod:8080/nifi-api \
@@ -206,7 +206,7 @@ java -jar nifi-deploy-config-1.1.2.jar \
 #### Sample access via Kerberos ticket exchange / SPNEGO negotiation
 
 ```shell
-java -jar nifi-deploy-config-1.1.2.jar \
+java -jar nifi-deploy-config-1.1.3.jar \
   -accessFromTicket \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
