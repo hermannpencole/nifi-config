@@ -97,6 +97,7 @@ public class ExtractProcessorService {
         ProcessorDTO result = new ProcessorDTO();
         result.setName(processor.getName());
         result.setConfig(processor.getConfig());
+        result.getConfig().setAutoTerminatedRelationships(null);
         result.getConfig().setDescriptors(null);
         result.getConfig().setDefaultConcurrentTasks(null);
         result.getConfig().setDefaultSchedulingPeriod(null);

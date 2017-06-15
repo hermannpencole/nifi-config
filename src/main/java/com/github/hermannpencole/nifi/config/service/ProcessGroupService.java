@@ -76,6 +76,9 @@ public class ProcessGroupService {
      * @throws ApiException
      */
     public ProcessGroupFlowEntity createDirectory(List<String> branch) throws ApiException {
+        //generate clientID
+        String clientId = flowapi.generateClientId();
+        //find root
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
             Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
@@ -85,6 +88,7 @@ public class ProcessGroupService {
                 created.setRevision(new RevisionDTO());
                 created.setComponent(new ProcessGroupDTO());
                 created.getRevision().setVersion(0L);
+                created.getRevision().setClientId(clientId);
                 created.getComponent().setName(processGroupName);
                 created.getComponent().setPosition(position);
                 created = processGroupsApi.createProcessGroup(flowEntity.getProcessGroupFlow().getId(), created);

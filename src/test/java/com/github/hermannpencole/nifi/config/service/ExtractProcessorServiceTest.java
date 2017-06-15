@@ -48,7 +48,6 @@ public class ExtractProcessorServiceTest {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
         File temp = File.createTempFile("tempfile", ".tmp");
         extractService.extractByBranch(branch, temp.getParent());
     }
@@ -62,7 +61,6 @@ public class ExtractProcessorServiceTest {
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
 
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
         extractService.extractByBranch(branch, temp.getAbsolutePath());
 
         //evaluate response
@@ -89,7 +87,6 @@ public class ExtractProcessorServiceTest {
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
 
         ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
         when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);

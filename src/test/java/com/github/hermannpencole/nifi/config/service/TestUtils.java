@@ -39,6 +39,8 @@ public class TestUtils {
         procDTO.setId(id);
         procDTO.setConfig(new ProcessorConfigDTO());
         proc.setComponent(procDTO);
+        proc.setRevision(new RevisionDTO());
+        proc.getRevision().setVersion(100L);
         return proc;
     }
 }

@@ -78,24 +78,18 @@ public class TemplateServiceTest {
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
 
-        ProcessGroupEntity processGroup = new ProcessGroupEntity();
-        RevisionDTO revision = new RevisionDTO();
-        revision.setVersion(100L);
-        processGroup.setId(processGroupFlow.get().getProcessGroupFlow().getId());
-        processGroup.setRevision(revision);
-        when(processGroupsApiMock.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId())).thenReturn(processGroup);
         TemplatesEntity templates = new TemplatesEntity();
         TemplateEntity template = new TemplateEntity();
         template.setId("templateId");
         template.setTemplate(new TemplateDTO());
-        template.getTemplate().setGroupId(processGroup.getId());
+        template.getTemplate().setGroupId(processGroupFlow.get().getProcessGroupFlow().getId());
         template.getTemplate().setId("templateId");
         templates.addTemplatesItem(template);
         when(flowApiMock.getTemplates()).thenReturn(templates);
 
         templateService.undeploy(branch);
         verify(templatesApiMock).removeTemplate(template.getId());
-        verify(processGroupsApiMock).removeProcessGroup(processGroup.getId(), "0", null);
+        verify(processGroupsApiMock).removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "0", null);
     }
 
     @Test

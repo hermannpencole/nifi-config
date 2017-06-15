@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +42,7 @@ public class UpdateProcessorService {
     private ProcessorsApi processorsApi;
 
 
+
     /**
      * @param branch
      * @param fileConfiguration
@@ -64,7 +66,12 @@ public class UpdateProcessorService {
             //Stop branch
             processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
             LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
-            updateComponent(configuration, componentSearch);
+            //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
+            componentSearch = flowapi.getFlow(componentSearch.getProcessGroupFlow().getId());
+
+            //generate clientID
+            String clientId = flowapi.generateClientId();
+            updateComponent(configuration, componentSearch, clientId);
 
             //Run all nifi processors
             processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
@@ -78,32 +85,50 @@ public class UpdateProcessorService {
     /**
      * @param configuration
      * @param componentSearch
+     * @param clientId
      * @throws ApiException
      */
-    private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch) throws ApiException {
+    private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch, String clientId) throws ApiException {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
-        configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig));
+        configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig, clientId));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
             ProcessGroupEntity processorGroupToUpdate = ProcessGroupService.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
-            updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()));
+            updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()), clientId);
         }
     }
 
     /**
      * update processor configuration with valueToPutInProc
      * at first find id of each processor and in second way update it
-     *
-     * @param processorsList
+     *  @param processorsList
      * @param componentToPutInProc
+     * @param clientId
      */
-    private void updateProcessor(List<ProcessorEntity> processorsList, ProcessorDTO componentToPutInProc) {
+    private void updateProcessor(List<ProcessorEntity> processorsList, ProcessorDTO componentToPutInProc, String clientId) {
         try {
             ProcessorEntity processorToUpdate = findProcByComponentName(processorsList, componentToPutInProc.getName());
             componentToPutInProc.setId(processorToUpdate.getId());
             LOG.info("Update processor : " + processorToUpdate.getComponent().getName());
             //update on nifi
+            List<String> autoTerminatedRelationships = new ArrayList<>();
+            processorToUpdate.getComponent().getRelationships().stream()
+                    .filter(relationships -> relationships.getAutoTerminate())
+                    .forEach(relationships -> autoTerminatedRelationships.add(relationships.getName()));
+            componentToPutInProc.getConfig().setAutoTerminatedRelationships(autoTerminatedRelationships);
+            componentToPutInProc.getConfig().setDescriptors(processorToUpdate.getComponent().getConfig().getDescriptors());
+            componentToPutInProc.getConfig().setDefaultConcurrentTasks(processorToUpdate.getComponent().getConfig().getDefaultConcurrentTasks());
+            componentToPutInProc.getConfig().setDefaultSchedulingPeriod(processorToUpdate.getComponent().getConfig().getDefaultSchedulingPeriod());
+            componentToPutInProc.setRelationships(processorToUpdate.getComponent().getRelationships());
+            componentToPutInProc.setStyle(processorToUpdate.getComponent().getStyle());
+            componentToPutInProc.setSupportsBatching(processorToUpdate.getComponent().getSupportsBatching());
+            componentToPutInProc.setSupportsEventDriven(processorToUpdate.getComponent().getSupportsEventDriven());
+            componentToPutInProc.setSupportsParallelProcessing(processorToUpdate.getComponent().getSupportsParallelProcessing());
+            componentToPutInProc.setPersistsState(processorToUpdate.getComponent().getPersistsState());
+            componentToPutInProc.setRestricted(processorToUpdate.getComponent().getRestricted());
+            componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
             processorToUpdate.setComponent(componentToPutInProc);
+            processorToUpdate.getRevision().setClientId(clientId);
             processorsApi.updateProcessor(processorToUpdate.getId(), processorToUpdate);
 
             //nifiService.updateProcessorProperties(toUpdate, componentToPutInProc.getString("id"));
