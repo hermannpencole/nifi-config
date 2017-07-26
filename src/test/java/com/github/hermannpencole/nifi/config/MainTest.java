@@ -178,6 +178,7 @@ public class MainTest {
         PowerMockito.verifyStatic();
         System.exit(1);
     }
+
     @Test
     public void mainPrintUsageWithoutPasswordTest() throws Exception {
         PowerMockito.mockStatic(System.class);
@@ -185,6 +186,7 @@ public class MainTest {
         PowerMockito.verifyStatic();
         System.exit(1);
     }
+
     @Test
     public void mainPrintUsageWithoutUserTest() throws Exception {
         PowerMockito.mockStatic(System.class);

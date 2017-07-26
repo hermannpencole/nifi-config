@@ -87,9 +87,13 @@ public class TemplateServiceTest {
         templates.addTemplatesItem(template);
         when(flowApiMock.getTemplates()).thenReturn(templates);
 
+        ProcessGroupEntity processGroupEntity = TestUtils.createProcessGroupEntity("idProcessGroupFlow", "nameProcessGroupFlow");
+        when(processGroupsApiMock.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId())).thenReturn(processGroupEntity);
+
         templateService.undeploy(branch);
         verify(templatesApiMock).removeTemplate(template.getId());
-        verify(processGroupsApiMock).removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "0", null);
+        verify(processGroupServiceMock).setState(processGroupFlow.get().getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+        verify(processGroupsApiMock).removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "10", null);
     }
 
     @Test

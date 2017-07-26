@@ -87,7 +87,15 @@ public class TemplateService {
         for (TemplateEntity templateInGroup : templatesInGroup.collect(Collectors.toList())) {
             templatesApi.removeTemplate(templateInGroup.getId());
         }
-        processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "0",null);
+
+        //Stop branch
+        processGroupService.setState(processGroupFlow.get().getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+        LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
+
+        //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
+        ProcessGroupEntity processGroupEntity = processGroupsApi.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId());
+
+        processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), processGroupEntity.getRevision().getVersion().toString(),null);
 
     }
 

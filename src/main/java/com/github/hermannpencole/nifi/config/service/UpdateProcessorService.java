@@ -66,6 +66,7 @@ public class UpdateProcessorService {
             //Stop branch
             processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
             LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
+
             //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
             componentSearch = flowapi.getFlow(componentSearch.getProcessGroupFlow().getId());
 

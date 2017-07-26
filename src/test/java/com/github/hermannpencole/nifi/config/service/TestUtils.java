@@ -28,6 +28,9 @@ public class TestUtils {
         processGroupDTO.setName(name);
         processGroupDTO.setId(id);
         processGroupEntity.setComponent(processGroupDTO);
+        RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(10L);
+        processGroupEntity.setRevision(revision);
         return processGroupEntity;
     }
 
