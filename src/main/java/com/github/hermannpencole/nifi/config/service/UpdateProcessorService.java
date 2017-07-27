@@ -50,7 +50,7 @@ public class UpdateProcessorService {
      * @throws URISyntaxException
      * @throws ApiException
      */
-    public void updateByBranch(List<String> branch, String fileConfiguration) throws IOException, ApiException {
+    public void updateByBranch(List<String> branch, String fileConfiguration, boolean optionNoStartProcessors) throws IOException, ApiException {
         File file = new File(fileConfiguration);
         if (!file.exists()) {
             throw new FileNotFoundException("Repository " + file.getName() + " is empty or doesn't exist");
@@ -74,9 +74,11 @@ public class UpdateProcessorService {
             String clientId = flowapi.generateClientId();
             updateComponent(configuration, componentSearch, clientId);
 
-            //Run all nifi processors
-            processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
-            LOG.info(Arrays.toString(branch.toArray()) + " is running");
+            if (!optionNoStartProcessors) {
+                //Run all nifi processors
+                processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
+                LOG.info(Arrays.toString(branch.toArray()) + " is running");
+            }
         } finally {
             LOG.debug("updateByBranch end");
         }

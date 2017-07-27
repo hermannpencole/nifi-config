@@ -58,6 +58,7 @@ public class Main {
             options.addOption("password", true, "password for access via username/password, then user is mandatory");
             options.addOption("accessFromTicket", false, "Access via Kerberos ticket exchange / SPNEGO negotiation");
             options.addOption("noVerifySsl", false, "turn off ssl verification certificat");
+            options.addOption("noStartProcessors", false, "turn off auto start of the processors after update of the config");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -100,7 +101,7 @@ public class Main {
                 if ("updateConfig".equals(cmd.getOptionValue("m"))) {
                     //Get an instance of the bean from the context
                     UpdateProcessorService processorService = injector.getInstance(UpdateProcessorService.class);
-                    processorService.updateByBranch(branchList, fileConfiguration);
+                    processorService.updateByBranch(branchList, fileConfiguration, cmd.hasOption("noStartProcessors"));
                     LOG.info("The group configuration {} is updated with the file {}.", branch, fileConfiguration);
                 } else if ("extractConfig".equals(cmd.getOptionValue("m"))) {
                     //Get an instance of the bean from the context

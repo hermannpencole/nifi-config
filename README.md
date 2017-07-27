@@ -30,6 +30,7 @@ usage: java -jar nifi-deploy-config-1.1.3.jar [OPTIONS]
  -user <arg>               user name for access via username/password, then password is mandatory
  -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
  -noVerifySsl              turn off ssl verification certificat
+ -noStartProcessors        turn off auto start of the processors after update of the config
 ```
 
 Requirement : *You must have java 8 or higher installed on your machine*
