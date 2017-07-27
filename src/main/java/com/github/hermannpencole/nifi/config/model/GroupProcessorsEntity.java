@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.model;
 
+import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceDTO;
 import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
 import com.google.gson.annotations.SerializedName;
 
@@ -16,6 +17,9 @@ public class GroupProcessorsEntity {
 
     @SerializedName("groupProcessorsEntity")
     private List<GroupProcessorsEntity> groupProcessorsEntity = new ArrayList<>();
+
+    @SerializedName("controllerServices")
+    private List<ControllerServiceDTO> controllerServicesDTO = new ArrayList<>();
 
     @SerializedName("name")
     private String name;
@@ -41,6 +45,14 @@ public class GroupProcessorsEntity {
         this.groupProcessorsEntity = groupProcessorsEntity;
     }
 
+    public List<ControllerServiceDTO> getControllerServicesDTO() {
+        return controllerServicesDTO;
+    }
+
+    public void setControllerServicesDTO(List<ControllerServiceDTO> controllerServicesDTO) {
+        this.controllerServicesDTO = controllerServicesDTO;
+    }
+
     public String getName() {
         return name;
     }
@@ -48,4 +60,6 @@ public class GroupProcessorsEntity {
     public void setName(String name) {
         this.name = name;
     }
+
+
 }

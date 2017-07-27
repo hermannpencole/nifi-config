@@ -3,19 +3,19 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
+import com.github.hermannpencole.nifi.swagger.client.ControllerApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowDTO;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,6 +37,9 @@ public class ExtractProcessorService {
     private ProcessGroupService processGroupService;
 
     @Inject
+    private ControllerApi controllerApi;
+
+    @Inject
     private FlowApi flowapi;
 
     /**
@@ -52,7 +55,19 @@ public class ExtractProcessorService {
         ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
                 .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
+        //add group processors and processors
         GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
+
+        //add controllers
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(componentSearch.getProcessGroupFlow().getId());
+        if ( !controllerServicesEntity.getControllerServices().isEmpty() ) {
+            result.setControllerServicesDTO(new ArrayList<>());
+        }
+        for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
+            result.getControllerServicesDTO().add(extractController(controllerServiceEntity));
+        }
+
+        //convert to json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         LOG.debug("saving in file {}", fileConfiguration);
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
@@ -84,6 +99,7 @@ public class ExtractProcessorService {
         if (result.getProcessors().isEmpty()) {
             result.setProcessors(null);
         }
+        result.setControllerServicesDTO(null);
         return result;
     }
 
@@ -112,4 +128,15 @@ public class ExtractProcessorService {
         return result;
     }
 
+    private ControllerServiceDTO extractController(ControllerServiceEntity controllerServiceEntity) {
+        ControllerServiceDTO result = new ControllerServiceDTO();
+        result.setName(controllerServiceEntity.getComponent().getName());
+        result.setProperties(controllerServiceEntity.getComponent().getProperties());
+        result.setPersistsState(null);
+        result.setRestricted(null);
+        result.setDescriptors(null);
+        result.setReferencingComponents(null);
+        result.setValidationErrors(null);
+        return result;
+    }
 }
