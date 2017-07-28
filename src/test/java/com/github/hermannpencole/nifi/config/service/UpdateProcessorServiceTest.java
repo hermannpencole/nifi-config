@@ -2,11 +2,10 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
+import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.ProcessorEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.RelationshipDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -14,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -36,6 +36,9 @@ public class UpdateProcessorServiceTest {
 
     @Mock
     private ProcessorsApi processorsApiMock;
+
+    @Mock
+    private ControllerServicesApi controllerServicesApiMock;
 
     @InjectMocks
     private UpdateProcessorService updateProcessorService;
@@ -91,6 +94,24 @@ public class UpdateProcessorServiceTest {
         verify(processorsApiMock).updateProcessor(eq("idProc"), processorEntity.capture());
         assertEquals(1, processorEntity.getValue().getComponent().getConfig().getAutoTerminatedRelationships().size());
         assertEquals("testRelation", processorEntity.getValue().getComponent().getConfig().getAutoTerminatedRelationships().get(0));
+    }
+
+    @Test
+    public void updateBranchControllershipTest() throws ApiException, IOException, URISyntaxException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+        ControllerServicesEntity controllerServicesEntity = TestUtils.createControllerServicesEntity("idCtrl", "nameCtrl");
+        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
+
+        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestController.json").getPath(), false);
+
+        ArgumentCaptor<ControllerServiceEntity> controllerServiceEntity = ArgumentCaptor.forClass(ControllerServiceEntity.class);
+        verify(controllerServicesApiMock).updateControllerService(eq("idCtrl"), controllerServiceEntity.capture());
+        assertEquals("idCtrl", controllerServiceEntity.getValue().getComponent().getId());
+        assertEquals(2, controllerServiceEntity.getValue().getComponent().getProperties().size());
     }
 
     @Test(expected = ConfigException.class)

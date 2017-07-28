@@ -1,0 +1,12 @@
+{
+  "name" : "nameComponent" ,
+  "controllerServices": [
+    {
+      "name": "nameCtrl",
+      "properties": {
+        "key": "value1",
+        "key2": "value2"
+      }
+    }
+  ]
+}

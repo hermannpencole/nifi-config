@@ -3,6 +3,7 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
+import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
@@ -41,6 +42,8 @@ public class UpdateProcessorService {
     @Inject
     private ProcessorsApi processorsApi;
 
+    @Inject
+    private ControllerServicesApi controllerServicesApi;
 
 
     /**
@@ -74,6 +77,10 @@ public class UpdateProcessorService {
             String clientId = flowapi.generateClientId();
             updateComponent(configuration, componentSearch, clientId);
 
+            //controller
+            ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(componentSearch.getProcessGroupFlow().getId());
+            updateControllers(configuration, controllerServicesEntity);
+
             if (!optionNoStartProcessors) {
                 //Run all nifi processors
                 processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
@@ -83,6 +90,26 @@ public class UpdateProcessorService {
             LOG.debug("updateByBranch end");
         }
 
+    }
+
+    /**
+     *
+     * @param configuration
+     * @param controllerServicesEntity
+     * @throws ApiException
+     */
+    private void updateControllers(GroupProcessorsEntity configuration, ControllerServicesEntity controllerServicesEntity) throws ApiException {
+        for (ControllerServiceDTO controllerServiceDTO : configuration.getControllerServicesDTO()) {
+            //find controller for have id
+            ControllerServiceEntity controllerServiceEntityFind = controllerServicesEntity.getControllerServices().stream().filter(item -> item.getComponent().getName().trim().equals(controllerServiceDTO.getName().trim()))
+                    .findFirst().orElseThrow(() -> new ConfigException(("cannot find " + controllerServiceDTO.getName())));
+            //update processor
+            ControllerServiceEntity controllerServiceEntityConf = new ControllerServiceEntity();
+            controllerServiceEntityConf.setRevision(controllerServiceEntityFind.getRevision());
+            controllerServiceDTO.setId(controllerServiceEntityFind.getId());
+            controllerServiceEntityConf.setComponent(controllerServiceDTO);
+            controllerServicesApi.updateControllerService(controllerServiceEntityFind.getId(), controllerServiceEntityConf);
+        }
     }
 
     /**

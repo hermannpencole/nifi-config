@@ -50,7 +50,7 @@ public class TestUtils {
     public static ControllerServicesEntity createControllerServicesEntity(String id, String name) {
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
         controllerServicesEntity.getControllerServices().add(new ControllerServiceEntity());
-        controllerServicesEntity.getControllerServices().get(0).setId("id");
+        controllerServicesEntity.getControllerServices().get(0).setId(id);
         controllerServicesEntity.getControllerServices().get(0).setComponent(new ControllerServiceDTO());
         controllerServicesEntity.getControllerServices().get(0).getComponent().setName(name);
         controllerServicesEntity.getControllerServices().get(0).getComponent().setId(id);
