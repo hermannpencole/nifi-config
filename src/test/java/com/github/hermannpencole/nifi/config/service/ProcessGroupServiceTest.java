@@ -13,10 +13,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -118,10 +115,7 @@ public class ProcessGroupServiceTest {
     public void startTest() throws ApiException, IOException, URISyntaxException {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
         List<ConnectionEntity> connections = new ArrayList<>();
-        ConnectionEntity connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("idProc");
-        connectionEntity.setDestinationId("idProc2");
-        connections.add(connectionEntity);
+        connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
         responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
@@ -138,10 +132,7 @@ public class ProcessGroupServiceTest {
     public void stopTest() throws ApiException, IOException, URISyntaxException {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
         List<ConnectionEntity> connections = new ArrayList<>();
-        ConnectionEntity connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("idProc");
-        connectionEntity.setDestinationId("idProc2");
-        connections.add(connectionEntity);
+        connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
         responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
@@ -170,33 +161,31 @@ public class ProcessGroupServiceTest {
     public void reorderTest() throws ApiException, IOException, URISyntaxException {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
         List<ConnectionEntity> connections = new ArrayList<>();
-        ConnectionEntity connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("1");
-        connectionEntity.setDestinationId("2");
-        connections.add(connectionEntity);
-        connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("2");
-        connectionEntity.setDestinationId("7");
-        connections.add(connectionEntity);
-        connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("3");
-        connectionEntity.setDestinationId("4");
-        connections.add(connectionEntity);
-        connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("4");
-        connectionEntity.setDestinationId("5");
-        connections.add(connectionEntity);
-        connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("4");
-        connectionEntity.setDestinationId("6");
-        connections.add(connectionEntity);
-        connectionEntity = new ConnectionEntity();
-        connectionEntity.setSourceId("6");
-        connectionEntity.setDestinationId("7");
-        connections.add(connectionEntity);
+        connections.add(TestUtils.createConnectionEntity("idCnx1", "1","2"));
+        connections.add(TestUtils.createConnectionEntity("idCnx2", "2","7"));
+        connections.add(TestUtils.createConnectionEntity("idCnx3", "3","4"));
+        connections.add(TestUtils.createConnectionEntity("idCnx4", "4","5"));
+        connections.add(TestUtils.createConnectionEntity("idCnx5", "4","6"));
+        connections.add(TestUtils.createConnectionEntity("idCnx6", "6","7"));
         responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
-        processGroupService.reorder(responseRoot.getProcessGroupFlow().getFlow());
-
+        List<ProcessorEntity> processors = new ArrayList<>();
+        processors = new ArrayList<>();
+        processors.add(TestUtils.createProcessorEntity("1","name1"));
+        processors.add(TestUtils.createProcessorEntity("2","name2"));
+        processors.add(TestUtils.createProcessorEntity("3","name3"));
+        processors.add(TestUtils.createProcessorEntity("4","name4"));
+        processors.add(TestUtils.createProcessorEntity("5","name5"));
+        processors.add(TestUtils.createProcessorEntity("6","name6"));
+        processors.add(TestUtils.createProcessorEntity("7","name7"));
+        responseRoot.getProcessGroupFlow().getFlow().setProcessors(processors);
+        List<Set<?>> result = processGroupService.reorder(responseRoot.getProcessGroupFlow().getFlow());
+        assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
+        assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
+        assertEquals("2", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("4", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
+        assertEquals("6", ((ProcessorEntity)result.get(4).toArray()[0]).getId());
+        assertEquals("5", ((ProcessorEntity)result.get(4).toArray()[1]).getId());
+        assertEquals("idCnx6", ((ConnectionEntity)result.get(5).toArray()[0]).getId());
     }
 
     @Test

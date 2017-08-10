@@ -20,7 +20,6 @@ import javax.inject.Singleton;
 @Singleton
 public class ControllerServicesService {
 
-
     /**
      * The logger.
      */
@@ -37,9 +36,15 @@ public class ControllerServicesService {
     @Inject
     private ControllerServicesApi controllerServicesApi;
 
-    @Inject
-    private ProcessorsApi processorsApi;
-
+    /**
+     * disable, update and re enable the controller
+     *
+     * @param controllerServiceDTO
+     * @param controllerServiceEntity
+     * @return
+     * @throws ApiException
+     * @throws InterruptedException
+     */
     public ControllerServiceEntity updateControllerService(ControllerServiceDTO controllerServiceDTO, ControllerServiceEntity controllerServiceEntity) throws ApiException, InterruptedException {
         //TODO timeout
         //Disabling this controller service

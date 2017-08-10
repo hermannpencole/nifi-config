@@ -57,4 +57,12 @@ public class TestUtils {
         controllerServicesEntity.getControllerServices().get(0).getComponent().getProperties().put("key", "value");
         return controllerServicesEntity;
     }
+
+    public static ConnectionEntity createConnectionEntity(String id, String sourceId, String destinationId) {
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setId(id);
+        connectionEntity.setDestinationId(destinationId);
+        connectionEntity.setSourceId(sourceId);
+        return connectionEntity;
+    }
 }
