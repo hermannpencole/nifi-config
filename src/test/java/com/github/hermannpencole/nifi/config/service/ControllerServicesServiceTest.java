@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ControllerServiceServiceTests {
+public class ControllerServicesServiceTest {
 
     @Mock
     private ControllerServicesApi controllerServicesApi;

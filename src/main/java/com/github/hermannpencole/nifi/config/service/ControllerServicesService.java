@@ -92,14 +92,11 @@ public class ControllerServicesService {
     }
 
     public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
-        UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity;
-        ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity;
-        ControllerServiceEntity controllerServiceEntity;
-        updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
+        UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
         updateControllerServiceReferenceRequestEntity.setId(id);
         updateControllerServiceReferenceRequestEntity.setState(state);
-        controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
-        controllerServiceEntity = controllerServicesApi.getControllerService(id);
+        ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
+        ControllerServiceEntity controllerServiceEntity = controllerServicesApi.getControllerService(id);
     }
 
     public void setStateReferenceProcessors(ControllerServiceEntity controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
@@ -118,7 +115,7 @@ public class ControllerServicesService {
                 controllerServiceEntity = controllerServicesApi.getControllerService(controllerServiceEntityFind.getId());
             } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
-                if (!e.getResponseBody().endsWith("Current state is STOPPING")){
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
                     throw e;
                 }
             }

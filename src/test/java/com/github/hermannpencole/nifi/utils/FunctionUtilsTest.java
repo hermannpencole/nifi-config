@@ -32,10 +32,9 @@ import static org.mockito.Mockito.*;
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
-public class FuntionUtilsTest {
+public class FunctionUtilsTest {
 
-
-    int result = 0;
+    private int result = 0;
 
     @Test(expected = TimeoutException.class)
     public void runWhileTimeOutTest() throws ApiException, IOException, URISyntaxException {

@@ -21,7 +21,6 @@ import javax.inject.Singleton;
 @Singleton
 public class ProcessorService {
 
-
     /**
      * The logger.
      */
@@ -37,7 +36,6 @@ public class ProcessorService {
 
     @Inject
     private ProcessorsApi processorsApi;
-
 
     /**
      * the the state of processor
@@ -66,7 +64,7 @@ public class ProcessorService {
                 LOG.info(" {} ({}) is {} ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState());
                 haveResult = true;
             } catch (ApiException e) {
-                if (!e.getResponseBody().endsWith("Current state is STOPPING")) {
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")) {
                     logErrors(processor);
                     throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
                 }
