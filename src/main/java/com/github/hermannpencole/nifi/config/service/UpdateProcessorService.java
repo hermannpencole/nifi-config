@@ -3,11 +3,11 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class that offer service for nifi processor
@@ -26,7 +27,6 @@ import java.util.List;
  */
 @Singleton
 public class UpdateProcessorService {
-
 
     /**
      * The logger.
@@ -37,14 +37,13 @@ public class UpdateProcessorService {
     private ProcessGroupService processGroupService;
 
     @Inject
+    private ControllerServicesService controllerServicesService;
+
+    @Inject
     private FlowApi flowapi;
 
     @Inject
     private ProcessorsApi processorsApi;
-
-    @Inject
-    private ControllerServicesApi controllerServicesApi;
-
 
     /**
      * @param branch
@@ -60,14 +59,15 @@ public class UpdateProcessorService {
         }
 
         LOG.info("Processing : " + file.getName());
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().serializeNulls().create();
+
         try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
             GroupProcessorsEntity configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
             ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
                     .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
             //Stop branch
-            processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+            processGroupService.stop(componentSearch);
             LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
 
             //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
@@ -83,14 +83,19 @@ public class UpdateProcessorService {
 
             if (!optionNoStartProcessors) {
                 //Run all nifi processors
-                processGroupService.setState(componentSearch.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
+                componentSearch = flowapi.getFlow(componentSearch.getProcessGroupFlow().getId());
+                processGroupService.start(componentSearch);
+                //setState(componentSearch, ProcessorDTO.StateEnum.RUNNING);
                 LOG.info(Arrays.toString(branch.toArray()) + " is running");
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             LOG.debug("updateByBranch end");
         }
-
     }
+
+
 
     /**
      *
@@ -98,17 +103,27 @@ public class UpdateProcessorService {
      * @param controllerServicesEntity
      * @throws ApiException
      */
-    private void updateControllers(GroupProcessorsEntity configuration, ControllerServicesEntity controllerServicesEntity) throws ApiException {
+    private void updateControllers(GroupProcessorsEntity configuration, ControllerServicesEntity controllerServicesEntity) throws ApiException, InterruptedException {
         for (ControllerServiceDTO controllerServiceDTO : configuration.getControllerServicesDTO()) {
+
             //find controller for have id
             ControllerServiceEntity controllerServiceEntityFind = controllerServicesEntity.getControllerServices().stream().filter(item -> item.getComponent().getName().trim().equals(controllerServiceDTO.getName().trim()))
                     .findFirst().orElseThrow(() -> new ConfigException(("cannot find " + controllerServiceDTO.getName())));
-            //update processor
-            ControllerServiceEntity controllerServiceEntityConf = new ControllerServiceEntity();
-            controllerServiceEntityConf.setRevision(controllerServiceEntityFind.getRevision());
-            controllerServiceDTO.setId(controllerServiceEntityFind.getId());
-            controllerServiceEntityConf.setComponent(controllerServiceDTO);
-            controllerServicesApi.updateControllerService(controllerServiceEntityFind.getId(), controllerServiceEntityConf);
+
+            //stopping referencing processors and reporting tasks
+          //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
+
+            //Disabling referencing controller services
+            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+
+            //Enabling this controller service
+            ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityFind);
+
+            //Enabling referencing controller services
+            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.ENABLED);
+
+            //Starting referencing processors and reporting tasks
+          //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityUpdate, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
         }
     }
 
@@ -157,8 +172,15 @@ public class UpdateProcessorService {
             componentToPutInProc.setPersistsState(processorToUpdate.getComponent().getPersistsState());
             componentToPutInProc.setRestricted(processorToUpdate.getComponent().getRestricted());
             componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
+            //remove controller link
+            for ( Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
+                if (entry.getValue().getIdentifiesControllerService() != null) {
+                    componentToPutInProc.getConfig().getProperties().remove(entry.getKey());
+                }
+            }
             processorToUpdate.setComponent(componentToPutInProc);
             processorToUpdate.getRevision().setClientId(clientId);
+
             processorsApi.updateProcessor(processorToUpdate.getId(), processorToUpdate);
 
             //nifiService.updateProcessorProperties(toUpdate, componentToPutInProc.getString("id"));

@@ -26,6 +26,9 @@ usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
  -h,--help                 Usage description
  -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
  -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
+ -f,--force                turn on force mode : empty queue after timeout
+ -timeout <arg>            allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout
+ -interval <arg>           allows specifying the polling interval in second (default 2 seconds)
  -password <arg>           password for access via username/password, then user is mandatory
  -user <arg>               user name for access via username/password, then password is mandatory
  -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
@@ -191,6 +194,18 @@ java -jar nifi-deploy-config-1.1.3.jar \
   -m undeploy
 ```
 
+force mode actived
+
+```shell
+java -jar nifi-deploy-config-1.1.3.jar \
+  -nifi http://ip-nifi-prod:8080/nifi-api \
+  -branch "root>my group>my subgroup" \
+  -m undeploy
+  -f
+  -timeout 600
+  -interval 10
+```
+
 #### Sample access via username/password
 
 ```shell
@@ -217,6 +232,10 @@ java -jar nifi-deploy-config-1.1.5.jar \
 # TODO
 
 add version management that undeploy the old version automatically (with a version # in comment?)
+
+Delete properties when this is null
+
+Start (one by one ?) processor and get error if there is
 
 All idea are welcome. 
 

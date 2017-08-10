@@ -38,7 +38,7 @@ public class UpdateProcessorServiceTest {
     private ProcessorsApi processorsApiMock;
 
     @Mock
-    private ControllerServicesApi controllerServicesApiMock;
+    private ControllerServicesService controllerServicesServiceMock;
 
     @InjectMocks
     private UpdateProcessorService updateProcessorService;
@@ -97,7 +97,7 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test
-    public void updateBranchControllershipTest() throws ApiException, IOException, URISyntaxException {
+    public void updateBranchControllershipTest() throws ApiException, IOException, URISyntaxException, InterruptedException {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
 
@@ -109,9 +109,10 @@ public class UpdateProcessorServiceTest {
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestController.json").getPath(), false);
 
         ArgumentCaptor<ControllerServiceEntity> controllerServiceEntity = ArgumentCaptor.forClass(ControllerServiceEntity.class);
-        verify(controllerServicesApiMock).updateControllerService(eq("idCtrl"), controllerServiceEntity.capture());
+        ArgumentCaptor<ControllerServiceDTO> controllerServiceDTO = ArgumentCaptor.forClass(ControllerServiceDTO.class);
+        verify(controllerServicesServiceMock).updateControllerService(controllerServiceDTO.capture(), controllerServiceEntity.capture());
         assertEquals("idCtrl", controllerServiceEntity.getValue().getComponent().getId());
-        assertEquals(2, controllerServiceEntity.getValue().getComponent().getProperties().size());
+        assertEquals(2, controllerServiceDTO.getValue().getProperties().size());
     }
 
     @Test(expected = ConfigException.class)

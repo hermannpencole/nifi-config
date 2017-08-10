@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 @Singleton
 public class TemplateService {
 
-
     /**
      * The logger.
      */
@@ -89,7 +88,7 @@ public class TemplateService {
         }
 
         //Stop branch
-        processGroupService.setState(processGroupFlow.get().getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+        processGroupService.stop(processGroupFlow.get());
         LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
 
         //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup

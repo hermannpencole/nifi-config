@@ -5,8 +5,10 @@ import com.github.hermannpencole.nifi.config.service.*;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.Configuration;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,9 @@ public class Main {
             options.addOption("m", "mode", true, "mandatory : updateConfig/extractConfig/deployTemplate/undeploy");
             options.addOption("user", true, "user name for access via username/password, then password is mandatory");
             options.addOption("password", true, "password for access via username/password, then user is mandatory");
+            options.addOption("f", "force", false, "turn on force mode : empty queue after timeout");
+            options.addOption("timeout", true, "allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout");
+            options.addOption("interval", true, "allows specifying the polling interval in second (default 2 seconds)");
             options.addOption("accessFromTicket", false, "Access via Kerberos ticket exchange / SPNEGO negotiation");
             options.addOption("noVerifySsl", false, "turn off ssl verification certificat");
             options.addOption("noStartProcessors", false, "turn off auto start of the processors after update of the config");
@@ -76,6 +81,11 @@ public class Main {
                 printUsage(options);
                 System.exit(1);
             } else {
+                //configure options
+                Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) :120;
+                Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) :2;
+                Boolean forceMode = cmd.hasOption("force");
+
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
                 String addressNifi = cmd.getOptionValue("n");
                 String fileConfiguration = cmd.getOptionValue("c");
@@ -90,7 +100,15 @@ public class Main {
                 }
 
                 setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"));
-                Injector injector = Guice.createInjector();
+                Injector injector = Guice.createInjector(new AbstractModule() {
+                    protected void configure() {
+                        bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
+                        bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(interval);
+                        bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(forceMode);
+                    }
+                });
+
+                //start
                 AccessService accessService = injector.getInstance(AccessService.class);
                 accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
 

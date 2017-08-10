@@ -8,7 +8,6 @@ import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +17,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class that offer service for nifi processor
@@ -113,6 +113,12 @@ public class ExtractProcessorService {
         ProcessorDTO result = new ProcessorDTO();
         result.setName(processor.getName());
         result.setConfig(processor.getConfig());
+        //remove controller link
+        for ( Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
+            if (entry.getValue().getIdentifiesControllerService() != null) {
+                result.getConfig().getProperties().remove(entry.getKey());
+            }
+        }
         result.getConfig().setAutoTerminatedRelationships(null);
         result.getConfig().setDescriptors(null);
         result.getConfig().setDefaultConcurrentTasks(null);
@@ -125,6 +131,7 @@ public class ExtractProcessorService {
         result.setPersistsState(null);
         result.setRestricted(null);
         result.setValidationErrors(null);
+
         return result;
     }
 

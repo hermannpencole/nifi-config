@@ -1,9 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
-import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.Configuration;
-import com.github.hermannpencole.nifi.swagger.client.AccessApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 
 import javax.inject.Inject;

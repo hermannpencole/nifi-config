@@ -5,16 +5,16 @@ package com.github.hermannpencole.nifi.config.model;
  *
  * Created by SFRJ2737 on 2017-05-28.
  */
-public class ConfigException extends RuntimeException {
-    public ConfigException(Throwable e) {
+public class TimeoutException extends RuntimeException {
+    public TimeoutException(Throwable e) {
         super(e);
     }
 
-    public ConfigException(String s, Throwable e) {
+    public TimeoutException(String s, Throwable e) {
         super(s,e);
     }
 
-    public ConfigException(String s) {
+    public TimeoutException(String s) {
         super(s);
     }
 }

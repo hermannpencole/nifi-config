@@ -6,10 +6,13 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 import org.apache.commons.cli.UnrecognizedOptionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -20,6 +23,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Arrays;
 
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
@@ -55,11 +59,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy"});
         verify(templateServiceMock).undeploy(Arrays.asList("root","N2"));
@@ -72,11 +79,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","https://localhost:8080/nifi-api","-branch","\"root>N2\"","-m","undeploy","-noVerifySsl"});
         verify(templateServiceMock).undeploy(Arrays.asList("root","N2"));
@@ -89,11 +99,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","deployTemplate"});
         verify(templateServiceMock).installOnBranch(Arrays.asList("root","N2"), "adr");
@@ -106,11 +119,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(UpdateProcessorService.class).toInstance(updateProcessorServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","updateConfig","-user","user","-password","password"});
         verify(updateProcessorServiceMock).updateByBranch(Arrays.asList("root","N2"), "adr",false);
@@ -123,11 +139,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(ExtractProcessorService.class).toInstance(extractProcessorServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-conf","adr","-m","extractConfig", "-accessFromTicket"});
         verify(extractProcessorServiceMock).extractByBranch(Arrays.asList("root"), "adr");
@@ -207,11 +226,14 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(TemplateService.class).toInstance(templateServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
         //given
         PowerMockito.mockStatic(Guice.class);
-        Mockito.when(Guice.createInjector()).thenReturn(injector);
+        Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
         doThrow(new ApiException()).when(accessServiceMock).addTokenOnConfiguration(false, null ,null);
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy"});
 

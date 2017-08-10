@@ -92,7 +92,7 @@ public class TemplateServiceTest {
 
         templateService.undeploy(branch);
         verify(templatesApiMock).removeTemplate(template.getId());
-        verify(processGroupServiceMock).setState(processGroupFlow.get().getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+        verify(processGroupServiceMock).stop(processGroupFlow.get());
         verify(processGroupsApiMock).removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "10", null);
     }
 

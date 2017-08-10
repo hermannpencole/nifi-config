@@ -6,12 +6,14 @@ import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -31,6 +33,12 @@ public class ProcessGroupServiceTest {
 
     @Mock
     private ProcessGroupsApi processGroupsApiMock;
+
+    @Mock
+    private ProcessorService processorServiceMock;
+
+    @Mock
+    private ConnectionService connectionServiceMock;
 
     @InjectMocks
     private ProcessGroupService processGroupService;
@@ -97,12 +105,98 @@ public class ProcessGroupServiceTest {
 
     @Test
     public void setStateTest() throws ApiException, IOException, URISyntaxException {
-        processGroupService.setState("id", ScheduleComponentsEntity.StateEnum.RUNNING);
+        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
+        processGroupService.setState(responseRoot.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
         ScheduleComponentsEntity body = new ScheduleComponentsEntity();
-        body.setId("id");
+        body.setId("root");
         body.setState(ScheduleComponentsEntity.StateEnum.RUNNING);
         body.setComponents(null);//for all
-        verify(flowapiMock).scheduleComponents("id", body);
+        verify(flowapiMock).scheduleComponents("root", body);
+    }
+
+    @Test
+    public void startTest() throws ApiException, IOException, URISyntaxException {
+        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
+        List<ConnectionEntity> connections = new ArrayList<>();
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("idProc");
+        connectionEntity.setDestinationId("idProc2");
+        connections.add(connectionEntity);
+        responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        responseRoot.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
+        responseRoot.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProc2") );
+        processGroupService.start(responseRoot);
+        ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
+        verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.RUNNING));
+        assertEquals("idProc2", processorCapture.getAllValues().get(0).getId());
+        assertEquals("idProc", processorCapture.getAllValues().get(1).getId());
+    }
+
+    @Test
+    public void stopTest() throws ApiException, IOException, URISyntaxException {
+        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
+        List<ConnectionEntity> connections = new ArrayList<>();
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("idProc");
+        connectionEntity.setDestinationId("idProc2");
+        connections.add(connectionEntity);
+        responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        responseRoot.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
+        responseRoot.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProc2") );
+        processGroupService.stop(responseRoot);
+        ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
+        verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.STOPPED));
+        assertEquals("idProc", processorCapture.getAllValues().get(0).getId());
+        assertEquals("idProc2", processorCapture.getAllValues().get(1).getId());
+        ArgumentCaptor<ConnectionEntity> connectionCapture = ArgumentCaptor.forClass(ConnectionEntity.class);
+        verify(connectionServiceMock).waitEmptyQueue(connectionCapture.capture());
+        assertEquals("idProc", connectionCapture.getValue().getSourceId());
+
+    }
+
+    @Test
+//    1 - 2
+//    2 - 7
+//    3 - 4
+//    4 - 5
+//    4 - 6
+//    6 - 7
+//
+//    1,3 - 2,4 - 5,6 - 7
+    public void reorderTest() throws ApiException, IOException, URISyntaxException {
+        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
+        List<ConnectionEntity> connections = new ArrayList<>();
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("1");
+        connectionEntity.setDestinationId("2");
+        connections.add(connectionEntity);
+        connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("2");
+        connectionEntity.setDestinationId("7");
+        connections.add(connectionEntity);
+        connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("3");
+        connectionEntity.setDestinationId("4");
+        connections.add(connectionEntity);
+        connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("4");
+        connectionEntity.setDestinationId("5");
+        connections.add(connectionEntity);
+        connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("4");
+        connectionEntity.setDestinationId("6");
+        connections.add(connectionEntity);
+        connectionEntity = new ConnectionEntity();
+        connectionEntity.setSourceId("6");
+        connectionEntity.setDestinationId("7");
+        connections.add(connectionEntity);
+        responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        processGroupService.reorder(responseRoot.getProcessGroupFlow().getFlow());
+
     }
 
     @Test
