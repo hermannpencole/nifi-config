@@ -101,56 +101,65 @@ Configuration work with the name, remember that each processor in a group **must
 
 sample :
 ```json
-{
+{  
   "processors": [
+	{
+	  "name": "ExecuteSQL",
+	  "config": {
+		"properties": {
+		  "Database Connection Pooling Service": "85f67694-015d-1000-5071-8cd46e8b2e47",
+		  "Max Wait Time": "5 seconds",
+		  "dbf-normalize": "false",
+		  "dbf-user-logical-types": null,
+		  "dbf-default-precision": null,
+		  "dbf-default-scale": null
+		},
+		"schedulingPeriod": "0 sec",
+		"schedulingStrategy": "TIMER_DRIVEN",
+		"executionNode": "ALL",
+		"penaltyDuration": "30 sec",
+		"yieldDuration": "1 sec",
+		"bulletinLevel": "WARN",
+		"runDurationMillis": 0,
+		"concurrentlySchedulableTaskCount": 1,
+		"comments": "",
+		"lossTolerant": false
+	  }
+	},
+	{
+	  "name": "PutFile",
+	  "config": {
+		"properties": {
+		  "Directory": "c:\\tmp",
+		  "Conflict Resolution Strategy": "fail",
+		  "Create Missing Directories": "true"
+		},
+		"schedulingPeriod": "0 sec",
+		"schedulingStrategy": "TIMER_DRIVEN",
+		"executionNode": "ALL",
+		"penaltyDuration": "30 sec",
+		"yieldDuration": "1 sec",
+		"bulletinLevel": "WARN",
+		"runDurationMillis": 0,
+		"concurrentlySchedulableTaskCount": 1,
+		"comments": "",
+		"lossTolerant": false
+	  }
+	} 
+      
+  ],
+  "controllerServices": [
     {
-      "name": "TheListFile",
-      "config": {
-        "properties": {
-          "Input Directory": "c:\\temp",
-          "Recurse Subdirectories": "false",
-          "Input Directory Location": "Local",
-          "File Filter": "[^\\.].*",
-          "Minimum File Age": "0 sec",
-          "Minimum File Size": "0 B",
-          "Ignore Hidden Files": "true"
-        },
-        "schedulingPeriod": "0 sec",
-        "schedulingStrategy": "TIMER_DRIVEN",
-        "executionNode": "ALL",
-        "penaltyDuration": "30 sec",
-        "yieldDuration": "1 sec",
-        "bulletinLevel": "WARN",
-        "runDurationMillis": 0,
-        "concurrentlySchedulableTaskCount": 1,
-        "comments": "",
-        "lossTolerant": false
+      "name": "DBCPConnectionPool",
+      "properties": {
+        "Database Connection URL": "localhost:8080",
+		"Database Driver Class Name": "org.test",
+		"Password": "********",
+        "Max Total Connections": "3"
       }
     }
   ],
-  "groupProcessorsEntity": [
-    {
-      "processors": [
-        {
-          "name": "ConnectWebSocket",
-          "config": {
-            "properties": {},
-            "schedulingPeriod": "0 sec",
-            "schedulingStrategy": "TIMER_DRIVEN",
-            "executionNode": "ALL",
-            "penaltyDuration": "30 sec",
-            "yieldDuration": "1 sec",
-            "bulletinLevel": "WARN",
-            "runDurationMillis": 0,
-            "concurrentlySchedulableTaskCount": 1,
-            "comments": "",
-            "lossTolerant": false
-          }
-        }
-      ],
-      "name": "test"
-    }
-  ]
+  "name": "testController"
 }
 ```
 ### Sample usage
