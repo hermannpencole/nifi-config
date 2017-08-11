@@ -28,10 +28,14 @@ public class TestUtils {
         processGroupDTO.setName(name);
         processGroupDTO.setId(id);
         processGroupEntity.setComponent(processGroupDTO);
-        RevisionDTO revision = new RevisionDTO();
-        revision.setVersion(10L);
-        processGroupEntity.setRevision(revision);
+        processGroupEntity.setRevision(createRevision(10L));
         return processGroupEntity;
+    }
+
+    public static RevisionDTO createRevision(Long version) {
+        RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(version);
+        return revision;
     }
 
     public static ProcessorEntity createProcessorEntity(String id, String name) {
@@ -47,22 +51,23 @@ public class TestUtils {
         return proc;
     }
 
-    public static ControllerServicesEntity createControllerServicesEntity(String id, String name) {
-        ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
-        controllerServicesEntity.getControllerServices().add(new ControllerServiceEntity());
-        controllerServicesEntity.getControllerServices().get(0).setId(id);
-        controllerServicesEntity.getControllerServices().get(0).setComponent(new ControllerServiceDTO());
-        controllerServicesEntity.getControllerServices().get(0).getComponent().setName(name);
-        controllerServicesEntity.getControllerServices().get(0).getComponent().setId(id);
-        controllerServicesEntity.getControllerServices().get(0).getComponent().getProperties().put("key", "value");
-        return controllerServicesEntity;
-    }
-
     public static ConnectionEntity createConnectionEntity(String id, String sourceId, String destinationId) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
         connectionEntity.setId(id);
         connectionEntity.setDestinationId(destinationId);
         connectionEntity.setSourceId(sourceId);
+        connectionEntity.setRevision(createRevision(10L));
         return connectionEntity;
+    }
+
+    public static ControllerServiceEntity createControllerServiceEntity(String id, String name) {
+        ControllerServiceEntity controllerService = new ControllerServiceEntity();
+        controllerService.setId(id);
+        controllerService.setComponent(new ControllerServiceDTO());
+        controllerService.getComponent().setName(name);
+        controllerService.getComponent().setId(id);
+        controllerService.getComponent().getProperties().put("key", "value");
+        controllerService.setRevision(createRevision(10L));
+        return controllerService;
     }
 }

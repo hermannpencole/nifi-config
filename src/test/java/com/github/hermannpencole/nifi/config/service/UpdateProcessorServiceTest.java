@@ -103,7 +103,8 @@ public class UpdateProcessorServiceTest {
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
         when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
-        ControllerServicesEntity controllerServicesEntity = TestUtils.createControllerServicesEntity("idCtrl", "nameCtrl");
+        ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
+        controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
 
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestController.json").getPath(), false);

@@ -92,7 +92,8 @@ public class ExtractProcessorServiceTest {
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        ControllerServicesEntity controllerServicesEntity = TestUtils.createControllerServicesEntity("idCtrl", "nameCtrl");
+        ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
+        controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
 
         ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");

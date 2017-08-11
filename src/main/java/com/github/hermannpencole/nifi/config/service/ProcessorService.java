@@ -46,7 +46,6 @@ public class ProcessorService {
     public void setState(ProcessorEntity processor, ProcessorDTO.StateEnum state) {
         //how obtain state of and don't have this bullshit trick
         //trick for don't have error : xxxx cannot be started because it is not stopped. Current state is STOPPING
-        //TODO timeout
         if (processor.getComponent().getState().equals(state)) {
             LOG.info(" {} ({}) is already ", processor.getComponent().getName() ,processor.getId(), processor.getComponent().getState());
             return;
