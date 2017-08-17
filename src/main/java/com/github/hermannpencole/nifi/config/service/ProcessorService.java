@@ -59,6 +59,7 @@ public class ProcessorService {
                 body.setComponent(new ProcessorDTO());
                 body.getComponent().setState(state);
                 body.getComponent().setId(processor.getId());
+                body.getComponent().setRestricted(null);
                 ProcessorEntity processorEntity= processorsApi.updateProcessor(processor.getId(), body);
                 LOG.info(" {} ({}) is {} ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState());
                 haveResult = true;

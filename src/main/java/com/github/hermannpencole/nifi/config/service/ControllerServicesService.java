@@ -54,6 +54,7 @@ public class ControllerServicesService {
         controllerServiceEntityConf.setRevision(controllerServiceEntityUpdate.getRevision());
         controllerServiceEntityConf.setComponent(controllerServiceDTO);
         controllerServiceEntityConf.getComponent().setId(controllerServiceEntity.getId());
+        controllerServiceEntityConf.getComponent().setRestricted(null);
         controllerServiceEntityUpdate = controllerServicesApi.updateControllerService(controllerServiceEntityUpdate.getId(), controllerServiceEntityConf);
         LOG.info(controllerServiceEntityUpdate.getId() + " is UPDATED");
 
