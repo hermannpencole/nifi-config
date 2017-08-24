@@ -1,5 +1,10 @@
+# Generated content
 /target
 /configure-nifi.iml
-/.idea
 /nifi-deploy-config.iml
 /dependency-reduced-pom.xml
+# IDE files
+/.idea
+/.settings
+/.project
+/.classpath

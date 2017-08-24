@@ -1,6 +1,6 @@
 
 
-# Deploy and configure Template on Nifi 
+# Deploy and configure Template on Nifi
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.hermannpencole/nifi-deploy-config.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.hermannpencole/nifi-deploy-config)
 [![Build Status](https://travis-ci.org/hermannpencole/nifi-config.svg?branch=master)](https://travis-ci.org/hermannpencole/nifi-config/)
 [![codecov](https://codecov.io/gh/hermannpencole/nifi-config/branch/master/graph/badge.svg)](https://codecov.io/gh/hermannpencole/nifi-config)
@@ -34,6 +34,7 @@ usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
  -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
  -noVerifySsl              turn off ssl verification certificat
  -noStartProcessors        turn off auto start of the processors after update of the config
+ -enableDebugMode          turn on debugging mode of the underlying API library
 ```
 
 Requirement : *You must have java 8 or higher installed on your machine*
@@ -42,7 +43,7 @@ Requirement : *You must have java 8 or higher installed on your machine*
 
 ### Prepare your nifi development
 
-1 ) Create a template on nifi : 
+1 ) Create a template on nifi :
 
 with this rule : each processor and each controller in a process group **must** have a unique name.
 
@@ -145,8 +146,8 @@ sample :
 		"comments": "",
 		"lossTolerant": false
 	  }
-	} 
-      
+	}
+
   ],
   "controllerServices": [
     {
@@ -246,7 +247,7 @@ Delete properties when this is null
 
 Start (one by one ?) processor and get error if there is
 
-All idea are welcome. 
+All idea are welcome.
 
 # Troubleshooting
 
