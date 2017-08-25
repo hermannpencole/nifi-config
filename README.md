@@ -35,6 +35,7 @@ usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
  -noVerifySsl              turn off ssl verification certificat
  -noStartProcessors        turn off auto start of the processors after update of the config
  -enableDebugMode          turn on debugging mode of the underlying API library
+ -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
 ```
 
 Requirement : *You must have java 8 or higher installed on your machine*

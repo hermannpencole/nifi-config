@@ -65,6 +65,7 @@ public class Main {
             options.addOption("noVerifySsl", false, "turn off ssl verification certificat");
             options.addOption("noStartProcessors", false, "turn off auto start of the processors after update of the config");
             options.addOption("enableDebugMode", false, "turn on debug mode");
+            options.addOption("connectionTimeout", true, "configure api client connection timeout (default 10 seconds)");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -85,6 +86,7 @@ public class Main {
                 //configure options
                 Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) :120;
                 Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) :2;
+                Integer connectionTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("connectionTimeout")) :10000;
                 Boolean forceMode = cmd.hasOption("force");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
@@ -100,7 +102,7 @@ public class Main {
                     throw new ConfigException("The branch address must begin with the element 'root' ( sample : root > branch > sub-branch)");
                 }
 
-                setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"));
+                setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout);
                 Injector injector = Guice.createInjector(new AbstractModule() {
                     protected void configure() {
                         bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
@@ -144,9 +146,12 @@ public class Main {
     }
 
 
-    public static void setConfiguration(String basePath, boolean verifySsl, boolean debugging) throws ApiException {
-        ApiClient client = new ApiClient().setBasePath(basePath).setVerifyingSsl(verifySsl);
-        client.setDebugging(debugging);
+    public static void setConfiguration(String basePath, boolean verifySsl, boolean debugging, int connectionTimeout) throws ApiException {
+        ApiClient client = new ApiClient()
+                .setBasePath(basePath)
+                .setVerifyingSsl(verifySsl)
+                .setConnectTimeout(connectionTimeout)
+                .setDebugging(debugging);
         Configuration.setDefaultApiClient(client);
     }
 }
