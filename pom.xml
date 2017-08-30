@@ -19,7 +19,7 @@
 		<dependency>
             <groupId>com.github.hermannpencole</groupId>
             <artifactId>nifi-swagger-client</artifactId>
-            <version>1.1.0.2</version>
+            <version>1.1.0.3</version>
         </dependency>
 
         <dependency>

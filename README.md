@@ -21,22 +21,14 @@ Deploy, undeploy template
 
 ```shell
 usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
+ -h,--help                 Usage description
  -b,--branch <arg>         process group to begin (must begin by root) : root > my group > my sub group (default root)
  -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
- -h,--help                 Usage description
  -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
  -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
- -f,--force                turn on force mode : empty queue after timeout
- -timeout <arg>            allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout
- -interval <arg>           allows specifying the polling interval in second (default 2 seconds)
- -password <arg>           password for access via username/password, then user is mandatory
- -user <arg>               user name for access via username/password, then password is mandatory
- -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
- -noVerifySsl              turn off ssl verification certificat
- -noStartProcessors        turn off auto start of the processors after update of the config
- -enableDebugMode          turn on debugging mode of the underlying API library
- -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
 ```
+
+For more options see Chapiter [Advanced options](#Advanced Options)
 
 Requirement : *You must have java 8 or higher installed on your machine*
 
@@ -240,13 +232,39 @@ java -jar nifi-deploy-config-1.1.5.jar \
   -m updateConfig
 ```
 
+### Advanced Options
+
+Pooling
+```shell
+ -timeout <arg>            allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout
+ -interval <arg>           allows specifying the polling interval in second (default 2 seconds)
+```
+
+ Security
+ ```shell
+ -password <arg>           password for access via username/password, then user is mandatory
+ -user <arg>               user name for access via username/password, then password is mandatory
+ -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
+ -noVerifySsl              turn off ssl verification certificat
+ 
+ ```
+
+ Timeout Api Client
+ ```shell
+ -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
+ -readTimeout <arg>        configure api client read timeout (default 10 seconds)
+ -writeTimeout <arg>       configure api client write timeout (default 10 seconds)
+ ```
+
+ Other
+ ```shell
+ -f,--force                turn on force mode : empty queue after timeout
+ -noStartProcessors        turn off auto start of the processors after update of the config
+ -enableDebugMode          turn on debugging mode of the underlying API library
+ ```
 # TODO
 
 add version management that undeploy the old version automatically (with a version # in comment?)
-
-Delete properties when this is null
-
-Start (one by one ?) processor and get error if there is
 
 All idea are welcome.
 
