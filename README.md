@@ -28,7 +28,7 @@ usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
  -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
 ```
 
-For more options see Chapiter [Advanced options](#Advanced Options)
+*For more options see Chapiter [Advanced options](#Advanced-Options)*
 
 Requirement : *You must have java 8 or higher installed on your machine*
 
