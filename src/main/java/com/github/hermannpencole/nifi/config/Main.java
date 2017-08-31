@@ -89,8 +89,8 @@ public class Main {
                 Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) :120;
                 Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) :2;
                 Integer connectionTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("connectionTimeout")) :10000;
-                Integer readTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) :10000;
-                Integer writeTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) :10000;
+                Integer readTimeout = cmd.hasOption("readTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) :10000;
+                Integer writeTimeout = cmd.hasOption("writeTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) :10000;
                 Boolean forceMode = cmd.hasOption("force");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
