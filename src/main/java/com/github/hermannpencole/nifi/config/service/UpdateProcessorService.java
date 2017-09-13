@@ -2,6 +2,7 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
+import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
@@ -137,7 +138,7 @@ public class UpdateProcessorService {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
         configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig, clientId));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
-            ProcessGroupEntity processorGroupToUpdate = ProcessGroupService.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
+            ProcessGroupEntity processorGroupToUpdate = FunctionUtils.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
             updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()), clientId);
         }

@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -46,20 +47,13 @@ public class ProcessGroupService {
     public Optional<ProcessGroupFlowEntity> changeDirectory(List<String> branch) throws ApiException {
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
-            Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
+            Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
             if (!flowEntityChild.isPresent()) {
                 return Optional.empty();
             }
             flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
         }
         return Optional.of(flowEntity);
-    }
-
-    //can static => utils
-    public static Optional<ProcessGroupEntity> findByComponentName(List<ProcessGroupEntity> listGroup, String name) {
-        return listGroup.stream()
-                .filter(item -> item.getComponent().getName().trim().equals(name.trim()))
-                .findFirst();
     }
 
     /**
@@ -75,7 +69,7 @@ public class ProcessGroupService {
         //find root
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
-            Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
+            Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
             if (!flowEntityChild.isPresent()) {
                 PositionDTO position = getNextPosition(flowEntity);
                 ProcessGroupEntity created = new ProcessGroupEntity();
