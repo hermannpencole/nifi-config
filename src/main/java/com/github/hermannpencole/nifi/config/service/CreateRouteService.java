@@ -1,19 +1,24 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.RouteConnectionEntity;
+import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.io.*;
 import java.util.*;
 import java.util.stream.Stream;
 
-public class CreateRouteService {
+public final class CreateRouteService {
 
     /**
      * The logger.
@@ -35,11 +40,11 @@ public class CreateRouteService {
     @Inject
     private ProcessGroupsApi processGroupsApi;
 
-    private Optional<PortEntity> findPortEntityByName(Stream<PortEntity> portEntities, String name) {
+    private Optional<PortEntity> findPortEntityByName(final Stream<PortEntity> portEntities, final String name) {
         return portEntities.filter(item -> item.getComponent().getName().trim().equals(name.trim())).findFirst();
     }
 
-    private PortDTO.TypeEnum matchConnectableTypeToPortType(ConnectableDTO.TypeEnum connectableType) {
+    private PortDTO.TypeEnum matchConnectableTypeToPortType(final ConnectableDTO.TypeEnum connectableType) {
         switch (connectableType) {
             case INPUT_PORT:
                 return PortDTO.TypeEnum.INPUT_PORT;
@@ -50,7 +55,7 @@ public class CreateRouteService {
         }
     }
 
-    private ConnectableDTO.TypeEnum matchPortTypeToConnectableType(PortDTO.TypeEnum portType) {
+    private ConnectableDTO.TypeEnum matchPortTypeToConnectableType(final PortDTO.TypeEnum portType) {
         switch (portType) {
             case INPUT_PORT:
                 return ConnectableDTO.TypeEnum.INPUT_PORT;
@@ -69,7 +74,7 @@ public class CreateRouteService {
      * @param type           Whether to create an input or an output port
      * @return A data transfer object representative of the state of the created port
      */
-    private PortEntity createPort(String processGroupId, String name, PortDTO.TypeEnum type) {
+    private PortEntity createPort(final String processGroupId, final String name, final PortDTO.TypeEnum type) {
         PortEntity portEntity = new PortEntity();
         portEntity.setRevision(new RevisionDTO());
         portEntity.setComponent(new PortDTO());
@@ -85,7 +90,7 @@ public class CreateRouteService {
         throw new ConfigException(String.format("Couldn't create port '{}'", name));
     }
 
-    private ConnectableDTO createConnectableDTOFromPort(PortEntity port) {
+    private ConnectableDTO createConnectableDTOFromPort(final PortEntity port) {
         ConnectableDTO connectableDTO = new ConnectableDTO();
         connectableDTO.setGroupId(port.getComponent().getParentGroupId());
         connectableDTO.setName(port.getComponent().getName());
@@ -116,22 +121,22 @@ public class CreateRouteService {
     }
 
     private ProcessGroupFlowEntity advanceToNextProcessGroup(
-            String processGroupName,
-            ProcessGroupFlowEntity flowEntity) {
+            final String processGroupName,
+            final ProcessGroupFlowEntity flowEntity) {
         Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(
                 flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(),
                 processGroupName);
         if (!flowEntityChild.isPresent()) {
             throw new ConfigException("Couldn't find process group '" + processGroupName + "'");
         }
-        flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
-        return flowEntity;
+        return flowapi.getFlow(flowEntityChild.get().getId());
     }
 
     private ConnectableDTO createOrFindPort(
-            String destinationInputPort,
-            ConnectableDTO.TypeEnum connectableType,
-            ProcessGroupFlowEntity flowEntity, String processGroupName) {
+            final String destinationInputPort,
+            final ConnectableDTO.TypeEnum connectableType,
+            final ProcessGroupFlowEntity flowEntity,
+            final String processGroupName) {
         ConnectableDTO connectableDTO = findConnectableComponent(flowEntity, destinationInputPort);
         if (connectableDTO != null && connectableDTO.getType() == connectableType) {
             return connectableDTO;
@@ -147,8 +152,8 @@ public class CreateRouteService {
     }
 
     private String determineConnectionLocation(
-            ConnectableDTO source,
-            ConnectableDTO destination) {
+            final ConnectableDTO source,
+            final ConnectableDTO destination) {
         switch (source.getType()) {
             case OUTPUT_PORT:
                 switch (destination.getType()) {
@@ -170,8 +175,8 @@ public class CreateRouteService {
     }
 
     private ConnectionEntity createConnectionEntity(
-            ConnectableDTO source,
-            ConnectableDTO dest) {
+            final ConnectableDTO source,
+            final ConnectableDTO dest) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
         connectionEntity.setRevision(new RevisionDTO());
         connectionEntity.getRevision().setVersion(0L);
@@ -229,8 +234,11 @@ public class CreateRouteService {
             String processGroupName = branch.next();
             flowEntity = advanceToNextProcessGroup(processGroupName, flowEntity);
             if (createPorts) {
-                connectableDTOs.add(
-                        createOrFindPort(destinationInputPort, connectableType, flowEntity, processGroupName));
+                connectableDTOs.add(createOrFindPort(
+                        destinationInputPort,
+                        connectableType,
+                        flowEntity,
+                        processGroupName));
             }
         }
 
@@ -259,14 +267,14 @@ public class CreateRouteService {
     /**
      * Create a route in NiFi composed of ports and connections.
      *
-     * @param sourcePath           Path to the process group from which to create the route
-     * @param destinationPath      Path to the process group to which to create the route
-     * @param destinationInputPort Name of ports created along the route
+     * @param name            Name of the route
+     * @param sourcePath      Path to the process group from which to create the route
+     * @param destinationPath Path to the process group to which to create the route
      */
-    public void createRoute(
+    private void createRoute(
+            final String name,
             final List<String> sourcePath,
-            final List<String> destinationPath,
-            final String destinationInputPort) {
+            final List<String> destinationPath) {
         ListIterator<String> source = sourcePath.listIterator();
         ListIterator<String> destination = destinationPath.listIterator();
 
@@ -275,17 +283,37 @@ public class CreateRouteService {
 
         // Traverse the source branch, creating output ports down the hierarchy
         List<ConnectableDTO> sourceConnectables
-                = createPorts(source, destinationInputPort, ConnectableDTO.TypeEnum.OUTPUT_PORT);
+                = createPorts(source, name, ConnectableDTO.TypeEnum.OUTPUT_PORT);
         // Reverse the sequence of the output ports as the connections should point up the hierarchy
         Collections.reverse(sourceConnectables);
 
         // Traverse the destination branch, creating input ports up the hierarchy
         List<ConnectableDTO> destinationConnectables
-                = createPorts(destination, destinationInputPort, ConnectableDTO.TypeEnum.INPUT_PORT);
+                = createPorts(destination, name, ConnectableDTO.TypeEnum.INPUT_PORT);
 
         // Stitch the two lists of connectables together
         List<ConnectableDTO> route = new ArrayList<>(sourceConnectables);
         route.addAll(destinationConnectables);
         createConnections(route.listIterator());
+    }
+
+    public void createRoutes(String fileConfiguration, boolean optionNoStartProcessors) throws IOException {
+        File file = new File(fileConfiguration);
+        if (!file.exists()) {
+            throw new FileNotFoundException("Repository " + file.getName() + " is empty or doesn't exist");
+        }
+
+        LOG.info("Processing : " + file.getName());
+        Gson gson = new GsonBuilder().serializeNulls().create();
+        try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
+            RouteConnectionsEntity connections = gson.fromJson(reader, RouteConnectionsEntity.class);
+
+            for (RouteConnectionEntity routeConnectionEntity : connections.getConnections()) {
+                createRoute(
+                        routeConnectionEntity.getName(),
+                        routeConnectionEntity.getSourceList(),
+                        routeConnectionEntity.getDestinationList());
+            }
+        }
     }
 }
