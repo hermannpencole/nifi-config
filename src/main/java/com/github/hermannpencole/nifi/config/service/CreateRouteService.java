@@ -6,6 +6,8 @@ import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
+import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
+import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.gson.Gson;
@@ -16,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.io.*;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public final class CreateRouteService {
@@ -36,6 +39,12 @@ public final class CreateRouteService {
 
     @Inject
     private FlowApi flowapi;
+
+    @Inject
+    private InputPortsApi inputPortsApi;
+
+    @Inject
+    private OutputPortsApi outputPortsApi;
 
     @Inject
     private ProcessGroupsApi processGroupsApi;
@@ -211,6 +220,43 @@ public final class CreateRouteService {
         );
     }
 
+    private void startPort(String id, PortDTO.TypeEnum type) {
+        PortEntity portEntity;
+
+        switch (type) {
+            case OUTPUT_PORT:
+                portEntity = outputPortsApi.getOutputPort(id);
+                break;
+            case INPUT_PORT:
+                portEntity = inputPortsApi.getInputPort(id);
+                break;
+            default:
+                throw new ConfigException("Unknown port type '" + type + "'");
+        }
+
+        if (portEntity.getComponent().getState() == PortDTO.StateEnum.RUNNING) return;
+
+        portEntity.getComponent().setState(PortDTO.StateEnum.RUNNING);
+        portEntity.getStatus().setRunStatus("Running");
+        portEntity.getRevision().setClientId(getClientId());
+
+        switch (type) {
+            case OUTPUT_PORT:
+                outputPortsApi.updateOutputPort(id, portEntity);
+                return;
+            case INPUT_PORT:
+                inputPortsApi.updateInputPort(id, portEntity);
+                return;
+            default:
+                throw new ConfigException("Unknown port type '" + type + "'");
+        }
+    }
+
+    private Predicate<ConnectableDTO> isPort() {
+        return c -> c.getType() == ConnectableDTO.TypeEnum.OUTPUT_PORT
+                || c.getType() == ConnectableDTO.TypeEnum.INPUT_PORT;
+    }
+
     private List<ConnectableDTO> createPorts(
             final ListIterator<String> branch,
             final String destinationInputPort,
@@ -264,17 +310,24 @@ public final class CreateRouteService {
         }
     }
 
+    private void startPorts(Stream<ConnectableDTO> connectables) {
+        connectables.filter(isPort()).forEach(
+                port -> startPort(port.getId(), matchConnectableTypeToPortType(port.getType())));
+    }
+
     /**
      * Create a route in NiFi composed of ports and connections.
      *
      * @param name            Name of the route
      * @param sourcePath      Path to the process group from which to create the route
      * @param destinationPath Path to the process group to which to create the route
+     * @param startRoute      Whether to put ports along the route into a running state
      */
     private void createRoute(
             final String name,
             final List<String> sourcePath,
-            final List<String> destinationPath) {
+            final List<String> destinationPath,
+            final boolean startRoute) {
         ListIterator<String> source = sourcePath.listIterator();
         ListIterator<String> destination = destinationPath.listIterator();
 
@@ -295,6 +348,11 @@ public final class CreateRouteService {
         List<ConnectableDTO> route = new ArrayList<>(sourceConnectables);
         route.addAll(destinationConnectables);
         createConnections(route.listIterator());
+
+        // Switch on ports
+        if (startRoute) {
+            startPorts(route.stream());
+        }
     }
 
     public void createRoutes(String fileConfiguration, boolean optionNoStartProcessors) throws IOException {
@@ -312,7 +370,8 @@ public final class CreateRouteService {
                 createRoute(
                         routeConnectionEntity.getName(),
                         routeConnectionEntity.getSourceList(),
-                        routeConnectionEntity.getDestinationList());
+                        routeConnectionEntity.getDestinationList(),
+                        !optionNoStartProcessors);
             }
         }
     }
