@@ -355,6 +355,13 @@ public final class CreateRouteService {
         }
     }
 
+    /**
+     * Create routes described by configuration.
+     *
+     * @param fileConfiguration       Configuration file describing connections
+     * @param optionNoStartProcessors Whether or not to start ports created along the route
+     * @throws IOException If repository file cannot be found
+     */
     public void createRoutes(String fileConfiguration, boolean optionNoStartProcessors) throws IOException {
         File file = new File(fileConfiguration);
         if (!file.exists()) {
