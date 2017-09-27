@@ -3,7 +3,6 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.RouteConnectionEntity;
 import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
-import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
@@ -20,6 +19,8 @@ import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
 public final class CreateRouteService {
 
@@ -132,7 +133,7 @@ public final class CreateRouteService {
     private ProcessGroupFlowEntity advanceToNextProcessGroup(
             final String processGroupName,
             final ProcessGroupFlowEntity flowEntity) {
-        Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(
+        Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(
                 flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(),
                 processGroupName);
         if (!flowEntityChild.isPresent()) {

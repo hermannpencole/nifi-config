@@ -1,6 +1,5 @@
 package com.github.hermannpencole.nifi.config.service;
 
-import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -11,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
+
+import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
 /**
  * Class that offer service for process group
@@ -47,7 +48,7 @@ public class ProcessGroupService {
     public Optional<ProcessGroupFlowEntity> changeDirectory(List<String> branch) throws ApiException {
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
-            Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
+            Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
             if (!flowEntityChild.isPresent()) {
                 return Optional.empty();
             }
@@ -69,7 +70,7 @@ public class ProcessGroupService {
         //find root
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
         for (String processGroupName : branch.subList(1, branch.size())) {
-            Optional<ProcessGroupEntity> flowEntityChild = FunctionUtils.findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
+            Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName);
             if (!flowEntityChild.isPresent()) {
                 PositionDTO position = getNextPosition(flowEntity);
                 ProcessGroupEntity created = new ProcessGroupEntity();
@@ -177,8 +178,8 @@ public class ProcessGroupService {
         while (!connections.isEmpty()) {
             Set<String> destination = new HashSet<>();
             Set<String> source = new HashSet<>();
-            Set<ConnectionEntity> levelConnection= new HashSet<>();
-            for (ConnectionEntity connection: new ArrayList<>(connections)) {
+            Set<ConnectionEntity> levelConnection = new HashSet<>();
+            for (ConnectionEntity connection : new ArrayList<>(connections)) {
                 if (thisLevel.contains(connection.getSourceId())) {
                     source.add(connection.getDestinationId());
                     //remove connection for next use
@@ -194,8 +195,8 @@ public class ProcessGroupService {
             }
             thisLevel = new HashSet<>(source);
             thisLevel.removeAll(destination);
-            Set<ProcessorEntity> levelProcessor= new HashSet<>();
-            for (ProcessorEntity processor : flow.getProcessors()){
+            Set<ProcessorEntity> levelProcessor = new HashSet<>();
+            for (ProcessorEntity processor : flow.getProcessors()) {
                 if (thisLevel.contains(processor.getId())) {
                     levelProcessor.add(processor);
                 }
@@ -224,7 +225,7 @@ public class ProcessGroupService {
         nextPosition.setX(0d);
         nextPosition.setY(0d);
         while (positions.indexOf(nextPosition) != -1) {
-            if(nextPosition.getX() == 800d) {
+            if (nextPosition.getX() == 800d) {
                 nextPosition.setX(0d);
                 nextPosition.setY(nextPosition.getY() + 200);
             } else {
