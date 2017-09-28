@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
-public final class CreateRouteService {
+public class CreateRouteService {
 
     /**
      * The logger.
