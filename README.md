@@ -158,7 +158,7 @@ sample :
     {
       "name": "front_end_1",
       "source": "root > front_end > front_end_1",
-      "destination": "root > front_end > back_end_1"
+      "destination": "root > back_end > back_end_1"
     }
   ],
   "name": "testController"

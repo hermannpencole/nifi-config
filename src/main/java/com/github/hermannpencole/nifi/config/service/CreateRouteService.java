@@ -111,35 +111,23 @@ public final class CreateRouteService {
     }
 
     private ConnectableDTO findConnectableComponent(
-            final ProcessGroupFlowEntity flowEntity,
+            final FlowDTO flow,
             final String componentName) {
-        // Ports
-        Optional<PortEntity> port = findPortEntityByName(
-                flowEntity.getProcessGroupFlow().getFlow().getOutputPorts().stream(),
-                componentName);
-        if (port.isPresent()) {
-            return createConnectableDTOFromPort(port.get());
-        }
-        port = findPortEntityByName(
-                flowEntity.getProcessGroupFlow().getFlow().getInputPorts().stream(),
-                componentName);
-        if (port.isPresent()) {
-            return createConnectableDTOFromPort(port.get());
-        }
-
-        return null;
+        return findPortEntityByName(flow.getOutputPorts().stream(), componentName)
+                .map(this::createConnectableDTOFromPort)
+                .orElse(
+                        findPortEntityByName(flow.getInputPorts().stream(), componentName)
+                                .map(this::createConnectableDTOFromPort)
+                                .orElse(null));
     }
 
     private ProcessGroupFlowEntity advanceToNextProcessGroup(
             final String processGroupName,
             final ProcessGroupFlowEntity flowEntity) {
-        Optional<ProcessGroupEntity> flowEntityChild = findByComponentName(
-                flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(),
-                processGroupName);
-        if (!flowEntityChild.isPresent()) {
-            throw new ConfigException("Couldn't find process group '" + processGroupName + "'");
-        }
-        return flowapi.getFlow(flowEntityChild.get().getId());
+        return findByComponentName(
+                flowEntity.getProcessGroupFlow().getFlow().getProcessGroups(), processGroupName)
+                .map(flowEntityChild -> flowapi.getFlow(flowEntityChild.getId()))
+                .orElseThrow(() -> new ConfigException("Couldn't find process group '" + processGroupName + "'"));
     }
 
     private ConnectableDTO createOrFindPort(
@@ -147,13 +135,14 @@ public final class CreateRouteService {
             final ConnectableDTO.TypeEnum connectableType,
             final ProcessGroupFlowEntity flowEntity,
             final String processGroupName) {
-        ConnectableDTO connectableDTO = findConnectableComponent(flowEntity, destinationInputPort);
+        ProcessGroupFlowDTO processGroupFlow = flowEntity.getProcessGroupFlow();
+        ConnectableDTO connectableDTO = findConnectableComponent(processGroupFlow.getFlow(), destinationInputPort);
         if (connectableDTO != null && connectableDTO.getType() == connectableType) {
             return connectableDTO;
         }
         if (connectableDTO == null) {
             return createConnectableDTOFromPort(createPort(
-                    flowEntity.getProcessGroupFlow().getId(),
+                    processGroupFlow.getId(),
                     destinationInputPort,
                     matchConnectableTypeToPortType(connectableType)));
         }
