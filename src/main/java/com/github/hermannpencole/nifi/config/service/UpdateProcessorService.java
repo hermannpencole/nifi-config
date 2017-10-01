@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
+
 /**
  * Class that offer service for nifi processor
  * <p>
@@ -96,7 +98,6 @@ public class UpdateProcessorService {
     }
 
 
-
     /**
      *
      * @param configuration
@@ -137,7 +138,7 @@ public class UpdateProcessorService {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
         configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig, clientId));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
-            ProcessGroupEntity processorGroupToUpdate = ProcessGroupService.findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
+            ProcessGroupEntity processorGroupToUpdate = findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
             updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()), clientId);
         }
@@ -146,7 +147,8 @@ public class UpdateProcessorService {
     /**
      * update processor configuration with valueToPutInProc
      * at first find id of each processor and in second way update it
-     *  @param processorsList
+     *
+     * @param processorsList
      * @param componentToPutInProc
      * @param clientId
      */
@@ -173,7 +175,7 @@ public class UpdateProcessorService {
             componentToPutInProc.setRestricted(null);//processorToUpdate.getComponent().getRestricted());
             componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
             //remove controller link
-            for ( Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
+            for (Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
                 if (entry.getValue().getIdentifiesControllerService() != null) {
                     componentToPutInProc.getConfig().getProperties().remove(entry.getKey());
                 }

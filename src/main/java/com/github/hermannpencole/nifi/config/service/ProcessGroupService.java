@@ -11,6 +11,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 
+import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
+
 /**
  * Class that offer service for process group
  * <p>
@@ -53,13 +55,6 @@ public class ProcessGroupService {
             flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
         }
         return Optional.of(flowEntity);
-    }
-
-    //can static => utils
-    public static Optional<ProcessGroupEntity> findByComponentName(List<ProcessGroupEntity> listGroup, String name) {
-        return listGroup.stream()
-                .filter(item -> item.getComponent().getName().trim().equals(name.trim()))
-                .findFirst();
     }
 
     /**
@@ -183,8 +178,8 @@ public class ProcessGroupService {
         while (!connections.isEmpty()) {
             Set<String> destination = new HashSet<>();
             Set<String> source = new HashSet<>();
-            Set<ConnectionEntity> levelConnection= new HashSet<>();
-            for (ConnectionEntity connection: new ArrayList<>(connections)) {
+            Set<ConnectionEntity> levelConnection = new HashSet<>();
+            for (ConnectionEntity connection : new ArrayList<>(connections)) {
                 if (thisLevel.contains(connection.getSourceId())) {
                     source.add(connection.getDestinationId());
                     //remove connection for next use
@@ -200,8 +195,8 @@ public class ProcessGroupService {
             }
             thisLevel = new HashSet<>(source);
             thisLevel.removeAll(destination);
-            Set<ProcessorEntity> levelProcessor= new HashSet<>();
-            for (ProcessorEntity processor : flow.getProcessors()){
+            Set<ProcessorEntity> levelProcessor = new HashSet<>();
+            for (ProcessorEntity processor : flow.getProcessors()) {
                 if (thisLevel.contains(processor.getId())) {
                     levelProcessor.add(processor);
                 }
@@ -230,7 +225,7 @@ public class ProcessGroupService {
         nextPosition.setX(0d);
         nextPosition.setY(0d);
         while (positions.indexOf(nextPosition) != -1) {
-            if(nextPosition.getX() == 800d) {
+            if (nextPosition.getX() == 800d) {
                 nextPosition.setX(0d);
                 nextPosition.setY(nextPosition.getY() + 200);
             } else {

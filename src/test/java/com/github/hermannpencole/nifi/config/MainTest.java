@@ -42,6 +42,8 @@ public class MainTest {
     @Mock
     private UpdateProcessorService updateProcessorServiceMock;
     @Mock
+    private CreateRouteService createRouteServiceMock;
+    @Mock
     private ExtractProcessorService extractProcessorServiceMock;
     @Mock
     private InformationService informationServiceMock;
@@ -119,6 +121,7 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(UpdateProcessorService.class).toInstance(updateProcessorServiceMock);
+                bind(CreateRouteService.class).toInstance(createRouteServiceMock);
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
@@ -236,6 +239,5 @@ public class MainTest {
         Mockito.when(Guice.createInjector((AbstractModule)anyObject())).thenReturn(injector);
         doThrow(new ApiException()).when(accessServiceMock).addTokenOnConfiguration(false, null ,null);
         Main.main(new String[]{"-nifi","http://localhost:8080/nifi-api","-branch","\"root>N2\"","-conf","adr","-m","undeploy"});
-
     }
 }

@@ -8,7 +8,7 @@
 
 Update, Extract Nifi Configuration
 
-Deploy, undeploy template
+Deploy, undeploy, connect template
 
 ## Which version
 
@@ -93,6 +93,8 @@ You can find all properties in your extraction file. Now just configure it with 
 
 Configuration work with the name, remember that each processor in a group **must** have a unique name.
 
+It is also possible to create connections between process groups by adding a `connections` JSON element to the configuration. The shortest route between the two process groups will be selected, with output and input ports named according to the connection's name used automatically, and created if they do not already exist. Note that it is only possible to connect to input and output ports, so this functionality is typically best used by including an input or output port already wired in to the template that is named the same as the connection.
+
 sample :
 ```json
 {  
@@ -140,7 +142,6 @@ sample :
 		"lossTolerant": false
 	  }
 	}
-
   ],
   "controllerServices": [
     {
@@ -151,6 +152,13 @@ sample :
 		"Password": "********",
         "Max Total Connections": "3"
       }
+    }
+  ],
+  "connections": [
+    {
+      "name": "front_end_1",
+      "source": "root > front_end > front_end_1",
+      "destination": "root > back_end > back_end_1"
     }
   ],
   "name": "testController"
