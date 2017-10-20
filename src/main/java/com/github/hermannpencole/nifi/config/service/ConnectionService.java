@@ -46,6 +46,10 @@ public class ConnectionService {
     @Inject
     private FlowfileQueuesApi flowfileQueuesApi;
 
+    public boolean isEmptyQueue(ConnectionEntity connectionEntity) throws ApiException {
+        return connectionsApi.getConnection(connectionEntity.getId()).getStatus().getAggregateSnapshot().getQueuedCount().equals("0");
+    }
+
     public void waitEmptyQueue(ConnectionEntity connectionEntity) throws ApiException {
         try {
             FunctionUtils.runWhile(() -> {

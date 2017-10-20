@@ -8,13 +8,13 @@ import java.util.List;
 public class RouteConnectionsEntity {
 
     @SerializedName("connections")
-    private List<RouteConnectionEntity> connections = new ArrayList<>();
+    private List<ConnectionPort> connections = new ArrayList<>();
 
-    public List<RouteConnectionEntity> getConnections() {
+    public List<ConnectionPort> getConnections() {
         return connections;
     }
 
-    public void setConnections(List<RouteConnectionEntity> connections) {
+    public void setConnections(List<ConnectionPort> connections) {
         this.connections = connections;
     }
 }

@@ -6,13 +6,11 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.apache.commons.cli.UnrecognizedOptionException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -41,8 +39,8 @@ public class MainTest {
     private TemplateService templateServiceMock;
     @Mock
     private UpdateProcessorService updateProcessorServiceMock;
-    @Mock
-    private CreateRouteService createRouteServiceMock;
+    //@Mock
+    //private ConnectionPortService createRouteServiceMock;
     @Mock
     private ExtractProcessorService extractProcessorServiceMock;
     @Mock
@@ -121,7 +119,7 @@ public class MainTest {
                 bind(AccessService.class).toInstance(accessServiceMock);
                 bind(InformationService.class).toInstance(informationServiceMock);
                 bind(UpdateProcessorService.class).toInstance(updateProcessorServiceMock);
-                bind(CreateRouteService.class).toInstance(createRouteServiceMock);
+               // bind(ConnectionPortService.class).toInstance(createRouteServiceMock);
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);

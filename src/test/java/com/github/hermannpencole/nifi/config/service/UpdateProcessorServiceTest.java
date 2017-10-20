@@ -40,6 +40,9 @@ public class UpdateProcessorServiceTest {
     @Mock
     private ControllerServicesService controllerServicesServiceMock;
 
+    @Mock
+    private CreateRouteService createRouteServiceMock;
+
     @InjectMocks
     private UpdateProcessorService updateProcessorService;
 

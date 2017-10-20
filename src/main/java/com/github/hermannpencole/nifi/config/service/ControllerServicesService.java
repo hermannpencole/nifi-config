@@ -95,11 +95,22 @@ public class ControllerServicesService {
         return controllerServiceEntityUpdate;
     }
 
-    public ControllerServiceReferencingComponentsEntity setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
-        UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
-        updateControllerServiceReferenceRequestEntity.setId(id);
-        updateControllerServiceReferenceRequestEntity.setState(state);
-        return controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
+    public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
+        FunctionUtils.runWhile(()-> {
+            ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = null;
+            try {
+                UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
+                updateControllerServiceReferenceRequestEntity.setId(id);
+                updateControllerServiceReferenceRequestEntity.setState(state);
+                controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
+             } catch (ApiException e) {
+                LOG.info(e.getResponseBody());
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
+                    throw e;
+                }
+            }
+            return controllerServiceReferencingComponentsEntity == null;
+        }, interval, timeout);
     }
 
     public void setStateReferenceProcessors(ControllerServiceEntity controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {

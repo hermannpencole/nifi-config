@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
@@ -34,6 +36,9 @@ public class ProcessGroupService {
 
     @Inject
     private ProcessorService processorService;
+
+    @Inject
+    private PortService portService;
 
     @Inject
     private ConnectionService connectionService;
@@ -114,17 +119,18 @@ public class ProcessGroupService {
      */
     public void start(ProcessGroupFlowEntity processGroupFlow) throws ApiException {
         try {
-            FlowDTO flow = processGroupFlow.getProcessGroupFlow().getFlow();
-            List<Set<?>> listing = reorder(flow);
+            List<Set<?>> listing = reorder(processGroupFlow.getProcessGroupFlow());
             for (int i = (listing.size() - 1); i >= 0; i--) {
                 Set<?> set = listing.get(i);
                 for (Object object : set) {
                     if (object instanceof ProcessorEntity) {
                         processorService.setState((ProcessorEntity) object, ProcessorDTO.StateEnum.RUNNING);
+                    } else if (object instanceof PortEntity) {
+                        portService.setState((PortEntity) object, PortDTO.StateEnum.STOPPED);
                     }
                 }
             }
-            for (ProcessGroupEntity procGroupInConf : flow.getProcessGroups()) {
+            for (ProcessGroupEntity procGroupInConf : processGroupFlow.getProcessGroupFlow().getFlow().getProcessGroups()) {
                 ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
                 start(processGroupFlowEntity);
             }
@@ -143,19 +149,33 @@ public class ProcessGroupService {
      */
     public void stop(ProcessGroupFlowEntity processGroupFlow) throws ApiException {
         try {
-            FlowDTO flow = processGroupFlow.getProcessGroupFlow().getFlow();
-            List<Set<?>> listing = reorder(flow);
+            List<Set<?>> listing = reorder( processGroupFlow.getProcessGroupFlow());
             for (int i = 0; i < (listing.size()); i++) {
                 Set<?> set = listing.get(i);
+
+                if (set.size()>0 && set.stream().findFirst().get() instanceof ConnectionEntity) {
+                    //make be sur that in one pass all queue are empty (for the case when there is cycle)
+                    boolean emptyQueue = true;
+                    do {
+                        emptyQueue = true;
+                        for (Object o : set) {
+                            emptyQueue = emptyQueue && connectionService.isEmptyQueue((ConnectionEntity) o);
+                        }
+                        if (!emptyQueue) {
+                            for (Object o : set) { connectionService.waitEmptyQueue((ConnectionEntity) o); }
+                        }
+                    } while (!emptyQueue);
+                }
+                //TODO manage remoteProcessGroup
                 for (Object object : set) {
                     if (object instanceof ProcessorEntity) {
                         processorService.setState((ProcessorEntity) object, ProcessorDTO.StateEnum.STOPPED);
-                    } else if (object instanceof ConnectionEntity) {
-                        connectionService.waitEmptyQueue((ConnectionEntity) object);
+                    } else if (object instanceof PortEntity) {
+                        portService.setState((PortEntity) object, PortDTO.StateEnum.STOPPED);
                     }
                 }
             }
-            for (ProcessGroupEntity procGroupInConf : flow.getProcessGroups()) {
+            for (ProcessGroupEntity procGroupInConf : processGroupFlow.getProcessGroupFlow().getFlow().getProcessGroups()) {
                 ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
                 start(processGroupFlowEntity);
             }
@@ -166,46 +186,70 @@ public class ProcessGroupService {
     }
 
     /**
-     * reorder for have the processor that consume stream -> connection -> processor connected etcc ...in the good order.
+     * reorder for have the processor that consume stream -> connection -> processor connected etc ...in the good order.
      *
-     * @param flow
+     * Just put the first at the first and the other after trick for bypass cycle
+     *
+     * @param processGroupFlow
      * @return
      */
-    public List<Set<?>> reorder(FlowDTO flow) {
+    public List<Set<?>> reorder(ProcessGroupFlowDTO processGroupFlow) {
         List<Set<?>> level = new ArrayList<>();
-        Set<String> thisLevel = new HashSet<>();
-        List<ConnectionEntity> connections = new ArrayList<>(flow.getConnections());
-        while (!connections.isEmpty()) {
-            Set<String> destination = new HashSet<>();
-            Set<String> source = new HashSet<>();
-            Set<ConnectionEntity> levelConnection = new HashSet<>();
-            for (ConnectionEntity connection : new ArrayList<>(connections)) {
-                if (thisLevel.contains(connection.getSourceId())) {
-                    source.add(connection.getDestinationId());
-                    //remove connection for next use
-                    connections.remove(connection);
-                    levelConnection.add(connection);
-                } else {
-                    destination.add(connection.getDestinationId());
-                    source.add(connection.getSourceId());
-                }
-            }
-            if (!levelConnection.isEmpty()) {
-                level.add(levelConnection);
-            }
-            thisLevel = new HashSet<>(source);
-            thisLevel.removeAll(destination);
-            Set<ProcessorEntity> levelProcessor = new HashSet<>();
-            for (ProcessorEntity processor : flow.getProcessors()) {
-                if (thisLevel.contains(processor.getId())) {
-                    levelProcessor.add(processor);
-                }
-            }
-            level.add(levelProcessor);
-        }
+
+        Set<ProcessGroupFlowDTO> allProcessGroupFlow = getAllProcessGroupFlow(processGroupFlow);
+        Set<ConnectionEntity> allConnections = allProcessGroupFlow.stream().flatMap(p->p.getFlow().getConnections().stream()).collect(Collectors.toSet());
+
+        //get the first
+        Set<String> destination = new HashSet<>();
+        Set<String> source = new HashSet<>();
+        allConnections.forEach( connection -> {
+            destination.add(connection.getDestinationId());
+            source.add(connection.getSourceId());
+        });
+
+        //get the first (the first have no destination)
+        Set<String> first = new HashSet<>(source);
+        first.removeAll(destination);
+        level.add(first.stream().map(id -> findById(allProcessGroupFlow,id).get()).collect(Collectors.toSet()));
+
+        //get the other (the other have destination)
+        level.add(allConnections);
+        level.add(destination.stream().map(id -> findById(allProcessGroupFlow,id).get()).collect(Collectors.toSet()));
+
         return level;
     }
 
+    private Set<ProcessGroupFlowDTO> getAllProcessGroupFlow(ProcessGroupFlowDTO processGroupFlow) {
+        Set<ProcessGroupFlowDTO> result = new HashSet<>();
+        result.add(processGroupFlow);
+        for (ProcessGroupEntity processGroup : processGroupFlow.getFlow().getProcessGroups()) {
+            result.add(flowapi.getFlow(processGroup.getId()).getProcessGroupFlow());
+        }
+        return result;
+    }
+
+    public Optional<?> findById(Set<ProcessGroupFlowDTO> allProcessGroupFlow, String id){
+        for (ProcessGroupFlowDTO processGroupFlowDTO : allProcessGroupFlow) {
+            Optional<?> result = findById(processGroupFlowDTO.getFlow(),id);
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<?> findById(FlowDTO flow, String id){
+        Optional<?> result = flow.getProcessors().stream().filter(processor -> id.equals(processor.getId())).findFirst();
+        if (!result.isPresent())
+            result = flow.getInputPorts().stream().filter(port -> id.equals(port.getId())).findFirst();
+        if (!result.isPresent())
+            result = flow.getOutputPorts().stream().filter(port -> id.equals(port.getId())).findFirst();
+        if (!result.isPresent())
+            result = flow.getFunnels().stream().filter(funnel -> id.equals(funnel.getId())).findFirst();
+        if (!result.isPresent())
+            result = flow.getRemoteProcessGroups().stream().filter(remoteProcessGroup -> id.equals(remoteProcessGroup.getId())).findFirst();
+        return result;
+    }
     /**
      * get the next free position to place the processor(or group processor) on this group processor
      *

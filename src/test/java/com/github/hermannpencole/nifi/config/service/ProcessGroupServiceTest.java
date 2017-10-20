@@ -138,6 +138,7 @@ public class ProcessGroupServiceTest {
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProc2") );
+        when(connectionServiceMock.isEmptyQueue(any())).thenReturn(false).thenReturn(true);
         processGroupService.stop(responseRoot);
         ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
         verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.STOPPED));
@@ -178,15 +179,56 @@ public class ProcessGroupServiceTest {
         processors.add(TestUtils.createProcessorEntity("6","name6"));
         processors.add(TestUtils.createProcessorEntity("7","name7"));
         responseRoot.getProcessGroupFlow().getFlow().setProcessors(processors);
-        List<Set<?>> result = processGroupService.reorder(responseRoot.getProcessGroupFlow().getFlow());
+        List<Set<?>> result = processGroupService.reorder(responseRoot.getProcessGroupFlow());
+        assertEquals(2, result.get(0).size());
+        assertEquals(6, result.get(1).size());
+        assertEquals(5, result.get(2).size());
         assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
         assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
-        assertEquals("2", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
-        assertEquals("4", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
-        assertEquals("6", ((ProcessorEntity)result.get(4).toArray()[0]).getId());
-        assertEquals("5", ((ProcessorEntity)result.get(4).toArray()[1]).getId());
-        assertEquals("idCnx6", ((ConnectionEntity)result.get(5).toArray()[0]).getId());
+        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
     }
+
+    @Test
+//    1 - 2
+//    2 - 7
+//    3 - 4
+//    4 - 5
+//    4 - 6
+//    6 - 7
+//    5 - 4
+//    1,3 - 2,4,5,6,7
+    public void reorderTestCycle() throws ApiException, IOException, URISyntaxException {
+        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
+        List<ConnectionEntity> connections = new ArrayList<>();
+        connections.add(TestUtils.createConnectionEntity("idCnx1", "1","2"));
+        connections.add(TestUtils.createConnectionEntity("idCnx2", "2","7"));
+        connections.add(TestUtils.createConnectionEntity("idCnx3", "3","4"));
+        connections.add(TestUtils.createConnectionEntity("idCnx4", "4","5"));
+        connections.add(TestUtils.createConnectionEntity("idCnx5", "4","6"));
+        connections.add(TestUtils.createConnectionEntity("idCnx6", "6","7"));
+        connections.add(TestUtils.createConnectionEntity("idCnx7", "5","4"));
+        responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        List<ProcessorEntity> processors = new ArrayList<>();
+        processors = new ArrayList<>();
+        processors.add(TestUtils.createProcessorEntity("1","name1"));
+        processors.add(TestUtils.createProcessorEntity("2","name2"));
+        processors.add(TestUtils.createProcessorEntity("3","name3"));
+        processors.add(TestUtils.createProcessorEntity("4","name4"));
+        processors.add(TestUtils.createProcessorEntity("5","name5"));
+        processors.add(TestUtils.createProcessorEntity("6","name6"));
+        processors.add(TestUtils.createProcessorEntity("7","name7"));
+        responseRoot.getProcessGroupFlow().getFlow().setProcessors(processors);
+        List<Set<?>> result = processGroupService.reorder(responseRoot.getProcessGroupFlow());
+        assertEquals(2, result.get(0).size());
+        assertEquals(7, result.get(1).size());
+        assertEquals(5, result.get(2).size());
+        assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
+        assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
+        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
+    }
+
 
     @Test
     public void getNextPositionTest() throws ApiException, IOException, URISyntaxException {

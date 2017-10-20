@@ -84,7 +84,8 @@ public class ControllerServicesServiceTest {
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
             }
         });
-        when(controllerServicesApiMock.updateControllerServiceReferences(eq("id"), any())).thenReturn(null);
+        when(controllerServicesApiMock.updateControllerServiceReferences(eq("id"), any())).thenReturn(new ControllerServiceReferencingComponentsEntity());
+        when(controllerServicesApiMock.getControllerServiceReferences("id")).thenReturn(null);
 
         ControllerServicesService controllerServicesService = injector.getInstance(ControllerServicesService.class);
         controllerServicesService.setStateReferencingControllerServices("id", UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
