@@ -42,8 +42,6 @@ public class PortService {
     @Inject
     private OutputPortsApi outputPortsApi;
 
-
-
     /**
      * the the state of port
      *
