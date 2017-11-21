@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +49,14 @@ public class TemplateService {
 
     @Inject
     private TemplatesApi templatesApi;
+
+    @Named("timeout")
+    @Inject
+    public Integer timeout;
+
+    @Named("interval")
+    @Inject
+    public Integer interval;
 
     /**
      * @param branch
@@ -94,7 +104,20 @@ public class TemplateService {
         //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
         ProcessGroupEntity processGroupEntity = processGroupsApi.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId());
 
-        processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), processGroupEntity.getRevision().getVersion().toString(),null);
+
+
+        FunctionUtils.runWhile(()-> {
+            ProcessGroupEntity processGroupToRemove = null;
+            try {
+                processGroupToRemove = processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), processGroupEntity.getRevision().getVersion().toString(),null);
+            } catch (ApiException e) {
+                LOG.info(e.getResponseBody());
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("is running")){
+                    throw e;
+                }
+            }
+            return processGroupToRemove == null;
+        }, interval, timeout);
 
     }
 

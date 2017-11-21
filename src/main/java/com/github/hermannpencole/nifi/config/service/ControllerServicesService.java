@@ -3,7 +3,6 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
-import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +94,10 @@ public class ControllerServicesService {
         return controllerServiceEntityUpdate;
     }
 
+    public ControllerServiceEntity getControllerServices(String id) throws ApiException {
+        return controllerServicesApi.getControllerServiceReferences(id);
+    }
+
     public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
         FunctionUtils.runWhile(()-> {
             ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = null;
@@ -135,5 +138,23 @@ public class ControllerServicesService {
             return (controllerServiceEntity == null);
         }, interval, timeout);
     }
+
+    public void remove(ControllerServiceEntity controllerServiceToRemove) throws ApiException {
+        //Disabling this controller service
+        ControllerServiceEntity controllerServiceEntityUpdate = setStateControllerService(controllerServiceToRemove, ControllerServiceDTO.StateEnum.DISABLED);
+
+        //how obtain state of controllerServiceReference and don't have this bullshit trick
+        FunctionUtils.runWhile(()-> {
+            ControllerServiceEntity controllerServiceEntity = null;
+            try {
+                controllerServiceEntity = controllerServicesApi.removeControllerService(controllerServiceEntityUpdate.getId(), controllerServiceEntityUpdate.getRevision().getVersion().toString(), controllerServiceEntityUpdate.getRevision().getClientId());
+            } catch (ApiException e) {
+                LOG.info(e.getResponseBody());
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
+                    throw e;
+                }
+            }
+            return controllerServiceEntity == null;
+        }, interval, timeout);    }
 
 }

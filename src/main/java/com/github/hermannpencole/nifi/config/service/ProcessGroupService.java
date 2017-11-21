@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
@@ -134,6 +133,7 @@ public class ProcessGroupService {
                 ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
                 start(processGroupFlowEntity);
             }
+            setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
         } catch (Exception e) {
             setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
             throw e;
@@ -179,6 +179,7 @@ public class ProcessGroupService {
                 ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
                 start(processGroupFlowEntity);
             }
+            setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
         } catch (Exception e) {
             setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
             throw e;
@@ -216,6 +217,9 @@ public class ProcessGroupService {
         level.add(allConnections);
         level.add(destination.stream().map(id -> findById(allProcessGroupFlow,id).get()).collect(Collectors.toSet()));
 
+        if (level.isEmpty()) {
+            level.add(new HashSet<ProcessorEntity>());
+        }
         return level;
     }
 

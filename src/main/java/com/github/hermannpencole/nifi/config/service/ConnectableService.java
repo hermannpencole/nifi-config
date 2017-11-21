@@ -1,9 +1,12 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.github.hermannpencole.nifi.swagger.client.model.ConnectableDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.PortDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.PortEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import javax.inject.Singleton;
 
 /**

@@ -6,7 +6,6 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
-import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

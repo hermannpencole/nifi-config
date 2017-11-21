@@ -15,10 +15,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
@@ -85,8 +83,7 @@ public class UpdateProcessorService {
             updateComponent(configuration, componentSearch, clientId);
 
             //controller
-            ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(componentSearch.getProcessGroupFlow().getId());
-            updateControllers(configuration, controllerServicesEntity);
+            updateControllers(configuration, componentSearch.getProcessGroupFlow().getId(), clientId);
 
             //connexion
             createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
@@ -99,7 +96,7 @@ public class UpdateProcessorService {
                 LOG.info(Arrays.toString(branch.toArray()) + " is running");
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
         } finally {
             LOG.debug("updateByBranch end");
         }
@@ -109,21 +106,49 @@ public class UpdateProcessorService {
     /**
      *
      * @param configuration
-     * @param controllerServicesEntity
+     * @param idComponent
      * @throws ApiException
      */
-    private void updateControllers(GroupProcessorsEntity configuration, ControllerServicesEntity controllerServicesEntity) throws ApiException, InterruptedException {
-        for (ControllerServiceDTO controllerServiceDTO : configuration.getControllerServicesDTO()) {
+    private void updateControllers(GroupProcessorsEntity configuration, String idComponent, String clientId) throws ApiException, InterruptedException {
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(idComponent);
+        //must we use flowapi.getControllerServicesFromController() ??
+        /*ControllerServicesEntity controllerServiceController = flowapi.getControllerServicesFromController();
+        for (ControllerServiceEntity controllerServiceEntity: controllerServiceController.getControllerServices()) {
+            controllerServicesEntity.addControllerServicesItem(controllerServiceEntity);
+        }*/
 
-            //find controller for have id
-            ControllerServiceEntity controllerServiceEntityFind = controllerServicesEntity.getControllerServices().stream().filter(item -> item.getComponent().getName().trim().equals(controllerServiceDTO.getName().trim()))
-                    .findFirst().orElseThrow(() -> new ConfigException(("cannot find " + controllerServiceDTO.getName())));
+        for (ControllerServiceDTO controllerServiceDTO : configuration.getControllerServicesDTO()) {
+            List<ControllerServiceEntity> all = controllerServicesEntity.getControllerServices().stream().filter(item -> item.getComponent().getName().trim().equals(controllerServiceDTO.getName().trim())).collect(Collectors.toList());
+
+            ControllerServiceEntity controllerServiceEntityFind = null;
+            Map<String, ControllerServiceEntity> oldControllersService = new HashMap<>();
+            if (all.size() > 1) {
+                for (ControllerServiceEntity controllerServiceEntity: all) {
+                    if (idComponent.equals(controllerServiceEntity.getComponent().getParentGroupId())) {
+                        //add to old
+                        oldControllersService.put(controllerServiceEntity.getId(), controllerServiceEntity);
+                    } else {
+                        controllerServiceEntityFind = controllerServiceEntity;
+                    }
+                }
+            } else if (all.size() == 1) {
+                //find controller for have id
+                controllerServiceEntityFind = all.get(0);
+            } else {
+                throw new ConfigException(("cannot find " + controllerServiceDTO.getName()));
+            }
+
+            //remove old
+            removeOldReference(oldControllersService.values());
 
             //stopping referencing processors and reporting tasks
-          //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
+            //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
 
             //Disabling referencing controller services
             controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+
+            //update new reference for ReferencingComponents on oldControllersService
+            updateOldReference(oldControllersService.values(), controllerServiceEntityFind.getId(), clientId);
 
             //Enabling this controller service
             ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityFind);
@@ -137,6 +162,48 @@ public class UpdateProcessorService {
     }
 
     /**
+     * Update controller to newControllerServiceId for ReferencingComponents on oldControllersService
+     *
+     * @param newControllerServiceId
+     * @param oldControllersService
+     */
+    private void updateOldReference(Collection<ControllerServiceEntity> oldControllersService, String newControllerServiceId, String clientId) {
+        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+            for (ControllerServiceReferencingComponentEntity component : oldControllerService.getComponent().getReferencingComponents()) {
+                ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
+                updateProperties(newProc, oldControllerService.getId(), newControllerServiceId);
+                updateProcessor(newProc, newProc.getComponent(), true, clientId);
+                //processorsApi.updateProcessor(newProc.getId(), newProc);
+            }
+        }
+    }
+
+    private void removeOldReference(Collection<ControllerServiceEntity> oldControllersService) {
+        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+            try {
+                //maybe there are already remove
+                controllerServicesService.getControllerServices(oldControllerService.getId());
+                //Disabling referencing controller services
+                controllerServicesService.setStateReferencingControllerServices(oldControllerService.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+                //remove
+                controllerServicesService.remove(oldControllerService);
+            } catch (ApiException e) {
+                if (e.getMessage().contains("Not Found")){
+
+                } else throw e;
+            }
+        }
+    }
+
+    private void updateProperties(ProcessorEntity proc, String oldValue, String newValue) {
+        for (Map.Entry<String, String> entry : proc.getComponent().getConfig().getProperties().entrySet()) {
+            if (oldValue.equals(entry.getValue())) {
+                proc.getComponent().getConfig().getProperties().put(entry.getKey(), newValue);
+            }
+        }
+    }
+
+    /**
      * @param configuration
      * @param componentSearch
      * @param clientId
@@ -144,7 +211,8 @@ public class UpdateProcessorService {
      */
     private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch, String clientId) throws ApiException {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
-        configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(flow.getProcessors(), processorOnConfig, clientId));
+        configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(
+                findProcByComponentName(flow.getProcessors(), processorOnConfig.getName()), processorOnConfig, false, clientId));
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
             ProcessGroupEntity processorGroupToUpdate = findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
@@ -156,13 +224,12 @@ public class UpdateProcessorService {
      * update processor configuration with valueToPutInProc
      * at first find id of each processor and in second way update it
      *
-     * @param processorsList
+     * @param processorToUpdate
      * @param componentToPutInProc
      * @param clientId
      */
-    private void updateProcessor(List<ProcessorEntity> processorsList, ProcessorDTO componentToPutInProc, String clientId) {
+    private void updateProcessor(ProcessorEntity processorToUpdate, ProcessorDTO componentToPutInProc, boolean forceController, String clientId) {
         try {
-            ProcessorEntity processorToUpdate = findProcByComponentName(processorsList, componentToPutInProc.getName());
             componentToPutInProc.setId(processorToUpdate.getId());
             LOG.info("Update processor : " + processorToUpdate.getComponent().getName());
             //update on nifi
@@ -183,9 +250,11 @@ public class UpdateProcessorService {
             componentToPutInProc.setRestricted(null);//processorToUpdate.getComponent().getRestricted());
             componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
             //remove controller link
-            for (Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
-                if (entry.getValue().getIdentifiesControllerService() != null) {
-                    componentToPutInProc.getConfig().getProperties().remove(entry.getKey());
+            if (! forceController) {
+                for (Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
+                    if (entry.getValue().getIdentifiesControllerService() != null) {
+                        componentToPutInProc.getConfig().getProperties().remove(entry.getKey());
+                    }
                 }
             }
             processorToUpdate.setComponent(componentToPutInProc);

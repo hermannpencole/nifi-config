@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,15 +27,8 @@ public class CreateRouteService {
   @Inject
   private PortService portService;
 
-  private String getClientId() {
-    if (clientId == null) {
-      clientId = flowapi.generateClientId();
-    }
-    return clientId;
-  }
-
-  private String clientId;
-
+  @Inject
+  private ProcessGroupsApi processGroupsApi;
 
   @Inject
   private ConnectableService connectableService;
@@ -43,10 +36,14 @@ public class CreateRouteService {
   @Inject
   private FlowApi flowapi;
 
+  private String clientId;
 
-
-  @Inject
-  private ProcessGroupsApi processGroupsApi;
+  private String getClientId() {
+    if (clientId == null) {
+      clientId = flowapi.generateClientId();
+    }
+    return clientId;
+  }
 
   private PortDTO.TypeEnum matchConnectableTypeToPortType(final ConnectableDTO.TypeEnum connectableType) {
     switch (connectableType) {
@@ -108,8 +105,6 @@ public class CreateRouteService {
     connectionEntity.getComponent().setDestination(connectableService.createConnectableDTOFromPort(dest));
     return connectionEntity;
   }
-
-
 
   private boolean connectionExists(
           final Stream<ConnectionEntity> connectionEntities,

@@ -3,8 +3,13 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
+import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.TemplatesApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -90,7 +95,20 @@ public class TemplateServiceTest {
         ProcessGroupEntity processGroupEntity = TestUtils.createProcessGroupEntity("idProcessGroupFlow", "nameProcessGroupFlow");
         when(processGroupsApiMock.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId())).thenReturn(processGroupEntity);
 
-        templateService.undeploy(branch);
+        when(processGroupsApiMock.removeProcessGroup("idProcessGroupFlow","10", null)).thenReturn(new ProcessGroupEntity());
+
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(TemplatesApi.class).toInstance(templatesApiMock);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessGroupService.class).toInstance(processGroupServiceMock);
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(1);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+            }
+        });
+        injector.getInstance(TemplateService.class).undeploy(branch);
         verify(templatesApiMock).removeTemplate(template.getId());
         verify(processGroupServiceMock).stop(processGroupFlow.get());
         verify(processGroupsApiMock).removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), "10", null);
