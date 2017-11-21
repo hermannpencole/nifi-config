@@ -21,6 +21,9 @@ public class GroupProcessorsEntity {
     @SerializedName("controllerServices")
     private List<ControllerServiceDTO> controllerServicesDTO = new ArrayList<>();
 
+    @SerializedName("connections")
+    private List<ConnectionPort> connectionPorts = new ArrayList<>();
+
     @SerializedName("name")
     private String name;
 
@@ -38,7 +41,6 @@ public class GroupProcessorsEntity {
     }
 
     /**
-     *
      * @param groupProcessorsEntity
      */
     public void setGroupProcessorsEntity(List<GroupProcessorsEntity> groupProcessorsEntity) {
@@ -51,6 +53,12 @@ public class GroupProcessorsEntity {
 
     public void setControllerServicesDTO(List<ControllerServiceDTO> controllerServicesDTO) {
         this.controllerServicesDTO = controllerServicesDTO;
+    }
+
+    public List<ConnectionPort> getConnectionPorts() { return connectionPorts; }
+
+    public void setConnectionPorts(List<ConnectionPort> connectionPorts) {
+        this.connectionPorts = connectionPorts;
     }
 
     public String getName() {

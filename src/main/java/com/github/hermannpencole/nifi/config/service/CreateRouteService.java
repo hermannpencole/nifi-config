@@ -2,22 +2,16 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.ConnectionPort;
-import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
-import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.*;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,12 +38,6 @@ public class CreateRouteService {
 
   @Inject
   private FlowApi flowapi;
-
-  @Inject
-  private InputPortsApi inputPortsApi;
-
-  @Inject
-  private OutputPortsApi outputPortsApi;
 
   @Inject
   private ProcessGroupsApi processGroupsApi;
@@ -312,12 +300,12 @@ public class CreateRouteService {
    * @param optionNoStartProcessors Whether or not to start ports created along the route
    * @throws IOException If repository file cannot be found
    */
-  public void createRoutes(RouteConnectionsEntity connections, boolean optionNoStartProcessors) throws IOException {
-      for (ConnectionPort routeConnectionEntity : connections.getConnections()) {
+  public void createRoutes(List<ConnectionPort> connections, boolean optionNoStartProcessors) throws IOException {
+      for (ConnectionPort connection : connections) {
         createRoute(
-                routeConnectionEntity.getName(),
-                Arrays.stream(routeConnectionEntity.getSource().split(">")).map(String::trim).collect(Collectors.toList()),
-                Arrays.stream(routeConnectionEntity.getDestination().split(">")).map(String::trim).collect(Collectors.toList()),
+                connection.getName(),
+                Arrays.stream(connection.getSource().split(">")).map(String::trim).collect(Collectors.toList()),
+                Arrays.stream(connection.getDestination().split(">")).map(String::trim).collect(Collectors.toList()),
                 !optionNoStartProcessors);
       }
 

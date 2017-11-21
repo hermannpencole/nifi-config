@@ -2,7 +2,6 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
-import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
@@ -90,8 +89,7 @@ public class UpdateProcessorService {
             updateControllers(configuration, controllerServicesEntity);
 
             //connexion
-            RouteConnectionsEntity connections = gson.fromJson(reader, RouteConnectionsEntity.class);
-            createRouteService.createRoutes(connections, optionNoStartProcessors);
+            createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
 
             if (!optionNoStartProcessors) {
                 //Run all nifi processors

@@ -1,7 +1,7 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
+import com.github.hermannpencole.nifi.config.model.ConnectionPort;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
@@ -127,15 +127,36 @@ public class UpdateProcessorServiceTest {
 
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
         when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
-        ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
-        controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
-        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
 
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestConnection.json").getPath(), false);
 
-        ArgumentCaptor<RouteConnectionsEntity> routeConnectionsEntity = ArgumentCaptor.forClass(RouteConnectionsEntity.class);
-        verify(createRouteServiceMock).createRoutes(routeConnectionsEntity.capture(), Matchers.eq(false));
-        assertEquals(1, routeConnectionsEntity.getValue().getConnections().size());
+        ArgumentCaptor<List<ConnectionPort>> listConnectionPorts = ArgumentCaptor.forClass((Class) List.class);
+        verify(createRouteServiceMock).createRoutes(listConnectionPorts.capture(), Matchers.eq(false));
+        assertEquals(1, listConnectionPorts.getValue().size());
+    }
+
+    @Test
+    public void updateBranchNoConnectionTest() throws ApiException, IOException, URISyntaxException, InterruptedException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc", "nameProc"));
+        response.getProcessGroupFlow().getFlow()
+                .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
+
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+
+        ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
+        subGroupResponse.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2", "nameProc2"));
+        when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
+
+        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
+
+        ArgumentCaptor<List<ConnectionPort>> listConnectionPorts = ArgumentCaptor.forClass((Class) List.class);
+        verify(createRouteServiceMock).createRoutes(listConnectionPorts.capture(), Matchers.eq(false));
+        assertEquals(0, listConnectionPorts.getValue().size());
     }
 
     @Test(expected = ConfigException.class)
