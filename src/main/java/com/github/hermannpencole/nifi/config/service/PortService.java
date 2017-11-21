@@ -5,6 +5,7 @@ import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
+import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.slf4j.Logger;
@@ -13,7 +14,9 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * Class that offer service for process group
@@ -41,6 +44,10 @@ public class PortService {
 
     @Inject
     private OutputPortsApi outputPortsApi;
+
+    @Inject
+    private ProcessGroupsApi processGroupsApi;
+
 
     /**
      * the the state of port
@@ -84,6 +91,19 @@ public class PortService {
 
     }
 
+    private Optional<PortEntity> findPortEntityByName(final Stream<PortEntity> portEntities, final String name) {
+        return portEntities.filter(item -> item.getComponent().getName().trim().equals(name.trim())).findFirst();
+    }
+
+    public Optional<PortEntity> findPortEntityByName(final FlowDTO flow, final String componentName) {
+        Optional<PortEntity> result = findPortEntityByName(flow.getOutputPorts().stream(), componentName);
+        if (!result.isPresent()) {
+            result = findPortEntityByName(flow.getInputPorts().stream(), componentName);
+        }
+        return result;
+    }
+
+
     public Predicate<ConnectableDTO> isPort() {
         return c -> c.getType() == ConnectableDTO.TypeEnum.OUTPUT_PORT
                 || c.getType() == ConnectableDTO.TypeEnum.INPUT_PORT;
@@ -95,6 +115,31 @@ public class PortService {
         else
             return outputPortsApi.getOutputPort(id);
     }
+
+    /**
+     * Creates an input or output port.
+     *
+     * @param processGroupId GUID of the process group in which to create the port
+     * @param name           The name of the port
+     * @param type           Whether to create an input or an output port
+     * @return A data transfer object representative of the state of the created port
+     */
+    public PortEntity createPort(final String processGroupId, final String name, final PortDTO.TypeEnum type) {
+        PortEntity portEntity = new PortEntity();
+        portEntity.setRevision(new RevisionDTO());
+        portEntity.setComponent(new PortDTO());
+        portEntity.getRevision().setVersion(0L);
+        portEntity.getComponent().setName(name);
+        switch (type) {
+            case INPUT_PORT:
+                return processGroupsApi.createInputPort(processGroupId, portEntity);
+            case OUTPUT_PORT:
+                return processGroupsApi.createOutputPort(processGroupId, portEntity);
+        }
+        throw new ConfigException(String.format("Couldn't create port '{}'", name));
+    }
+
+
 
     /**
      * log the error reported by port
