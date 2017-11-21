@@ -1,8 +1,8 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.RouteConnectionsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
@@ -10,10 +10,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,8 +21,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
+
 /**
  * API tests for AccessApi
  */
@@ -119,6 +120,24 @@ public class UpdateProcessorServiceTest {
         assertEquals(2, controllerServiceDTO.getValue().getProperties().size());
     }
 
+    @Test
+    public void updateBranchConnectionTest() throws ApiException, IOException, URISyntaxException, InterruptedException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+        ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
+        controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
+        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
+
+        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestConnection.json").getPath(), false);
+
+        ArgumentCaptor<RouteConnectionsEntity> routeConnectionsEntity = ArgumentCaptor.forClass(RouteConnectionsEntity.class);
+        verify(createRouteServiceMock).createRoutes(routeConnectionsEntity.capture(), Matchers.eq(false));
+        assertEquals(1, routeConnectionsEntity.getValue().getConnections().size());
+    }
+
     @Test(expected = ConfigException.class)
     public void updateErrorBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");
@@ -135,8 +154,6 @@ public class UpdateProcessorServiceTest {
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
 
     }
-
-
 
 
 }
