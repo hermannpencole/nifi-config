@@ -41,6 +41,7 @@ public class CreateRouteService {
   private String getClientId() {
     if (clientId == null) {
       clientId = flowapi.generateClientId();
+      LOG.debug("client id generated {}", clientId);
     }
     return clientId;
   }
@@ -64,7 +65,7 @@ public class CreateRouteService {
   }
 
   private PortEntity createOrFindPort(final String destinationInputPort, final ConnectableDTO.TypeEnum connectableType,
-          final ProcessGroupFlowEntity flowEntity, final String processGroupName) {
+          final ProcessGroupFlowEntity flowEntity) {
     ProcessGroupFlowDTO processGroupFlow = flowEntity.getProcessGroupFlow();
     Optional<PortEntity> port = portService.findPortEntityByName(processGroupFlow.getFlow(), destinationInputPort);
     if (port.isPresent()) {
@@ -80,14 +81,14 @@ public class CreateRouteService {
         switch (destination.getComponent().getType()) {
           case OUTPUT_PORT:
             return destination.getComponent().getParentGroupId();
-          case INPUT_PORT:
+          case INPUT_PORT: default:
             return flowapi.getFlow(source.getComponent().getParentGroupId()).getProcessGroupFlow().getParentGroupId();
         }
       case INPUT_PORT:
         switch (destination.getComponent().getType()) {
           case OUTPUT_PORT:
             return source.getComponent().getParentGroupId();
-          case INPUT_PORT:
+          case INPUT_PORT: default:
             return source.getComponent().getParentGroupId();
         }
     }
@@ -152,11 +153,7 @@ public class CreateRouteService {
       String processGroupName = branch.next();
       flowEntity = advanceToNextProcessGroup(processGroupName, flowEntity);
       if (createPorts) {
-        connectableDTOs.add(createOrFindPort(
-                destinationInputPort,
-                connectableType,
-                flowEntity,
-                processGroupName));
+        connectableDTOs.add( createOrFindPort(destinationInputPort, connectableType, flowEntity) );
       }
     }
 
@@ -169,14 +166,10 @@ public class CreateRouteService {
     while (connectables.hasNext()) {
       current = next;
       next = connectables.next();
-
       ProcessGroupFlowEntity flowEntity = flowapi.getFlow(determineConnectionLocation(current, next));
-
       ConnectionEntity connectionEntity = createConnectionEntity(current, next);
 
-      if (!connectionExists(
-              flowEntity.getProcessGroupFlow().getFlow().getConnections().stream(),
-              connectionEntity)) {
+      if (!connectionExists( flowEntity.getProcessGroupFlow().getFlow().getConnections().stream(), connectionEntity)) {
         processGroupsApi.createConnection(flowEntity.getProcessGroupFlow().getId(), connectionEntity);
       }
     }
@@ -207,14 +200,12 @@ public class CreateRouteService {
     while (!source.next().equals(destination.next())) ;
 
     // Traverse the source branch, creating output ports down the hierarchy
-    List<PortEntity> sourceConnectables
-            = createPorts(source, name, ConnectableDTO.TypeEnum.OUTPUT_PORT);
+    List<PortEntity> sourceConnectables = createPorts(source, name, ConnectableDTO.TypeEnum.OUTPUT_PORT);
     // Reverse the sequence of the output ports as the connections should point up the hierarchy
     Collections.reverse(sourceConnectables);
 
     // Traverse the destination branch, creating input ports up the hierarchy
-    List<PortEntity> destinationConnectables
-            = createPorts(destination, name, ConnectableDTO.TypeEnum.INPUT_PORT);
+    List<PortEntity> destinationConnectables = createPorts(destination, name, ConnectableDTO.TypeEnum.INPUT_PORT);
 
     // Switch the two lists of connectables together
     List<PortEntity> route = new ArrayList<>(sourceConnectables);

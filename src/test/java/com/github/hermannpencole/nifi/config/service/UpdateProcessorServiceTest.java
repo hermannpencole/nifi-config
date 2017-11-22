@@ -2,7 +2,6 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
@@ -13,7 +12,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,8 +19,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.*;
 /**
  * API tests for AccessApi
  */

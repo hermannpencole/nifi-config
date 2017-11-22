@@ -188,9 +188,10 @@ public class UpdateProcessorService {
                 //remove
                 controllerServicesService.remove(oldControllerService);
             } catch (ApiException e) {
-                if (e.getMessage().contains("Not Found")){
-
-                } else throw e;
+                //maybe there are already remove
+                if (!e.getMessage().contains("Not Found")) {
+                    throw e;
+                }
             }
         }
     }

@@ -132,10 +132,9 @@ public class PortService {
         switch (type) {
             case INPUT_PORT:
                 return processGroupsApi.createInputPort(processGroupId, portEntity);
-            case OUTPUT_PORT:
+            case OUTPUT_PORT: default:
                 return processGroupsApi.createOutputPort(processGroupId, portEntity);
         }
-        throw new ConfigException(String.format("Couldn't create port '{}'", name));
     }
 
 

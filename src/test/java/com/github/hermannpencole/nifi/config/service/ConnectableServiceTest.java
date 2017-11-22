@@ -1,24 +1,17 @@
 package com.github.hermannpencole.nifi.config.service;
 
-import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ConnectionsApi;
-import com.github.hermannpencole.nifi.swagger.client.FlowfileQueuesApi;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.name.Names;
+import com.github.hermannpencole.nifi.swagger.client.model.ConnectableDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.PortDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.PortEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 /**
  * API tests for AccessApi

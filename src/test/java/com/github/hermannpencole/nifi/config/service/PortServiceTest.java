@@ -1,25 +1,21 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.*;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
+import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
+import com.github.hermannpencole.nifi.swagger.client.model.PortDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.PortEntity;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;

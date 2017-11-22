@@ -3,7 +3,6 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
-import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.TemplatesApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.inject.AbstractModule;

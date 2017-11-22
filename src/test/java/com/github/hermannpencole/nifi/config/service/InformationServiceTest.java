@@ -1,7 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.AccessApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.AboutDTO;
 import com.github.hermannpencole.nifi.swagger.client.model.AboutEntity;
@@ -14,8 +13,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * API tests for AccessApi

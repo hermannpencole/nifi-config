@@ -127,7 +127,7 @@ public class ControllerServicesService {
                     updateControllerServiceReferenceRequestEntity.getReferencingComponentRevisions().put(controllerServiceReferencingComponentEntity.getId(), controllerServiceReferencingComponentEntity.getRevision());
                 }
                 updateControllerServiceReferenceRequestEntity.setState(state);
-                ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(controllerServiceEntityFind.getId(), updateControllerServiceReferenceRequestEntity);
+                controllerServicesApi.updateControllerServiceReferences(controllerServiceEntityFind.getId(), updateControllerServiceReferenceRequestEntity);
                 controllerServiceEntity = controllerServicesApi.getControllerService(controllerServiceEntityFind.getId());
             } catch (ApiException e) {
                 LOG.info(e.getResponseBody());

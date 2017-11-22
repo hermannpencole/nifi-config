@@ -1,11 +1,11 @@
 package com.github.hermannpencole.nifi.config.service;
 
-import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ConnectionsApi;
 import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
-import com.github.hermannpencole.nifi.swagger.client.FlowfileQueuesApi;
-import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceReferencingComponentsEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.UpdateControllerServiceReferenceRequestEntity;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -16,15 +16,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * API tests for AccessApi

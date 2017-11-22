@@ -199,10 +199,12 @@ public class ProcessGroupService {
 
         Set<ProcessGroupFlowDTO> allProcessGroupFlow = getAllProcessGroupFlow(processGroupFlow);
         Set<ConnectionEntity> allConnections = allProcessGroupFlow.stream().flatMap(p->p.getFlow().getConnections().stream()).collect(Collectors.toSet());
+        Set<ProcessorEntity> allProcessors = allProcessGroupFlow.stream().flatMap(p->p.getFlow().getProcessors().stream()).collect(Collectors.toSet());
 
         //get the first
         Set<String> destination = new HashSet<>();
         Set<String> source = new HashSet<>();
+        allProcessors.forEach( processor-> source.add(processor.getId()));
         allConnections.forEach( connection -> {
             destination.add(connection.getDestinationId());
             source.add(connection.getSourceId());
@@ -232,6 +234,13 @@ public class ProcessGroupService {
         return result;
     }
 
+    /**
+     * find processor, inputport, ouput port funnel or remote processor by id in allProcessGroupFlow
+     *
+     * @param allProcessGroupFlow
+     * @param id
+     * @return
+     */
     public Optional<?> findById(Set<ProcessGroupFlowDTO> allProcessGroupFlow, String id){
         for (ProcessGroupFlowDTO processGroupFlowDTO : allProcessGroupFlow) {
             Optional<?> result = findById(processGroupFlowDTO.getFlow(),id);
@@ -242,6 +251,13 @@ public class ProcessGroupService {
         return Optional.empty();
     }
 
+    /**
+     * find processor, inputport, ouput port funnel or remote processor by id in flow
+     *
+     * @param flow
+     * @param id
+     * @return
+     */
     public Optional<?> findById(FlowDTO flow, String id){
         Optional<?> result = flow.getProcessors().stream().filter(processor -> id.equals(processor.getId())).findFirst();
         if (!result.isPresent())
@@ -254,6 +270,7 @@ public class ProcessGroupService {
             result = flow.getRemoteProcessGroups().stream().filter(remoteProcessGroup -> id.equals(remoteProcessGroup.getId())).findFirst();
         return result;
     }
+
     /**
      * get the next free position to place the processor(or group processor) on this group processor
      *

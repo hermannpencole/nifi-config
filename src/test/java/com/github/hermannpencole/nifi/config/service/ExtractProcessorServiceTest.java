@@ -4,7 +4,6 @@ import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
-import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceEntity;
 import com.github.hermannpencole.nifi.swagger.client.model.ControllerServicesEntity;
 import com.github.hermannpencole.nifi.swagger.client.model.ProcessGroupFlowEntity;
 import com.google.gson.Gson;
