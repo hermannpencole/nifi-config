@@ -67,7 +67,7 @@ public final class FunctionUtils {
 
     public static Optional<ProcessGroupEntity> findByComponentName(List<ProcessGroupEntity> listGroup, String name) {
         return listGroup.stream()
-                .filter(item -> item.getComponent().getName().trim().equals(name.trim()))
+                .filter(item -> item.getComponent() != null && item.getComponent().getName().trim().equals(name.trim()))
                 .findFirst();
     }
 }
