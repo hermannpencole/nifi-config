@@ -277,6 +277,12 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
  -noStartProcessors        turn off auto start of the processors after update of the config
  -enableDebugMode          turn on debugging mode of the underlying API library
  ```
+## Note
+
+#### About controller
+
+By default, nifi-config uses the controller declared on the parent group that has the same name, if any then deletes the controller declaration on the child group, otherwise uses the controller of the group.
+
 # TODO
 
 add version management that undeploy the old version automatically (with a version # in comment?)
