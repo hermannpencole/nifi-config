@@ -20,7 +20,7 @@ Deploy, undeploy, connect template
 ## How to :
 
 ```shell
-usage: java -jar nifi-deploy-config-1.1.5.jar [OPTIONS]
+usage: java -jar nifi-deploy-config-1.1.15.jar [OPTIONS]
  -h,--help                 Usage description
  -b,--branch <arg>         process group to begin (must begin by root) : root > my group > my sub group (default root)
  -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
@@ -47,7 +47,7 @@ with this rule : each processor and each controller in a process group **must** 
 3) Extract a sample configuration with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>My Group>My Subgroup" \
   -conf /tmp/config.json \
@@ -59,7 +59,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 1a) undeploy the old version with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -m undeploy
@@ -68,7 +68,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 1b) deploy the template with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/my_template.xml \
@@ -78,7 +78,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 2) update the production configuration with the command
 
 ```shell
-java -jar nifi-deploy-config-1.1.3.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>My group>My Subgroup" \
   -conf /tmp/PROD_config.json \
@@ -169,7 +169,7 @@ sample :
 #### Sample extract configuration
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-dev:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -179,7 +179,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 #### Sample update configuration
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/test2.json \
@@ -189,7 +189,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 #### Sample deploy Template
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -conf /tmp/my_template.xml \
@@ -199,7 +199,7 @@ java -jar nifi-deploy-config-1.1.5.jar \
 #### Sample undeploy
 
 ```shell
-java -jar nifi-deploy-config-1.1.3.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -m undeploy
@@ -208,7 +208,7 @@ java -jar nifi-deploy-config-1.1.3.jar \
 force mode actived
 
 ```shell
-java -jar nifi-deploy-config-1.1.3.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
   -m undeploy
@@ -220,7 +220,7 @@ java -jar nifi-deploy-config-1.1.3.jar \
 #### Sample access via username/password
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -jar nifi-deploy-config-1.1.15.jar \
   -user my_username \
   -password my_password \
   -nifi http://ip-nifi-prod:8080/nifi-api \
@@ -232,7 +232,9 @@ java -jar nifi-deploy-config-1.1.5.jar \
 #### Sample access via Kerberos ticket exchange / SPNEGO negotiation
 
 ```shell
-java -jar nifi-deploy-config-1.1.5.jar \
+java -Djava.security.krb5.conf=/etc/krb5.conf \ 
+     -Djavax.security.auth.useSubjectCredsOy=false \
+     -jar nifi-deploy-config-1.1.15.jar \
   -accessFromTicket \
   -nifi http://ip-nifi-prod:8080/nifi-api \
   -branch "root>my group>my subgroup" \
@@ -252,12 +254,14 @@ Pooling
  ```shell
  -password <arg>           password for access via username/password, then user is mandatory
  -user <arg>               user name for access via username/password, then password is mandatory
- -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation
- -noVerifySsl              turn off ssl verification certificat
- 
+ -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation 
+ -noVerifySsl              turn off ssl verification certificat 
  ```
 
+For accessFromTicket option, if you want use access via Kerberos ticket exchange / SPNEGO negotiation ; You must configure system properties java.security.krb5.conf (see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/tutorials/KerberosReq.html) and javax.security.auth.useSubjectCredsOy to false.  [Sample access via Kerberos ticket exchange / SPNEGO negotiation](#sample-access-via-kerberos-ticket-exchange--spnego-negotiation)
+
  Timeout Api Client
+
  ```shell
  -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
  -readTimeout <arg>        configure api client read timeout (default 10 seconds)
