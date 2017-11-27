@@ -244,13 +244,15 @@ java -Djava.security.krb5.conf=/etc/krb5.conf \
 
 ### Advanced Options
 
-Pooling
+#### Pooling
+
 ```shell
  -timeout <arg>            allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout
  -interval <arg>           allows specifying the polling interval in second (default 2 seconds)
 ```
 
- Security
+####  Security
+
  ```shell
  -password <arg>           password for access via username/password, then user is mandatory
  -user <arg>               user name for access via username/password, then password is mandatory
@@ -260,7 +262,7 @@ Pooling
 
 For accessFromTicket option, if you want use access via Kerberos ticket exchange / SPNEGO negotiation ; You must configure system properties java.security.krb5.conf (see https://docs.oracle.com/javase/8/docs/technotes/guides/security/jgss/tutorials/KerberosReq.html) and javax.security.auth.useSubjectCredsOy to false.  [Sample access via Kerberos ticket exchange / SPNEGO negotiation](#sample-access-via-kerberos-ticket-exchange--spnego-negotiation)
 
- Timeout Api Client
+####  Timeout Api Client
 
  ```shell
  -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
@@ -268,7 +270,8 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
  -writeTimeout <arg>       configure api client write timeout (default 10 seconds)
  ```
 
- Other
+####  Other
+
  ```shell
  -f,--force                turn on force mode : empty queue after timeout
  -noStartProcessors        turn off auto start of the processors after update of the config
