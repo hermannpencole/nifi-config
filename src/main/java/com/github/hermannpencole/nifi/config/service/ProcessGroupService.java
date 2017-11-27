@@ -213,11 +213,11 @@ public class ProcessGroupService {
         //get the first (the first have no destination)
         Set<String> first = new HashSet<>(source);
         first.removeAll(destination);
-        level.add(first.stream().map(id -> findById(allProcessGroupFlow,id).get()).collect(Collectors.toSet()));
+        level.add(first.stream().map(id -> findById(allProcessGroupFlow,id)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet()));
 
         //get the other (the other have destination)
         level.add(allConnections);
-        level.add(destination.stream().map(id -> findById(allProcessGroupFlow,id).get()).collect(Collectors.toSet()));
+        level.add(destination.stream().map(id -> findById(allProcessGroupFlow,id)).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toSet()));
 
         if (level.isEmpty()) {
             level.add(new HashSet<ProcessorEntity>());
