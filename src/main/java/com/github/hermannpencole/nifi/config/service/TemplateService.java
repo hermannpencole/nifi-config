@@ -65,7 +65,7 @@ public class TemplateService {
      * @throws URISyntaxException
      * @throws ApiException
      */
-    public void installOnBranch(List<String> branch, String fileConfiguration) throws ApiException {
+    public void installOnBranch(List<String> branch, String fileConfiguration, boolean keepTemplate) throws ApiException {
         ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch).getProcessGroupFlow();
         File file = new File(fileConfiguration);
 
@@ -82,6 +82,9 @@ public class TemplateService {
         instantiateTemplate.setOriginX(0d);
         instantiateTemplate.setOriginY(0d);
         processGroupsApi.instantiateTemplate(processGroupFlow.getId(), instantiateTemplate);
+        if (!keepTemplate) {
+            templatesApi.removeTemplate(template.get().getTemplate().getId());
+        }
     }
 
     public void undeploy(List<String> branch) throws ApiException {

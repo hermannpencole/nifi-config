@@ -68,6 +68,8 @@ public class Main {
             options.addOption("connectionTimeout", true, "configure api client connection timeout (default 10 seconds)");
             options.addOption("readTimeout", true, "configure api client read timeout (default 10 seconds)");
             options.addOption("writeTimeout", true, "configure api client write timeout (default 10 seconds)");
+            options.addOption("keepTemplate", false, "keep template after installation (default false)");
+            options.addOption("placeWidth", true, "width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -91,6 +93,7 @@ public class Main {
                 Integer connectionTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("connectionTimeout")) :10000;
                 Integer readTimeout = cmd.hasOption("readTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) :10000;
                 Integer writeTimeout = cmd.hasOption("writeTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) :10000;
+                Double placeWidth = cmd.hasOption("placeWidth") ? Double.valueOf(cmd.getOptionValue("placeWidth")) : 1935d;
                 Boolean forceMode = cmd.hasOption("force");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
@@ -112,6 +115,7 @@ public class Main {
                         bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
                         bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(interval);
                         bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(forceMode);
+                        bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(placeWidth);
                     }
                 });
 
@@ -135,7 +139,7 @@ public class Main {
                     LOG.info("The group configuration {} is extrated on file {}", branch, fileConfiguration);
                 } else if ("deployTemplate".equals(cmd.getOptionValue("m"))) {
                     TemplateService templateService = injector.getInstance(TemplateService.class);
-                    templateService.installOnBranch(branchList, fileConfiguration);
+                    templateService.installOnBranch(branchList, fileConfiguration, cmd.hasOption("keepTemplate"));
                     LOG.info("Template {} is installed on the group {}", fileConfiguration, branch);
                 } else {
                     TemplateService templateService = injector.getInstance(TemplateService.class);

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,6 +27,9 @@ public class ProcessGroupService {
      * The logger.
      */
     private final static Logger LOG = LoggerFactory.getLogger(ProcessGroupService.class);
+    private final static double ELEMENT_WIDTH = 430;
+    private final static double ELEMENT_HEIGHT = 220;
+    private final static double APPROXIMATE = 0.01;
 
     @Inject
     private FlowApi flowapi;
@@ -41,6 +45,10 @@ public class ProcessGroupService {
 
     @Inject
     private ConnectionService connectionService;
+
+    @Named("placeWidth")
+    @Inject
+    public Double placeWidth;
 
     /**
      * browse nifi on branch pass in parameter
@@ -286,18 +294,44 @@ public class ProcessGroupService {
         for (ProcessGroupEntity processGroup : flowEntity.getProcessGroupFlow().getFlow().getProcessGroups()) {
             positions.add(processGroup.getPosition());
         }
-
+        for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getInputPorts()) {
+            positions.add(port.getPosition());
+        }
+        for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getOutputPorts()) {
+            positions.add(port.getPosition());
+        }
+        for (ConnectionEntity conn : flowEntity.getProcessGroupFlow().getFlow().getConnections()) {
+            positions.add(conn.getPosition());
+        }
+        for (FunnelEntity funnel : flowEntity.getProcessGroupFlow().getFlow().getFunnels()) {
+            positions.add(funnel.getPosition());
+        }
         nextPosition.setX(0d);
         nextPosition.setY(0d);
-        while (positions.indexOf(nextPosition) != -1) {
-            if (nextPosition.getX() == 800d) {
+        Optional<PositionDTO> otherPosition;
+        Optional<PositionDTO> fistInLine = Optional.empty();
+        while ( (otherPosition = findOtherPositionInPlace(positions, nextPosition)).isPresent() ) {
+            if (!fistInLine.isPresent()) {
+                fistInLine = otherPosition;
+            }
+            //plus 2* while 1 for the other and 1 for the element
+            if (otherPosition.get().getX() + 2*ELEMENT_WIDTH >= placeWidth) {
                 nextPosition.setX(0d);
-                nextPosition.setY(nextPosition.getY() + 200);
+                nextPosition.setY(fistInLine.get().getY() + ELEMENT_HEIGHT);
+                fistInLine = Optional.empty();
             } else {
-                nextPosition.setX(nextPosition.getX() + 400);
+                nextPosition.setY(otherPosition.get().getY());
+                nextPosition.setX(otherPosition.get().getX() + ELEMENT_WIDTH);
             }
         }
-        LOG.debug("nest postion {},{}", nextPosition.getX(), nextPosition.getY());
+        LOG.debug("next postion {},{}", nextPosition.getX(), nextPosition.getY());
         return nextPosition;
+    }
+
+    private Optional<PositionDTO> findOtherPositionInPlace(List<PositionDTO> positions, PositionDTO nextPosition) {
+        return positions.stream().filter(position ->
+                 nextPosition.getX() + (ELEMENT_WIDTH - APPROXIMATE) > position.getX() && nextPosition.getX()- (ELEMENT_WIDTH - APPROXIMATE) < position.getX()
+              && nextPosition.getY() + (ELEMENT_HEIGHT - APPROXIMATE) > position.getY() && nextPosition.getY()- (ELEMENT_HEIGHT - APPROXIMATE) < position.getY()
+        ).findFirst();
     }
 }

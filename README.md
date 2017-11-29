@@ -276,6 +276,8 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
  -f,--force                turn on force mode : empty queue after timeout
  -noStartProcessors        turn off auto start of the processors after update of the config
  -enableDebugMode          turn on debugging mode of the underlying API library
+ -keepTemplate             keep template after installation (default false)
+ -placeWidth <arg>         width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)
  ```
 ## Note
 

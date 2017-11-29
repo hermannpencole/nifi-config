@@ -48,7 +48,7 @@ public class TemplateServiceTest {
      * @throws ApiException if the Api call fails
      */
     @Test
-    public void createAccessTokenTest() throws ApiException, IOException, URISyntaxException {
+    public void installOnBranchTest() throws ApiException, IOException, URISyntaxException {
         List<String> branch = Arrays.asList("root", "elt1");
         String fileName = "test";
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idProcessGroupFlow", "nameProcessGroupFlow");
@@ -61,7 +61,7 @@ public class TemplateServiceTest {
         when(processGroupsApiMock.uploadTemplate(anyString(), any())).thenReturn(template);
         //when(processGroupsApiMock.uploadTemplate(processGroupFlow.getId(), new File(fileName))).thenReturn(template);
 
-        templateService.installOnBranch(branch, fileName);
+        templateService.installOnBranch(branch, fileName, true);
 
         InstantiateTemplateRequestEntity instantiateTemplate = new InstantiateTemplateRequestEntity(); // InstantiateTemplateRequestEntity | The instantiate template request.
         instantiateTemplate.setTemplateId(template.getId());
@@ -71,6 +71,35 @@ public class TemplateServiceTest {
         verify(processGroupServiceMock).createDirectory(branch);
         verify(processGroupsApiMock).uploadTemplate(response.getProcessGroupFlow().getId(), new File(fileName));
         verify(processGroupsApiMock).instantiateTemplate(response.getProcessGroupFlow().getId(), instantiateTemplate);
+        verify(templatesApiMock, never()).removeTemplate(template.getTemplate().getId());
+    }
+
+
+    @Test
+    public void installOnBranchWithRemoveTemplateTest() throws ApiException, IOException, URISyntaxException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        String fileName = "test";
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idProcessGroupFlow", "nameProcessGroupFlow");
+        when(processGroupServiceMock.createDirectory(branch)).thenReturn(response);
+        TemplateEntity template = new TemplateEntity();
+        template.setId("idTemplate");
+        template.setTemplate(new TemplateDTO());
+        template.getTemplate().setGroupId("idProcessGroupFlow");
+        template.getTemplate().setId("idTemplate");
+        when(processGroupsApiMock.uploadTemplate(anyString(), any())).thenReturn(template);
+        //when(processGroupsApiMock.uploadTemplate(processGroupFlow.getId(), new File(fileName))).thenReturn(template);
+
+        templateService.installOnBranch(branch, fileName, false);
+
+        InstantiateTemplateRequestEntity instantiateTemplate = new InstantiateTemplateRequestEntity(); // InstantiateTemplateRequestEntity | The instantiate template request.
+        instantiateTemplate.setTemplateId(template.getId());
+        instantiateTemplate.setOriginX(0d);
+        instantiateTemplate.setOriginY(0d);
+
+        verify(processGroupServiceMock).createDirectory(branch);
+        verify(processGroupsApiMock).uploadTemplate(response.getProcessGroupFlow().getId(), new File(fileName));
+        verify(processGroupsApiMock).instantiateTemplate(response.getProcessGroupFlow().getId(), instantiateTemplate);
+        verify(templatesApiMock).removeTemplate(template.getTemplate().getId());
     }
 
 
