@@ -29,6 +29,9 @@ public class TestUtils {
         processGroupDTO.setId(id);
         processGroupEntity.setComponent(processGroupDTO);
         processGroupEntity.setRevision(createRevision(10L));
+        processGroupEntity.setPosition(new PositionDTO());
+        processGroupEntity.getPosition().setX(0d);
+        processGroupEntity.getPosition().setY(0d);
         return processGroupEntity;
     }
 
@@ -48,6 +51,9 @@ public class TestUtils {
         proc.setComponent(procDTO);
         proc.setRevision(new RevisionDTO());
         proc.getRevision().setVersion(100L);
+        proc.setPosition(new PositionDTO());
+        proc.getPosition().setX(0d);
+        proc.getPosition().setY(0d);
         return proc;
     }
 

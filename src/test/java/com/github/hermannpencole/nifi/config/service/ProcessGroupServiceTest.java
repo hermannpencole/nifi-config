@@ -4,6 +4,10 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.name.Names;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +28,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class ProcessGroupServiceTest {
     @Mock
-    private FlowApi flowapiMock;
+    private FlowApi flowApiMock;
 
     @Mock
     private ProcessGroupsApi processGroupsApiMock;
@@ -45,7 +49,7 @@ public class ProcessGroupServiceTest {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
-        when(flowapiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
+        when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
 
         Optional<ProcessGroupFlowEntity> response = processGroupService.changeDirectory(branch);
         assertFalse(response.isPresent());
@@ -58,9 +62,9 @@ public class ProcessGroupServiceTest {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
-        when(flowapiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
+        when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
         ProcessGroupFlowEntity responseElt = TestUtils.createProcessGroupFlowEntity("idElt1", "elt1");
-        when(flowapiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
+        when(flowApiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
 
         Optional<ProcessGroupFlowEntity> response = processGroupService.changeDirectory(branch);
         assertTrue(response.isPresent());
@@ -74,12 +78,25 @@ public class ProcessGroupServiceTest {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
-        when(flowapiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
+        when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
         ProcessGroupFlowEntity responseElt = TestUtils.createProcessGroupFlowEntity("idElt2", "elt2");
         when(processGroupsApiMock.createProcessGroup(any(), any())).thenReturn(TestUtils.createProcessGroupEntity("idElt2", "elt2"));
-        when(flowapiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
+        when(flowApiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
 
-        ProcessGroupFlowEntity response = processGroupService.createDirectory(branch);
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(ProcessGroupService.class).toInstance(processGroupService);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(1);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+            }
+        });
+        ProcessGroupFlowEntity response = injector.getInstance(ProcessGroupService.class).createDirectory(branch);
         assertEquals("idElt2", response.getProcessGroupFlow().getId());
     }
 
@@ -90,9 +107,9 @@ public class ProcessGroupServiceTest {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
-        when(flowapiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
+        when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
         ProcessGroupFlowEntity responseElt = TestUtils.createProcessGroupFlowEntity("idElt1", "elt1");
-        when(flowapiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
+        when(flowApiMock.getFlow(responseElt.getProcessGroupFlow().getId())).thenReturn(responseElt);
 
         ProcessGroupFlowEntity response = processGroupService.createDirectory(branch);
         assertEquals("idElt1", response.getProcessGroupFlow().getId());
@@ -106,7 +123,7 @@ public class ProcessGroupServiceTest {
         body.setId("root");
         body.setState(ScheduleComponentsEntity.StateEnum.RUNNING);
         body.setComponents(null);//for all
-        verify(flowapiMock).scheduleComponents("root", body);
+        verify(flowApiMock).scheduleComponents("root", body);
     }
 
     @Test
@@ -183,8 +200,8 @@ public class ProcessGroupServiceTest {
         assertEquals(5, result.get(2).size());
         assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
         assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
-        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
-        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
+        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
     }
 
     @Test
@@ -223,8 +240,8 @@ public class ProcessGroupServiceTest {
         assertEquals(5, result.get(2).size());
         assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
         assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
-        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
-        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
+        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
     }
 
 
@@ -255,9 +272,22 @@ public class ProcessGroupServiceTest {
             position.setY(y);
             processGroup.setPosition(position);
         }
-        PositionDTO result = processGroupService.getNextPosition(responseRoot);
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(ProcessGroupService.class).toInstance(processGroupService);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(1);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+            }
+        });
+        PositionDTO result = injector.getInstance(ProcessGroupService.class).getNextPosition(responseRoot);
         assertEquals(0d, result.getX(), 0);
-        assertEquals(200d, result.getY(), 0);
+        assertEquals(220d, result.getY(), 0);
     }
 
 

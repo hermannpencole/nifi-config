@@ -134,6 +134,7 @@ public class TemplateServiceTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(1);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         injector.getInstance(TemplateService.class).undeploy(branch);

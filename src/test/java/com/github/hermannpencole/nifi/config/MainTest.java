@@ -62,6 +62,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
@@ -82,6 +83,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
@@ -102,6 +104,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
@@ -123,6 +126,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
@@ -143,6 +147,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
@@ -230,6 +235,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
             }
         });
         //given
