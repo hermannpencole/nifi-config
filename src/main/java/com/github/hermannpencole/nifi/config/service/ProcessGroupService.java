@@ -185,7 +185,7 @@ public class ProcessGroupService {
             }
             for (ProcessGroupEntity procGroupInConf : processGroupFlow.getProcessGroupFlow().getFlow().getProcessGroups()) {
                 ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
-                start(processGroupFlowEntity);
+                stop(processGroupFlowEntity);
             }
             setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
         } catch (Exception e) {
