@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -11,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
@@ -49,6 +51,14 @@ public class ProcessGroupService {
     @Named("placeWidth")
     @Inject
     public Double placeWidth;
+
+    @Named("timeout")
+    @Inject
+    public Integer timeout;
+
+    @Named("interval")
+    @Inject
+    public Integer interval;
 
     /**
      * browse nifi on branch pass in parameter
@@ -177,7 +187,9 @@ public class ProcessGroupService {
                 //TODO manage remoteProcessGroup
                 for (Object object : set) {
                     if (object instanceof ProcessorEntity) {
-                        processorService.setState((ProcessorEntity) object, ProcessorDTO.StateEnum.STOPPED);
+                        ProcessorEntity processor = (ProcessorEntity) object;
+                        processorService.setState(processor, ProcessorDTO.StateEnum.STOPPED);
+                        waitForProcessorTermination(processor);
                     } else if (object instanceof PortEntity) {
                         portService.setState((PortEntity) object, PortDTO.StateEnum.STOPPED);
                     }
@@ -188,9 +200,29 @@ public class ProcessGroupService {
                 stop(processGroupFlowEntity);
             }
             setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.STOPPED);
+        } catch (InterruptedException ie) {
+            LOG.error("ProcessGroupFlow stopping interrupted", ie);
         } catch (Exception e) {
             setState(processGroupFlow.getProcessGroupFlow().getId(), ScheduleComponentsEntity.StateEnum.RUNNING);
             throw e;
+        }
+    }
+
+    /**
+     * wait for all processor threads to stop
+     * @param processor
+     * @throws InterruptedException
+     */
+    private void waitForProcessorTermination(ProcessorEntity processor) throws InterruptedException {
+        final long waitingStart = System.currentTimeMillis();
+
+        while (processorService.getThreadsCount(processor) > 0) {
+            TimeUnit.SECONDS.sleep(interval);
+
+            final long durationMillis = System.currentTimeMillis() - waitingStart;
+            if (durationMillis > TimeUnit.SECONDS.toMillis(timeout)) {
+                throw new TimeoutException("Processor termination failed on timeout");
+            }
         }
     }
 

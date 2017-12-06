@@ -5,6 +5,8 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO;
 import com.github.hermannpencole.nifi.swagger.client.model.ProcessorEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessorStatusDTO;
+import com.github.hermannpencole.nifi.swagger.client.model.ProcessorStatusSnapshotDTO;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -90,6 +92,34 @@ public class ProcessorServiceTest {
         when(processorsApiMock.updateProcessor(eq("id"), any() )).thenThrow(new ApiException());
 
         processorService.setState(processor, ProcessorDTO.StateEnum.RUNNING);
+    }
+
+    @Test
+    public void getThreadsNumberTest() {
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(ProcessorsApi.class).toInstance(processorsApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(1);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+            }
+        });
+        ProcessorService processorService = injector.getInstance(ProcessorService.class);
+        ProcessorEntity processor = TestUtils.createProcessorEntity("id", "name");
+
+        ProcessorEntity processorResponse = TestUtils.createProcessorEntity("id", "name");
+        ProcessorStatusDTO statusResponse = new ProcessorStatusDTO();
+        ProcessorStatusSnapshotDTO aggregateSnapshotResponse = new ProcessorStatusSnapshotDTO();
+        aggregateSnapshotResponse.setActiveThreadCount(1);
+        statusResponse.setAggregateSnapshot(aggregateSnapshotResponse);
+        processorResponse.setStatus(statusResponse);
+
+        when(processorsApiMock.getProcessor(eq("id"))).thenReturn(processorResponse);
+
+        int threadsCount = processorService.getThreadsCount(processor);
+
+        assertEquals(1, threadsCount);
+        verify(processorsApiMock).getProcessor(eq("id"));
     }
 
 }
