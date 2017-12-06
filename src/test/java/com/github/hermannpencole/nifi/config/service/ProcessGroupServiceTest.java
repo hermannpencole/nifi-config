@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -128,14 +129,7 @@ public class ProcessGroupServiceTest {
 
     @Test
     public void startTest() throws ApiException, IOException, URISyntaxException {
-        ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
-        List<ConnectionEntity> connections = new ArrayList<>();
-        connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
-        responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
-        responseRoot.getProcessGroupFlow().getFlow()
-                .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
-        responseRoot.getProcessGroupFlow().getFlow()
-                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProc2") );
+        ProcessGroupFlowEntity responseRoot = createResponseRoot();
         processGroupService.start(responseRoot);
         ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
         verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.RUNNING));
@@ -145,6 +139,68 @@ public class ProcessGroupServiceTest {
 
     @Test
     public void stopTest() throws ApiException, IOException, URISyntaxException {
+        ProcessGroupFlowEntity responseRoot = createResponseRoot();
+        when(connectionServiceMock.isEmptyQueue(any())).thenReturn(false).thenReturn(true);
+        processGroupService.stop(responseRoot);
+        ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
+        verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.STOPPED));
+        verify(processorServiceMock, times(2)).getThreadsCount(any());
+        assertEquals("idProc", processorCapture.getAllValues().get(0).getId());
+        assertEquals("idProc2", processorCapture.getAllValues().get(1).getId());
+        ArgumentCaptor<ConnectionEntity> connectionCapture = ArgumentCaptor.forClass(ConnectionEntity.class);
+        verify(connectionServiceMock).waitEmptyQueue(connectionCapture.capture());
+        assertEquals("idProc", connectionCapture.getValue().getSourceId());
+    }
+
+    @Test
+    public void stopWithWaitingTest() throws ApiException, IOException, URISyntaxException {
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(5);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(15.0d);
+            }
+        });
+        ProcessGroupService procGroupService = injector.getInstance(ProcessGroupService.class);
+
+        ProcessGroupFlowEntity responseRoot = createResponseRoot();
+        when(connectionServiceMock.isEmptyQueue(any())).thenReturn(false).thenReturn(true);
+        when(processorServiceMock.getThreadsCount(any())).thenReturn(1).thenReturn(0);
+
+        procGroupService.stop(responseRoot);
+        verify(processorServiceMock, times(3)).getThreadsCount(any());
+    }
+
+    @Test(expected = TimeoutException.class)
+    public void stopWithWaitingExceptionTest() throws ApiException, IOException, URISyntaxException {
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(2);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(15.0d);
+            }
+        });
+        ProcessGroupService procGroupService = injector.getInstance(ProcessGroupService.class);
+
+        ProcessGroupFlowEntity responseRoot = createResponseRoot();
+        when(connectionServiceMock.isEmptyQueue(any())).thenReturn(false).thenReturn(true);
+        when(processorServiceMock.getThreadsCount(any())).thenReturn(1);
+
+        procGroupService.stop(responseRoot);
+        verify(processorServiceMock, times(3)).getThreadsCount(any());
+    }
+
+    private ProcessGroupFlowEntity createResponseRoot() {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "rootName");
         List<ConnectionEntity> connections = new ArrayList<>();
         connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
@@ -153,16 +209,7 @@ public class ProcessGroupServiceTest {
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProc2") );
-        when(connectionServiceMock.isEmptyQueue(any())).thenReturn(false).thenReturn(true);
-        processGroupService.stop(responseRoot);
-        ArgumentCaptor<ProcessorEntity> processorCapture = ArgumentCaptor.forClass(ProcessorEntity.class);
-        verify(processorServiceMock, times(2)).setState(processorCapture.capture(), eq(ProcessorDTO.StateEnum.STOPPED));
-        assertEquals("idProc", processorCapture.getAllValues().get(0).getId());
-        assertEquals("idProc2", processorCapture.getAllValues().get(1).getId());
-        ArgumentCaptor<ConnectionEntity> connectionCapture = ArgumentCaptor.forClass(ConnectionEntity.class);
-        verify(connectionServiceMock).waitEmptyQueue(connectionCapture.capture());
-        assertEquals("idProc", connectionCapture.getValue().getSourceId());
-
+        return responseRoot;
     }
 
     @Test

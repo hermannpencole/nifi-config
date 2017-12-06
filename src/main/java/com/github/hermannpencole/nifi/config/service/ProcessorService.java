@@ -75,6 +75,11 @@ public class ProcessorService {
 
     }
 
+    public int getThreadsCount(ProcessorEntity processor) throws ApiException {
+        ProcessorEntity loadedProcessor = processorsApi.getProcessor(processor.getId());
+        return loadedProcessor.getStatus().getAggregateSnapshot().getActiveThreadCount();
+    }
+
     /**
      * log the error reported by processor
      *
