@@ -56,7 +56,7 @@ public class ProcessorService {
         }
 
         FunctionUtils.runWhile(()-> {
-            boolean haveResult = false;
+            boolean isOk = false;
             try {
                 ProcessorEntity body = new ProcessorEntity();
                 body.setRevision(processor.getRevision());
@@ -66,7 +66,11 @@ public class ProcessorService {
                 body.getComponent().setRestricted(null);
                 ProcessorEntity processorEntity= processorsApi.updateProcessor(processor.getId(), body);
                 LOG.info(" {} ({}) is {} ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState());
-                haveResult = true;
+                boolean isRealStopped = processorEntity.getStatus().getAggregateSnapshot().getActiveThreadCount() == 0;
+                if ( (state.equals(ProcessorDTO.StateEnum.STOPPED) && isRealStopped)
+                    || state.equals(ProcessorDTO.StateEnum.RUNNING) ) {
+                    isOk = true;
+                }
             } catch (ApiException e) {
                 if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")) {
                     logErrors(processor);
@@ -74,7 +78,7 @@ public class ProcessorService {
                 }
                 LOG.info(e.getResponseBody());
             }
-            return !haveResult;
+            return !isOk;
         }, interval, timeout);
 
     }
