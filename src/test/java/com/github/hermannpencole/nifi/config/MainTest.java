@@ -3,6 +3,7 @@ package com.github.hermannpencole.nifi.config;
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.service.*;
 import com.github.hermannpencole.nifi.swagger.ApiException;
+import com.github.hermannpencole.nifi.swagger.client.model.PositionDTO;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -63,6 +64,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given
@@ -84,6 +86,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given
@@ -105,6 +108,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given
@@ -127,6 +131,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given
@@ -148,6 +153,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given
@@ -236,6 +242,7 @@ public class MainTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(10);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
         //given

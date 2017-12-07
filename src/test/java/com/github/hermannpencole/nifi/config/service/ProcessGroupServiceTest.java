@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.Main;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -94,6 +95,7 @@ public class ProcessGroupServiceTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(Main.createPosition("0,0"));
             }
         });
         ProcessGroupFlowEntity response = injector.getInstance(ProcessGroupService.class).createDirectory(branch);
@@ -283,6 +285,7 @@ public class ProcessGroupServiceTest {
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(Main.createPosition("0,0"));
             }
         });
         PositionDTO result = injector.getInstance(ProcessGroupService.class).getNextPosition(responseRoot);
