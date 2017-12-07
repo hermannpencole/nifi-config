@@ -289,22 +289,22 @@ public class ProcessGroupService {
         PositionDTO nextPosition = new PositionDTO();
         List<PositionDTO> positions = new ArrayList<>();
         for (ProcessorEntity processor : flowEntity.getProcessGroupFlow().getFlow().getProcessors()) {
-            positions.add(processor.getPosition());
+            addPosition(positions, processor.getPosition());
         }
         for (ProcessGroupEntity processGroup : flowEntity.getProcessGroupFlow().getFlow().getProcessGroups()) {
-            positions.add(processGroup.getPosition());
+            addPosition(positions, processGroup.getPosition());
         }
         for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getInputPorts()) {
-            positions.add(port.getPosition());
+            addPosition(positions, port.getPosition());
         }
         for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getOutputPorts()) {
-            positions.add(port.getPosition());
+            addPosition(positions, port.getPosition());
         }
         for (ConnectionEntity conn : flowEntity.getProcessGroupFlow().getFlow().getConnections()) {
-            positions.add(conn.getPosition());
+            addPosition(positions, conn.getPosition());
         }
         for (FunnelEntity funnel : flowEntity.getProcessGroupFlow().getFlow().getFunnels()) {
-            positions.add(funnel.getPosition());
+            addPosition(positions, funnel.getPosition());
         }
         nextPosition.setX(0d);
         nextPosition.setY(0d);
@@ -326,6 +326,12 @@ public class ProcessGroupService {
         }
         LOG.debug("next postion {},{}", nextPosition.getX(), nextPosition.getY());
         return nextPosition;
+    }
+
+    public void addPosition( List<PositionDTO> positions, PositionDTO positionToAdd) {
+        if (positionToAdd != null && positionToAdd.getX() != null && positionToAdd.getY() != null) {
+            positions.add(positionToAdd);
+        }
     }
 
     private Optional<PositionDTO> findOtherPositionInPlace(List<PositionDTO> positions, PositionDTO nextPosition) {
