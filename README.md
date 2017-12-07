@@ -270,6 +270,13 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
  -writeTimeout <arg>       configure api client write timeout (default 10 seconds)
  ```
 
+####  Position
+
+```shell
+ -placeWidth <arg>         width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)
+ -startPosition <arg>      starting position for the place for installing group, format x,y (default : 0,0)
+```
+
 ####  Other
 
  ```shell
@@ -277,7 +284,6 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
  -noStartProcessors        turn off auto start of the processors after update of the config
  -enableDebugMode          turn on debugging mode of the underlying API library
  -keepTemplate             keep template after installation (default false)
- -placeWidth <arg>         width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)
  ```
 ## Note
 

@@ -50,6 +50,10 @@ public class ProcessGroupService {
     @Inject
     public Double placeWidth;
 
+    @Named("startPosition")
+    @Inject
+    public PositionDTO startPosition;
+
     /**
      * browse nifi on branch pass in parameter
      *
@@ -306,8 +310,8 @@ public class ProcessGroupService {
         for (FunnelEntity funnel : flowEntity.getProcessGroupFlow().getFlow().getFunnels()) {
             addPosition(positions, funnel.getPosition());
         }
-        nextPosition.setX(0d);
-        nextPosition.setY(0d);
+        nextPosition.setX(startPosition.getX());
+        nextPosition.setY(startPosition.getY());
         Optional<PositionDTO> otherPosition;
         Optional<PositionDTO> fistInLine = Optional.empty();
         while ( (otherPosition = findOtherPositionInPlace(positions, nextPosition)).isPresent() ) {

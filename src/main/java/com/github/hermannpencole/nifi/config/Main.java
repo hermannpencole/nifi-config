@@ -5,6 +5,7 @@ import com.github.hermannpencole.nifi.config.service.*;
 import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.Configuration;
+import com.github.hermannpencole.nifi.swagger.client.model.PositionDTO;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -35,6 +36,7 @@ public class Main {
     public static final int DEFAULT_READTIMEOUT = 10000;
     public static final int DEFAULT_WRITETIMEOUT = 10000;
     public static final double DEFAULT_PLACEWIDTH = 1935d;
+    public static final String DEFAULT_PLACE = "0,0";
 
     /**
      * Print to the console the usage.
@@ -76,6 +78,7 @@ public class Main {
             options.addOption("writeTimeout", true, "configure api client write timeout (default 10 seconds)");
             options.addOption("keepTemplate", false, "keep template after installation (default false)");
             options.addOption("placeWidth", true, "width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)");
+            options.addOption("startPosition", true, "starting position for the place for installing group, format x,y (default : 0,0)");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -100,6 +103,7 @@ public class Main {
                 Integer readTimeout = cmd.hasOption("readTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) : DEFAULT_READTIMEOUT;
                 Integer writeTimeout = cmd.hasOption("writeTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) : DEFAULT_WRITETIMEOUT;
                 Double placeWidth = cmd.hasOption("placeWidth") ? Double.valueOf(cmd.getOptionValue("placeWidth")) : DEFAULT_PLACEWIDTH;
+                String startPlace = cmd.hasOption("startPosition") ? cmd.getOptionValue("startPosition") : DEFAULT_PLACE;
                 Boolean forceMode = cmd.hasOption("force");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
@@ -116,7 +120,7 @@ public class Main {
                 }
 
                 setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout, readTimeout, writeTimeout);
-                Injector injector = getInjector(timeout, interval, placeWidth, forceMode);
+                Injector injector = getInjector(timeout, interval, placeWidth, createPosition(startPlace), forceMode);
 
                 //start
                 AccessService accessService = injector.getInstance(AccessService.class);
@@ -152,6 +156,16 @@ public class Main {
         }
     }
 
+    public static PositionDTO createPosition(String value){
+        PositionDTO positionDTO = new PositionDTO();
+        String[] split = value.split(",");
+        if (split.length != 2) {
+            throw new ConfigException("startPlace must have format x,y whre y and y are integer");
+        }
+        positionDTO.setX( Double.valueOf(split[0]));
+        positionDTO.setY( Double.valueOf(split[1]));
+        return positionDTO;
+    }
     /**
      * create injector with the values pass in parameter
      *
@@ -161,12 +175,13 @@ public class Main {
      * @param forceMode
      * @return
      */
-    public static Injector getInjector(Integer timeout, Integer interval, Double placeWidth, Boolean forceMode) {
+    public static Injector getInjector(Integer timeout, Integer interval, Double placeWidth, PositionDTO startPosition, Boolean forceMode) {
         return Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
                 bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(interval);
                 bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(forceMode);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(startPosition);
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(placeWidth);
             }
         });
