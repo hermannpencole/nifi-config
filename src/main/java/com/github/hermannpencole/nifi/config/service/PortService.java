@@ -55,7 +55,10 @@ public class PortService {
      * @param state
      */
     public void setState(PortEntity port, PortDTO.StateEnum state) {
-
+        if (port.getComponent().getState().equals( PortDTO.StateEnum.DISABLED)) {
+            LOG.info(" {} ({}) is disabled ", port.getComponent().getName() ,port.getId(), port.getComponent().getState());
+            return;
+        }
         //how obtain state of and don't have this bullshit trick
         //trick for don't have error : xxxx cannot be started because it is not stopped. Current state is STOPPING
         if (port.getComponent().getState().equals(state)) {

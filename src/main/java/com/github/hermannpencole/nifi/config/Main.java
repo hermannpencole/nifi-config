@@ -29,6 +29,12 @@ public class Main {
     private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
     private final static String version = Main.class.getPackage().getImplementationVersion();
+    public static final int DEFAULT_TIMEOUT = 120;
+    public static final int DEFAULT_INTERVAL = 2;
+    public static final int DEFAULT_CONNECTIONTIMEOUT = 10000;
+    public static final int DEFAULT_READTIMEOUT = 10000;
+    public static final int DEFAULT_WRITETIMEOUT = 10000;
+    public static final double DEFAULT_PLACEWIDTH = 1935d;
 
     /**
      * Print to the console the usage.
@@ -88,12 +94,12 @@ public class Main {
                 System.exit(1);
             } else {
                 //configure options
-                Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) :120;
-                Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) :2;
-                Integer connectionTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("connectionTimeout")) :10000;
-                Integer readTimeout = cmd.hasOption("readTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) :10000;
-                Integer writeTimeout = cmd.hasOption("writeTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) :10000;
-                Double placeWidth = cmd.hasOption("placeWidth") ? Double.valueOf(cmd.getOptionValue("placeWidth")) : 1935d;
+                Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) : DEFAULT_TIMEOUT;
+                Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) : DEFAULT_INTERVAL;
+                Integer connectionTimeout = cmd.hasOption("connectionTimeout") ? Integer.valueOf(cmd.getOptionValue("connectionTimeout")) : DEFAULT_CONNECTIONTIMEOUT;
+                Integer readTimeout = cmd.hasOption("readTimeout") ? Integer.valueOf(cmd.getOptionValue("readTimeout")) : DEFAULT_READTIMEOUT;
+                Integer writeTimeout = cmd.hasOption("writeTimeout") ? Integer.valueOf(cmd.getOptionValue("writeTimeout")) : DEFAULT_WRITETIMEOUT;
+                Double placeWidth = cmd.hasOption("placeWidth") ? Double.valueOf(cmd.getOptionValue("placeWidth")) : DEFAULT_PLACEWIDTH;
                 Boolean forceMode = cmd.hasOption("force");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
@@ -110,14 +116,7 @@ public class Main {
                 }
 
                 setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout, readTimeout, writeTimeout);
-                Injector injector = Guice.createInjector(new AbstractModule() {
-                    protected void configure() {
-                        bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
-                        bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(interval);
-                        bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(forceMode);
-                        bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(placeWidth);
-                    }
-                });
+                Injector injector = getInjector(timeout, interval, placeWidth, forceMode);
 
                 //start
                 AccessService accessService = injector.getInstance(AccessService.class);
@@ -153,7 +152,38 @@ public class Main {
         }
     }
 
+    /**
+     * create injector with the values pass in parameter
+     *
+     * @param timeout
+     * @param interval
+     * @param placeWidth
+     * @param forceMode
+     * @return
+     */
+    public static Injector getInjector(Integer timeout, Integer interval, Double placeWidth, Boolean forceMode) {
+        return Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(timeout);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(interval);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(forceMode);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(placeWidth);
+            }
+        });
+    }
 
+
+    /**
+     * Configure the default http client
+     *
+     * @param basePath
+     * @param verifySsl
+     * @param debugging
+     * @param connectionTimeout
+     * @param readTimeout
+     * @param writeTimeout
+     * @throws ApiException
+     */
     public static void setConfiguration(String basePath, boolean verifySsl, boolean debugging,
                                         int connectionTimeout, int readTimeout, int writeTimeout) throws ApiException {
         ApiClient client = new ApiClient()
