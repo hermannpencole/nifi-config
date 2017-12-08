@@ -74,6 +74,11 @@ public class PortService {
                 body.setComponent(new PortDTO());
                 body.getComponent().setState(state);
                 body.getComponent().setId(port.getId());
+                body.setBulletins(null);
+                body.getComponent().setTransmitting(null);
+                body.getComponent().setUserAccessControl(null);
+                body.getComponent().setGroupAccessControl(null);
+                body.getComponent().setValidationErrors(null);
                 PortEntity portEntity;
                 if (port.getComponent().getType()== PortDTO.TypeEnum.INPUT_PORT)
                     portEntity = inputPortsApi.updateInputPort(port.getId(), body);
