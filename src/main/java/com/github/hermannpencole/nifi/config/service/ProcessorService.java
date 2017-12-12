@@ -66,6 +66,7 @@ public class ProcessorService {
                 body.getComponent().setRestricted(null);
                 ProcessorEntity processorEntity= processorsApi.updateProcessor(processor.getId(), body);
                 LOG.info(" {} ({}) is {} ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState());
+                processor.setRevision(processorEntity.getRevision());
                 boolean isRealStopped = processorEntity.getStatus() == null || processorEntity.getStatus().getAggregateSnapshot() == null || processorEntity.getStatus().getAggregateSnapshot().getActiveThreadCount() == null
                         || processorEntity.getStatus().getAggregateSnapshot().getActiveThreadCount() == 0;
                 if ( (state.equals(ProcessorDTO.StateEnum.STOPPED) && isRealStopped)
