@@ -291,6 +291,12 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
 
 By default, nifi-config uses the controller declared on the parent group that has the same name, if any then deletes the controller declaration on the child group, otherwise uses the controller of the group.
 
+If you want to use a controller declared on parent group without updating on it, just declared the controller with no properties on json file : 
+
+    "controllerServices": [
+     {
+      "name": "DBCPConnectionPool"
+      }
 # TODO
 
 add version management that undeploy the old version automatically (with a version # in comment?)

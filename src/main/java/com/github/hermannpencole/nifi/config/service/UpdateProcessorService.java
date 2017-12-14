@@ -141,23 +141,25 @@ public class UpdateProcessorService {
             //remove old
             removeOldReference(oldControllersService.values());
 
-            //stopping referencing processors and reporting tasks
-            //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
-
-            //Disabling referencing controller services
-            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
-
             //update new reference for ReferencingComponents on oldControllersService
             updateOldReference(oldControllersService.values(), controllerServiceEntityFind.getId(), clientId);
 
-            //Enabling this controller service
-            ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityFind);
+            if (controllerServiceDTO.getProperties() != null && !controllerServiceDTO.getProperties().isEmpty()) {
+                //stopping referencing processors and reporting tasks
+                controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
 
-            //Enabling referencing controller services
-            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.ENABLED);
+                //Disabling referencing controller services
+                controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
 
-            //Starting referencing processors and reporting tasks
-          //  controllerServicesService.setStateReferenceProcessors(controllerServiceEntityUpdate, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
+                //Enabling this controller service
+                ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityFind);
+
+                //Enabling referencing controller services
+                controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.ENABLED);
+
+                //Starting referencing processors and reporting tasks
+                controllerServicesService.setStateReferenceProcessors(controllerServiceEntityUpdate, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
+            }
         }
     }
 
