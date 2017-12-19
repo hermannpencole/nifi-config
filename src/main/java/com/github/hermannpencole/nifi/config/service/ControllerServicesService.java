@@ -101,7 +101,7 @@ public class ControllerServicesService {
     }
 
     public ControllerServiceEntity getControllerServices(String id) throws ApiException {
-        return controllerServicesApi.getControllerServiceReferences(id);
+        return controllerServicesApi.getControllerService(id);
     }
 
     public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {

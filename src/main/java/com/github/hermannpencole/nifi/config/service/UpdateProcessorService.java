@@ -19,6 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
+import static com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceReferencingComponentDTO.ReferenceTypeEnum.PROCESSOR;
 
 /**
  * Class that offer service for nifi processor
@@ -172,10 +173,11 @@ public class UpdateProcessorService {
     private void updateOldReference(Collection<ControllerServiceEntity> oldControllersService, String newControllerServiceId, String clientId) {
         for (ControllerServiceEntity oldControllerService: oldControllersService) {
             for (ControllerServiceReferencingComponentEntity component : oldControllerService.getComponent().getReferencingComponents()) {
-                ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
-                updateProperties(newProc, oldControllerService.getId(), newControllerServiceId);
-                updateProcessor(newProc, newProc.getComponent(), true, clientId);
-                //processorsApi.updateProcessor(newProc.getId(), newProc);
+                if (component.getComponent().getReferenceType().equals(PROCESSOR) ) {
+                    ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
+                    updateProperties(newProc, oldControllerService.getId(), newControllerServiceId);
+                    updateProcessor(newProc, newProc.getComponent(), true, clientId);
+                } // else TODO
             }
         }
     }
