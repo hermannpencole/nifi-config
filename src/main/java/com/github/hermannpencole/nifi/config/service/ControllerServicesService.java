@@ -10,6 +10,12 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceReferencingComponentDTO.ReferenceTypeEnum.CONTROLLERSERVICE;
+import static com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceReferencingComponentDTO.ReferenceTypeEnum.PROCESSOR;
 
 /**
  * Class that offer service for nifi processor
@@ -99,12 +105,16 @@ public class ControllerServicesService {
     }
 
     public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
+        //Get fresh references
+        Map<String, RevisionDTO> referencingControllerServices = getReferencingServices(id, CONTROLLERSERVICE);
+        if (referencingControllerServices.isEmpty()) return;
         FunctionUtils.runWhile(()-> {
             ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = null;
             try {
                 UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
                 updateControllerServiceReferenceRequestEntity.setId(id);
                 updateControllerServiceReferenceRequestEntity.setState(state);
+                updateControllerServiceReferenceRequestEntity.setReferencingComponentRevisions(referencingControllerServices);
                 controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
              } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
@@ -118,14 +128,16 @@ public class ControllerServicesService {
 
     public void setStateReferenceProcessors(ControllerServiceEntity controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
         //how obtain state of controllerServiceReference and don't have this bullshit trick
+
+        //Get fresh references
+        Map<String, RevisionDTO> referencingProcessorsServices = getReferencingServices(controllerServiceEntityFind.getId(), PROCESSOR);
+        if (referencingProcessorsServices.isEmpty()) return;
         FunctionUtils.runWhile(()-> {
             ControllerServiceEntity controllerServiceEntity = null;
             try {
                 UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
                 updateControllerServiceReferenceRequestEntity.setId(controllerServiceEntityFind.getId());
-                for (ControllerServiceReferencingComponentEntity controllerServiceReferencingComponentEntity : controllerServiceEntityFind.getComponent().getReferencingComponents()) {
-                    updateControllerServiceReferenceRequestEntity.getReferencingComponentRevisions().put(controllerServiceReferencingComponentEntity.getId(), controllerServiceReferencingComponentEntity.getRevision());
-                }
+                updateControllerServiceReferenceRequestEntity.setReferencingComponentRevisions(referencingProcessorsServices);
                 updateControllerServiceReferenceRequestEntity.setState(state);
                 controllerServicesApi.updateControllerServiceReferences(controllerServiceEntityFind.getId(), updateControllerServiceReferenceRequestEntity);
                 controllerServiceEntity = controllerServicesApi.getControllerService(controllerServiceEntityFind.getId());
@@ -137,6 +149,15 @@ public class ControllerServicesService {
             }
             return (controllerServiceEntity == null);
         }, interval, timeout);
+    }
+
+    public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type) throws ApiException {
+        ControllerServiceEntity controllerServiceEntityFresh = getControllerServices(id);
+        List<ControllerServiceReferencingComponentEntity> referencingComponentEntities = controllerServiceEntityFresh.getComponent().getReferencingComponents();
+        Map<String, RevisionDTO> referencingControllerServices = referencingComponentEntities.stream()
+                .filter(item -> item.getComponent().getReferenceType() == type)
+                .collect(Collectors.toMap(item -> item.getId(), item -> item.getRevision()));
+        return referencingControllerServices;
     }
 
     public void remove(ControllerServiceEntity controllerServiceToRemove) throws ApiException {

@@ -2,10 +2,7 @@ package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
-import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceDTO;
-import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.ControllerServiceReferencingComponentsEntity;
-import com.github.hermannpencole.nifi.swagger.client.model.UpdateControllerServiceReferenceRequestEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -16,7 +13,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -80,7 +80,16 @@ public class ControllerServicesServiceTest {
             }
         });
         when(controllerServicesApiMock.updateControllerServiceReferences(eq("id"), any())).thenReturn(new ControllerServiceReferencingComponentsEntity());
-        when(controllerServicesApiMock.getControllerServiceReferences("id")).thenReturn(null);
+        ControllerServiceEntity reponse = new ControllerServiceEntity();
+        reponse.setComponent(new ControllerServiceDTO());
+        reponse.getComponent().setReferencingComponents(new ArrayList<>());
+        ControllerServiceReferencingComponentEntity ref = new ControllerServiceReferencingComponentEntity();
+        ref.setComponent(new ControllerServiceReferencingComponentDTO());
+        ref.getComponent().setReferenceType(ControllerServiceReferencingComponentDTO.ReferenceTypeEnum.CONTROLLERSERVICE);
+        ref.setId("idRef");
+        ref.setRevision(new RevisionDTO());
+        reponse.getComponent().getReferencingComponents().add(ref);
+        when(controllerServicesApiMock.getControllerServiceReferences("id")).thenReturn(reponse);
 
         ControllerServicesService controllerServicesService = injector.getInstance(ControllerServicesService.class);
         controllerServicesService.setStateReferencingControllerServices("id", UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
@@ -88,6 +97,8 @@ public class ControllerServicesServiceTest {
         ArgumentCaptor<UpdateControllerServiceReferenceRequestEntity> updateControllerServiceReferenceRequestCapture= ArgumentCaptor.forClass(UpdateControllerServiceReferenceRequestEntity.class);
         verify(controllerServicesApiMock, times(1)).updateControllerServiceReferences(eq("id"),updateControllerServiceReferenceRequestCapture.capture());
         assertEquals(UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING, updateControllerServiceReferenceRequestCapture.getValue().getState());
+        assertEquals(1, updateControllerServiceReferenceRequestCapture.getValue().getReferencingComponentRevisions().size());
+        assertTrue(updateControllerServiceReferenceRequestCapture.getValue().getReferencingComponentRevisions().containsKey("idRef"));
     }
 
 }
