@@ -89,7 +89,7 @@ public class ControllerServicesServiceTest {
         ref.setId("idRef");
         ref.setRevision(new RevisionDTO());
         reponse.getComponent().getReferencingComponents().add(ref);
-        when(controllerServicesApiMock.getControllerServiceReferences("id")).thenReturn(reponse);
+        when(controllerServicesApiMock.getControllerService("id")).thenReturn(reponse);
 
         ControllerServicesService controllerServicesService = injector.getInstance(ControllerServicesService.class);
         controllerServicesService.setStateReferencingControllerServices("id", UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
