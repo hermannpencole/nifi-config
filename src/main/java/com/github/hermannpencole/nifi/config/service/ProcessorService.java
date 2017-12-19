@@ -99,4 +99,8 @@ public class ProcessorService {
         }
     }
 
+    public ProcessorEntity getById(String id) {
+        return processorsApi.getProcessor(id);
+    }
+
 }

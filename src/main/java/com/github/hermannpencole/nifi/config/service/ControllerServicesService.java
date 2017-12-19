@@ -41,6 +41,9 @@ public class ControllerServicesService {
     @Inject
     private ControllerServicesApi controllerServicesApi;
 
+    @Inject
+    private ProcessorService processorService;
+
     /**
      * disable, update and re enable the controller
      *
@@ -149,6 +152,15 @@ public class ControllerServicesService {
             }
             return (controllerServiceEntity == null);
         }, interval, timeout);
+
+        //be sure stop/start processor
+        for (String idProcessor : referencingProcessorsServices.keySet()) {
+            ProcessorEntity processorEntity = processorService.getById(idProcessor);
+            if (state.equals(UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED))
+                processorService.setState(processorEntity, ProcessorDTO.StateEnum.STOPPED);
+            else
+                processorService.setState(processorEntity, ProcessorDTO.StateEnum.RUNNING);
+        }
     }
 
     public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type) throws ApiException {
