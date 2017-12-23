@@ -57,16 +57,16 @@ public class ControllerServicesServiceTest {
 
         ControllerServiceDTO component = new ControllerServiceDTO();
         component.getProperties().put("key", "value");
-        controllerServicesService.updateControllerService(component, controllerService);
+        controllerServicesService.updateControllerService(component, controllerService, false);
 
         ArgumentCaptor<ControllerServiceEntity> controllerServiceCapture = ArgumentCaptor.forClass(ControllerServiceEntity.class);
-        verify(controllerServicesApiMock, times(3)).updateControllerService(eq("id"),controllerServiceCapture.capture());
+        verify(controllerServicesApiMock, times(1)).updateControllerService(eq("id"),controllerServiceCapture.capture());
+       // assertEquals("id", controllerServiceCapture.getAllValues().get(0).getComponent().getId());
+       // assertEquals(ControllerServiceDTO.StateEnum.DISABLED, controllerServiceCapture.getAllValues().get(0).getComponent().getState());
         assertEquals("id", controllerServiceCapture.getAllValues().get(0).getComponent().getId());
-        assertEquals(ControllerServiceDTO.StateEnum.DISABLED, controllerServiceCapture.getAllValues().get(0).getComponent().getState());
-        assertEquals("id", controllerServiceCapture.getAllValues().get(1).getComponent().getId());
-        assertEquals("value", controllerServiceCapture.getAllValues().get(1).getComponent().getProperties().get("key"));
-        assertEquals("id", controllerServiceCapture.getAllValues().get(2).getComponent().getId());
-        assertEquals(ControllerServiceDTO.StateEnum.ENABLED, controllerServiceCapture.getAllValues().get(2).getComponent().getState());
+        assertEquals("value", controllerServiceCapture.getAllValues().get(0).getComponent().getProperties().get("key"));
+     //   assertEquals("id", controllerServiceCapture.getAllValues().get(2).getComponent().getId());
+     //   assertEquals(ControllerServiceDTO.StateEnum.ENABLED, controllerServiceCapture.getAllValues().get(2).getComponent().getState());
     }
 
     @Test
@@ -86,6 +86,7 @@ public class ControllerServicesServiceTest {
         ControllerServiceReferencingComponentEntity ref = new ControllerServiceReferencingComponentEntity();
         ref.setComponent(new ControllerServiceReferencingComponentDTO());
         ref.getComponent().setReferenceType(ControllerServiceReferencingComponentDTO.ReferenceTypeEnum.CONTROLLERSERVICE);
+        ref.getComponent().setState("DISABLED");
         ref.setId("idRef");
         ref.setRevision(new RevisionDTO());
         reponse.getComponent().getReferencingComponents().add(ref);
