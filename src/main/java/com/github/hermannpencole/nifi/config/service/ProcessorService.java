@@ -47,16 +47,19 @@ public class ProcessorService {
         //how obtain state of and don't have this bullshit trick
         //trick for don't have error : xxxx cannot be started because it is not stopped. Current state is STOPPING
         if (processor.getComponent().getState().equals(ProcessorDTO.StateEnum.DISABLED)) {
-            LOG.info(" {} ({}) is disabled ", processor.getComponent().getName() ,processor.getId(), processor.getComponent().getState());
+            LOG.info(" {} ({}) is already disabled nifi-config make no update", processor.getComponent().getName() ,processor.getId());
             return;
         }
-        if (processor.getComponent().getState().equals(state)) {
-            LOG.info(" {} ({}) is already ", processor.getComponent().getName() ,processor.getId(), processor.getComponent().getState());
+        boolean isReallyStopped = isReallyStopped(processor);
+        if ((state.equals(ProcessorDTO.StateEnum.STOPPED) && state.equals(processor.getComponent().getState()) && isReallyStopped)
+                || (state.equals(ProcessorDTO.StateEnum.RUNNING) && state.equals(processor.getComponent().getState()) ) ) {
+            LOG.info(" {} ({}) is already {}", processor.getComponent().getName() ,processor.getId(), processor.getComponent().getState());
             return;
         }
 
-        FunctionUtils.runWhile(()-> {
-            boolean isOk = false;
+        if (state.equals(ProcessorDTO.StateEnum.STOPPED) && state.equals(processor.getComponent().getState()) && !isReallyStopped) {
+            //no update just waiting
+        } else {
             try {
                 ProcessorEntity body = new ProcessorEntity();
                 body.setRevision(processor.getRevision());
@@ -64,15 +67,9 @@ public class ProcessorService {
                 body.getComponent().setState(state);
                 body.getComponent().setId(processor.getId());
                 body.getComponent().setRestricted(null);
-                ProcessorEntity processorEntity= processorsApi.updateProcessor(processor.getId(), body);
-                LOG.info(" {} ({}) is {} ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState());
+                LOG.info(" {} ({}) update for {}", processor.getComponent().getName() ,processor.getId(), state);
+                ProcessorEntity processorEntity = processorsApi.updateProcessor(processor.getId(), body);
                 processor.setRevision(processorEntity.getRevision());
-                boolean isRealStopped = processorEntity.getStatus() == null || processorEntity.getStatus().getAggregateSnapshot() == null || processorEntity.getStatus().getAggregateSnapshot().getActiveThreadCount() == null
-                        || processorEntity.getStatus().getAggregateSnapshot().getActiveThreadCount() == 0;
-                if ( (state.equals(ProcessorDTO.StateEnum.STOPPED) && isRealStopped)
-                    || state.equals(ProcessorDTO.StateEnum.RUNNING) ) {
-                    isOk = true;
-                }
             } catch (ApiException e) {
                 if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")) {
                     logErrors(processor);
@@ -80,9 +77,30 @@ public class ProcessorService {
                 }
                 LOG.info(e.getResponseBody());
             }
-            return !isOk;
+        }
+
+        FunctionUtils.runWhile(()-> {
+            LOG.info(" {} ({}) waiting for {}", processor.getComponent().getName() ,processor.getId(), state);
+            ProcessorEntity processorEntity= processorsApi.getProcessor(processor.getId());
+            boolean reallyStopped = isReallyStopped(processorEntity);
+            LOG.info(" {} ({}) is {} (have thread active : {}) ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState(), !reallyStopped);
+            if ( (state.equals(ProcessorDTO.StateEnum.STOPPED) && state.equals(processorEntity.getComponent().getState()) && isReallyStopped(processorEntity))
+                || (state.equals(ProcessorDTO.StateEnum.RUNNING) && state.equals(processorEntity.getComponent().getState())) ) {
+                return false;
+            }
+            return true;
         }, interval, timeout);
 
+    }
+
+    /**
+     * is really stopped when there are no active thread
+     * @param processor
+     * @return
+     */
+    private boolean isReallyStopped(ProcessorEntity processor) {
+        return processor.getStatus() == null || processor.getStatus().getAggregateSnapshot() == null || processor.getStatus().getAggregateSnapshot().getActiveThreadCount() == null
+                || processor.getStatus().getAggregateSnapshot().getActiveThreadCount() == 0;
     }
 
     /**

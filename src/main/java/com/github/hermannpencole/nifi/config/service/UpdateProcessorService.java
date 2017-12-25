@@ -258,7 +258,7 @@ public class UpdateProcessorService {
     private void updateProcessor(ProcessorEntity processorToUpdate, ProcessorDTO componentToPutInProc, boolean forceByController, String clientId) {
         try {
             componentToPutInProc.setId(processorToUpdate.getId());
-            LOG.info("Update processor : " + processorToUpdate.getComponent().getName());
+            LOG.info("Update config processor {} ({}) " + processorToUpdate.getComponent().getName(), processorToUpdate.getId());
             //update on nifi
             List<String> autoTerminatedRelationships = new ArrayList<>();
             processorToUpdate.getComponent().getRelationships().stream()
@@ -290,7 +290,7 @@ public class UpdateProcessorService {
             processorsApi.updateProcessor(processorToUpdate.getId(), processorToUpdate);
 
             //nifiService.updateProcessorProperties(toUpdate, componentToPutInProc.getString("id"));
-            LOG.info("Updated : " + componentToPutInProc.getName());
+            LOG.info("Processor {} ({}) have config updated " + processorToUpdate.getComponent().getName(), processorToUpdate.getId());
         } catch (ApiException e) {
             throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
         }

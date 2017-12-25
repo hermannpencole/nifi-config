@@ -73,7 +73,7 @@ public class ControllerServicesService {
             }
         }
         controllerServiceEntityUpdate = controllerServicesApi.updateControllerService(controllerServiceEntity.getId(), controllerServiceEntityConf);
-        LOG.info(controllerServiceEntityUpdate.getId() + " is UPDATED");
+        LOG.info( " {} ({}) is UPDATED", controllerServiceEntityUpdate.getComponent().getName(), controllerServiceEntityUpdate.getId());
 
         //Enabling this controller service
        // controllerServiceEntityUpdate = setStateControllerService(controllerServiceEntityUpdate, ControllerServiceDTO.StateEnum.ENABLED);
@@ -103,11 +103,13 @@ public class ControllerServicesService {
         controllerServiceEntityEmpty.getComponent().setValidationErrors(null);
         controllerServiceEntityEmpty.getComponent().setPersistsState(null);
         controllerServiceEntityEmpty.getComponent().setRestricted(null);
+        LOG.info(" {} ({}) update for {}" , controllerServiceEntity.getComponent().getName(), controllerServiceEntity.getId(), state);
         controllerServiceEntityUpdate = controllerServicesApi.updateControllerService(controllerServiceEntity.getId(), controllerServiceEntityEmpty);
         //Wait disabled
         FunctionUtils.runWhile(()-> {
+            LOG.info(" {} ({}) waiting for {}" , controllerServiceEntity.getComponent().getName(), controllerServiceEntity.getId(), state);
             ControllerServiceEntity controllerService = controllerServicesApi.getControllerService(controllerServiceEntity.getId());
-            LOG.info(controllerService.getId() + " is " + controllerService.getComponent().getState());
+            LOG.info(" {} ({}) is {}" , controllerService.getComponent().getName(), controllerService.getId(), controllerService.getComponent().getState());
             return !controllerService.getComponent().getState().equals(state);
         }, interval, timeout);
         return controllerServiceEntityUpdate;
@@ -163,22 +165,22 @@ public class ControllerServicesService {
             return (controllerServiceEntity == null);
         }, interval, timeout);
 
-        //be sure stop/start processor
-       /* for (String idProcessor : referencingProcessorsServices.keySet()) {
+        //be sure stop/start ALL processor
+        for (String idProcessor : getReferencingServices(controllerServiceEntityFind.getId(), PROCESSOR, "ALL").keySet() ) {
             ProcessorEntity processorEntity = processorService.getById(idProcessor);
             if (state.equals(UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED))
                 processorService.setState(processorEntity, ProcessorDTO.StateEnum.STOPPED);
             else
                 processorService.setState(processorEntity, ProcessorDTO.StateEnum.RUNNING);
-        }*/
+        }
     }
 
-    public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type, String askedState) throws ApiException {
+    public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type, String filteredState) throws ApiException {
         ControllerServiceEntity controllerServiceEntityFresh = getControllerServices(id);
         List<ControllerServiceReferencingComponentEntity> referencingComponentEntities = controllerServiceEntityFresh.getComponent().getReferencingComponents();
         Map<String, RevisionDTO> referencingControllerServices = referencingComponentEntities.stream()
                 .filter(item -> item.getComponent().getReferenceType() == type)
-                .filter(item -> !item.getComponent().getState().equals(askedState))
+                .filter(item -> !item.getComponent().getState().equals(filteredState))
                 .collect(Collectors.toMap(item -> item.getId(), item -> item.getRevision()));
         return referencingControllerServices;
     }

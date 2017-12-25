@@ -65,6 +65,7 @@ public class ProcessorServiceTest {
         ProcessorEntity processorResponse = TestUtils.createProcessorEntity("id", "name");
         processorResponse.getComponent().setState(ProcessorDTO.StateEnum.RUNNING);
         when(processorsApiMock.updateProcessor(eq("id"), any() )).thenReturn(processorResponse);
+        when(processorsApiMock.getProcessor(eq("id"))).thenReturn(processorResponse);
 
         processorService.setState(processor, ProcessorDTO.StateEnum.RUNNING);
         ArgumentCaptor<ProcessorEntity> processorEntity = ArgumentCaptor.forClass(ProcessorEntity.class);
@@ -87,7 +88,10 @@ public class ProcessorServiceTest {
         ProcessorEntity processor = TestUtils.createProcessorEntity("id", "name");
         processor.getComponent().setState(ProcessorDTO.StateEnum.STOPPED);
 
+        ProcessorEntity processorResponse = TestUtils.createProcessorEntity("id", "name");
+        processorResponse.getComponent().setState(ProcessorDTO.StateEnum.RUNNING);
         when(processorsApiMock.updateProcessor(eq("id"), any() )).thenThrow(new ApiException());
+        when(processorsApiMock.getProcessor(eq("id") )).thenReturn(processorResponse);
 
         processorService.setState(processor, ProcessorDTO.StateEnum.RUNNING);
     }
