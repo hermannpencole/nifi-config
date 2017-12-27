@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.hermannpencole</groupId>
     <artifactId>nifi-deploy-config</artifactId>
-    <version>1.1.30-SNAPSHOT</version>
+    <version>1.1.30</version>
     <packaging>jar</packaging>
     <name>Deploy Nifi Configuration</name>
     <url>https://github.com/hermannpencole/nifi-config</url>
@@ -103,7 +103,7 @@
         <connection>scm:git:https://github.com/hermannpencole/nifi-config</connection>
         <developerConnection>scm:git:https://github.com/hermannpencole/nifi-config</developerConnection>
         <url>https://github.com/hermannpencole/nifi-config</url>
-        <tag>HEAD</tag>
+        <tag>nifi-deploy-config-1.1.30</tag>
     </scm>
 
     <build>
