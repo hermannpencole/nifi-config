@@ -6,6 +6,7 @@ import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
 import com.github.hermannpencole.nifi.swagger.client.TemplatesApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,13 +70,12 @@ public class TemplateService {
         ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch).getProcessGroupFlow();
         File file = new File(fileConfiguration);
 
-        //must we force resintall template ?
-        /*TemplatesEntity templates = flowApi.getTemplates();
+        TemplatesEntity templates = flowApi.getTemplates();
         String name = FilenameUtils.getBaseName(file.getName());
-        Optional<TemplateEntity> template = templates.getTemplates().stream().filter(templateParse -> templateParse.getTemplate().getName().equals(name)).findFirst();
-        if (!template.isPresent()) {
-            template = Optional.of(processGroupsApi.uploadTemplate(processGroupFlow.getId(), file));
-        }*/
+        Optional<TemplateEntity> oldTemplate = templates.getTemplates().stream().filter(templateParse -> templateParse.getTemplate().getName().equals(name)).findFirst();
+        if (oldTemplate.isPresent()) {
+            templatesApi.removeTemplate(oldTemplate.get().getTemplate().getId());
+        }
         Optional<TemplateEntity> template = Optional.of(processGroupsApi.uploadTemplate(processGroupFlow.getId(), file));
         InstantiateTemplateRequestEntity instantiateTemplate = new InstantiateTemplateRequestEntity(); // InstantiateTemplateRequestEntity | The instantiate template request.
         instantiateTemplate.setTemplateId(template.get().getTemplate().getId());

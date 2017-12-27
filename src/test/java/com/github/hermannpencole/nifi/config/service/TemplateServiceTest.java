@@ -60,6 +60,8 @@ public class TemplateServiceTest {
         template.getTemplate().setId("idTemplate");
         when(processGroupsApiMock.uploadTemplate(anyString(), any())).thenReturn(template);
         //when(processGroupsApiMock.uploadTemplate(processGroupFlow.getId(), new File(fileName))).thenReturn(template);
+        TemplatesEntity templatesEntity = new TemplatesEntity();
+        when(flowApiMock.getTemplates()).thenReturn(templatesEntity);
 
         templateService.installOnBranch(branch, fileName, true);
 
@@ -87,6 +89,8 @@ public class TemplateServiceTest {
         template.getTemplate().setGroupId("idProcessGroupFlow");
         template.getTemplate().setId("idTemplate");
         when(processGroupsApiMock.uploadTemplate(anyString(), any())).thenReturn(template);
+        TemplatesEntity templatesEntity = new TemplatesEntity();
+        when(flowApiMock.getTemplates()).thenReturn(templatesEntity);
         //when(processGroupsApiMock.uploadTemplate(processGroupFlow.getId(), new File(fileName))).thenReturn(template);
 
         templateService.installOnBranch(branch, fileName, false);
