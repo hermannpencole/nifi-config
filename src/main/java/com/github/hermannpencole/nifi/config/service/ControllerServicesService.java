@@ -90,6 +90,10 @@ public class ControllerServicesService {
      * @throws ApiException
      */
     public ControllerServiceEntity setStateControllerService(ControllerServiceEntity controllerServiceEntity, ControllerServiceDTO.StateEnum state) throws ApiException {
+
+        if (state.equals(ControllerServiceDTO.StateEnum.ENABLED))
+            setStateControllerServicesReference(controllerServiceEntity.getId(), ControllerServiceDTO.StateEnum.ENABLED);
+
         ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesApi.getControllerService(controllerServiceEntity.getId());
         //Disabling this controller service
         ControllerServiceEntity controllerServiceEntityEmpty = new ControllerServiceEntity();
@@ -131,7 +135,7 @@ public class ControllerServicesService {
                 updateControllerServiceReferenceRequestEntity.setState(state);
                 updateControllerServiceReferenceRequestEntity.setReferencingComponentRevisions(referencingControllerServices);
                 controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
-             } catch (ApiException e) {
+            } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
                 if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
                     throw e;
@@ -139,6 +143,21 @@ public class ControllerServicesService {
             }
             return controllerServiceReferencingComponentsEntity == null;
         }, interval, timeout);
+    }
+
+
+    public void setStateControllerServicesReference(String id, ControllerServiceDTO.StateEnum state) throws ApiException {
+        //Get fresh references
+        ControllerServiceEntity controllerServiceEntity = controllerServicesApi.getControllerService(id);
+
+        //remove controller link
+        for (Map.Entry<String, PropertyDescriptorDTO> entry : controllerServiceEntity.getComponent().getDescriptors().entrySet()) {
+            if (entry.getValue().getIdentifiesControllerService() != null) {
+                String idController = controllerServiceEntity.getComponent().getProperties().get(entry.getKey());
+                if(idController != null)
+                    setStateControllerService(controllerServicesApi.getControllerService(idController), state);
+            }
+        }
     }
 
     public void setStateReferenceProcessors(ControllerServiceEntity controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
@@ -188,12 +207,13 @@ public class ControllerServicesService {
     public void remove(ControllerServiceEntity controllerServiceToRemove) throws ApiException {
         //Disabling this controller service
         ControllerServiceEntity controllerServiceEntityUpdate = setStateControllerService(controllerServiceToRemove, ControllerServiceDTO.StateEnum.DISABLED);
-
+        LOG.info(" {} ({}) trying removing" , controllerServiceEntityUpdate.getComponent().getName(), controllerServiceEntityUpdate.getId());
         //how obtain state of controllerServiceReference and don't have this bullshit trick
         FunctionUtils.runWhile(()-> {
             ControllerServiceEntity controllerServiceEntity = null;
             try {
                 controllerServiceEntity = controllerServicesApi.removeControllerService(controllerServiceEntityUpdate.getId(), controllerServiceEntityUpdate.getRevision().getVersion().toString(), controllerServiceEntityUpdate.getRevision().getClientId());
+                LOG.info(" {} ({}) is removed" , controllerServiceEntity.getComponent().getName(), controllerServiceEntity.getId());
             } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
                 if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){

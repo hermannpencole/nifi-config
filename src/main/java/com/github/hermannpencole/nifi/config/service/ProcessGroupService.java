@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessGroupsApi;
@@ -12,6 +13,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.hermannpencole.nifi.config.utils.FunctionUtils.findByComponentName;
 
@@ -54,6 +56,13 @@ public class ProcessGroupService {
     @Inject
     public PositionDTO startPosition;
 
+    @Named("timeout")
+    @Inject
+    public Integer timeout;
+
+    @Named("interval")
+    @Inject
+    public Integer interval;
     /**
      * browse nifi on branch pass in parameter
      *
@@ -281,6 +290,23 @@ public class ProcessGroupService {
         if (!result.isPresent())
             result = flow.getRemoteProcessGroups().stream().filter(remoteProcessGroup -> id.equals(remoteProcessGroup.getId())).findFirst();
         return result;
+    }
+
+    public void delete(String processGroupId) {
+        FunctionUtils.runWhile(()-> {
+            ProcessGroupEntity processGroupToRemove = null;
+            try {
+                //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
+                ProcessGroupEntity processGroupEntity = processGroupsApi.getProcessGroup(processGroupId);
+                processGroupToRemove = processGroupsApi.removeProcessGroup(processGroupId, processGroupEntity.getRevision().getVersion().toString(),null);
+            } catch (ApiException e) {
+                LOG.info(e.getResponseBody());
+                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("is running")){
+                    throw e;
+                }
+            }
+            return processGroupToRemove == null;
+        }, interval, timeout);
     }
 
     /**

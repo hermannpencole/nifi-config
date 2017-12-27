@@ -51,6 +51,9 @@ public class TemplateService {
     @Inject
     private TemplatesApi templatesApi;
 
+    @Inject
+    private ControllerServicesService controllerServicesService;
+
     @Named("timeout")
     @Inject
     public Integer timeout;
@@ -93,6 +96,12 @@ public class TemplateService {
             LOG.warn("cannot find " + Arrays.toString(branch.toArray()));
             return;
         }
+
+        //Stop branch
+        processGroupService.stop(processGroupFlow.get());
+        LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
+
+        //delete template
         TemplatesEntity templates = flowApi.getTemplates();
         Stream<TemplateEntity> templatesInGroup = templates.getTemplates().stream()
                 .filter(templateParse -> templateParse.getTemplate().getGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId()));
@@ -100,29 +109,24 @@ public class TemplateService {
             templatesApi.removeTemplate(templateInGroup.getId());
         }
 
-        //Stop branch
-        processGroupService.stop(processGroupFlow.get());
-        LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
+        //disable controllers
+        ControllerServicesEntity controllerServicesEntity = flowApi.getControllerServicesFromGroup(processGroupFlow.get().getProcessGroupFlow().getId());
+        for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
+            //stopping referencing processors and reporting tasks
+            controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
 
-        //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
-        ProcessGroupEntity processGroupEntity = processGroupsApi.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId());
+            //Disabling referencing controller services
+            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
 
+            //Disabling this controller service
+            ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+        }
 
-
-        FunctionUtils.runWhile(()-> {
-            ProcessGroupEntity processGroupToRemove = null;
-            try {
-                processGroupToRemove = processGroupsApi.removeProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId(), processGroupEntity.getRevision().getVersion().toString(),null);
-            } catch (ApiException e) {
-                LOG.info(e.getResponseBody());
-                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("is running")){
-                    throw e;
-                }
-            }
-            return processGroupToRemove == null;
-        }, interval, timeout);
+        processGroupService.delete(processGroupFlow.get().getProcessGroupFlow().getId());
 
     }
 
 
-    }
+
+
+}

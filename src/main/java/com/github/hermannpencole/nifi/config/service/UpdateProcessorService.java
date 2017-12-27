@@ -119,6 +119,8 @@ public class UpdateProcessorService {
             controllerServicesEntity.addControllerServicesItem(controllerServiceEntity);
         }*/
         List<ControllerServiceEntity> controllerUpdated = new ArrayList<>();
+        List<ControllerServiceEntity> controllerDeleted = new ArrayList<>();
+
 
         for (ControllerServiceDTO controllerServiceDTO : configuration.getControllerServicesDTO()) {
             List<ControllerServiceEntity> all = controllerServicesEntity.getControllerServices().stream().filter(item -> item.getComponent().getName().trim().equals(controllerServiceDTO.getName().trim())).collect(Collectors.toList());
@@ -142,10 +144,10 @@ public class UpdateProcessorService {
             }
 
             //remove old
-            removeOldReference(oldControllersService.values());
-
+            stopOldReference(oldControllersService.values());
             //update new reference for ReferencingComponents on oldControllersService
             updateOldReference(oldControllersService.values(), controllerServiceEntityFind.getId(), clientId);
+            controllerDeleted.addAll(oldControllersService.values());
 
             if (controllerServiceDTO.getProperties() != null && !controllerServiceDTO.getProperties().isEmpty()) {
                 //stopping referencing processors and reporting tasks
@@ -154,22 +156,25 @@ public class UpdateProcessorService {
                 //Disabling referencing controller services
                 controllerServicesService.setStateReferencingControllerServices(controllerServiceEntityFind.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
 
-                //Enabling this controller service
                 //Disabling this controller service
                 ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntityFind, ControllerServiceDTO.StateEnum.DISABLED);
                 controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityUpdate, false);
                 controllerUpdated.add(controllerServiceEntityUpdate);
             }
         }
-        //enabling ref controller service in separate way because ref conroller is may be not configured
-        for (ControllerServiceEntity controllerServiceEntity : controllerUpdated) {
-            //Enabling referencing controller services
-            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.ENABLED);
-        }
+
+        //remove old
+        removeOldReference(controllerDeleted);
+
         // start enabling service
         for (ControllerServiceEntity controllerServiceEntity : controllerUpdated) {
             //Enabling this controller service
             controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.ENABLED);
+        }
+        //enabling ref controller service in separate way because ref conroller is may be not configured
+        for (ControllerServiceEntity controllerServiceEntity : controllerUpdated) {
+            //Enabling referencing controller services
+            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.ENABLED);
         }
         //start ref processor in separate way because the processor can have multiple controller
         for (ControllerServiceEntity controllerServiceEntity : controllerUpdated) {
@@ -198,10 +203,11 @@ public class UpdateProcessorService {
                     controllerServicesService.updateControllerService(newControllerService.getComponent(), newControllerService, true);
                 }// else TODO for reporting task ??
             }
+            LOG.info(" {} ({}) is replaced by ({})" , oldControllerService.getComponent().getName(), oldControllerService.getComponent().getId(), newControllerServiceId);
         }
     }
 
-    private void removeOldReference(Collection<ControllerServiceEntity> oldControllersService) {
+    private void stopOldReference(Collection<ControllerServiceEntity> oldControllersService) {
         for (ControllerServiceEntity oldControllerService: oldControllersService) {
             try {
                 //maybe there are already remove
@@ -211,6 +217,20 @@ public class UpdateProcessorService {
 
                 //Disabling referencing controller services
                 controllerServicesService.setStateReferencingControllerServices(oldControllerService.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+            } catch (ApiException e) {
+                //maybe there are already remove
+                if (!e.getMessage().contains("Not Found")) {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private void removeOldReference(Collection<ControllerServiceEntity> oldControllersService) {
+        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+            try {
+                //maybe there are already remove
+                controllerServicesService.getControllerServices(oldControllerService.getId());
                 //remove
                 controllerServicesService.remove(oldControllerService);
             } catch (ApiException e) {
@@ -258,7 +278,7 @@ public class UpdateProcessorService {
     private void updateProcessor(ProcessorEntity processorToUpdate, ProcessorDTO componentToPutInProc, boolean forceByController, String clientId) {
         try {
             componentToPutInProc.setId(processorToUpdate.getId());
-            LOG.info("Update config processor {} ({}) " + processorToUpdate.getComponent().getName(), processorToUpdate.getId());
+            LOG.info("Update config processor {} ({}) ", processorToUpdate.getComponent().getName(), processorToUpdate.getId());
             //update on nifi
             List<String> autoTerminatedRelationships = new ArrayList<>();
             processorToUpdate.getComponent().getRelationships().stream()
@@ -290,7 +310,7 @@ public class UpdateProcessorService {
             processorsApi.updateProcessor(processorToUpdate.getId(), processorToUpdate);
 
             //nifiService.updateProcessorProperties(toUpdate, componentToPutInProc.getString("id"));
-            LOG.info("Processor {} ({}) have config updated " + processorToUpdate.getComponent().getName(), processorToUpdate.getId());
+            LOG.info("Processor {} ({}) have config updated ", processorToUpdate.getComponent().getName(), processorToUpdate.getId());
         } catch (ApiException e) {
             throw new ConfigException(e.getMessage() + ": " + e.getResponseBody(), e);
         }
