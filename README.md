@@ -19,20 +19,20 @@ Deploy, undeploy, connect template
 
 ## How to :
 
-```shell
+```text
 usage: java -jar nifi-deploy-config-1.1.15.jar [OPTIONS]
  -h,--help                 Usage description
- -b,--branch <arg>         process group to begin (must begin by root) : root > my group > my sub group (default root)
- -c,--conf <arg>           adresse configuration file mandatory with mode (updateConfig/extractConfig/deployTemplate)
- -m,--mode <arg>           mandatory :updateConfig/extractConfig/deployTemplate/undeploy
- -n,--nifi <arg>           mandatory : Nifi http (ex : http://localhost:8080/nifi-api)
+ -b,--branch <arg>         Target process group (must begin by root) : root > my group > my sub group (default : root)
+ -m,--mode <arg>           mandatory, possible values : updateConfig/extractConfig/deployTemplate/undeploy
+ -c,--conf <arg>           mandatory if mode in [updateConfig, extractConfig, deployTemplate]  : configuration file
+ -n,--nifi <arg>           mandatory : Nifi URL (ex : http://localhost:8080/nifi-api)
 ```
 
-*For more options see Chapiter [Advanced options](#advanced-options)*
+*For more options see Chapter [Advanced options](#advanced-options)*
 
 Requirement : *You must have java 8 or higher installed on your machine*
 
-## Step by Step : use in real live
+## Step by Step : use in real life
 
 ### Prepare your nifi development
 
@@ -42,7 +42,7 @@ with this rule : each processor and each controller in a process group **must** 
 
 ![template](/docs/template.png)
 
-2) and download it
+2) Download it
 
 3) Extract a sample configuration with the command
 
@@ -85,13 +85,13 @@ java -jar nifi-deploy-config-1.1.15.jar \
   -mode updateConfig
 ```
 
-## What can I configure
+## What can I configure ?
 
-All !
+Everything !
 
 You can find all properties in your extraction file. Now just configure it with the production properties and update your production with the mode updateConfig.
 
-Configuration work with the name, remember that each processor in a group **must** have a unique name.
+Configuration is based on "name" properties, remember that each processor in a group **must** have a unique name.
 
 It is also possible to create connections between process groups by adding a `connections` JSON element to the configuration. The shortest route between the two process groups will be selected, with output and input ports named according to the connection's name used automatically, and created if they do not already exist. Note that it is only possible to connect to input and output ports, so this functionality is typically best used by including an input or output port already wired in to the template that is named the same as the connection.
 
@@ -246,14 +246,14 @@ java -Djava.security.krb5.conf=/etc/krb5.conf \
 
 #### Pooling
 
-```shell
+```text
  -timeout <arg>            allows specifying the polling timeout in second (defaut 120 seconds); negative values indicate no timeout
  -interval <arg>           allows specifying the polling interval in second (default 2 seconds)
 ```
 
 ####  Security
 
- ```shell
+ ```text
  -password <arg>           password for access via username/password, then user is mandatory
  -user <arg>               user name for access via username/password, then password is mandatory
  -accessFromTicket         Access via Kerberos ticket exchange / SPNEGO negotiation 
@@ -264,7 +264,7 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
 
 ####  Timeout Api Client
 
- ```shell
+ ```text
  -connectionTimeout <arg>  configure api client connection timeout (default 10 seconds)
  -readTimeout <arg>        configure api client read timeout (default 10 seconds)
  -writeTimeout <arg>       configure api client write timeout (default 10 seconds)
@@ -272,14 +272,14 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
 
 ####  Position
 
-```shell
+```text
  -placeWidth <arg>         width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)
  -startPosition <arg>      starting position for the place for installing group, format x,y (default : 0,0)
 ```
 
 ####  Other
 
- ```shell
+ ```text
  -f,--force                turn on force mode : empty queue after timeout
  -noStartProcessors        turn off auto start of the processors after update of the config
  -enableDebugMode          turn on debugging mode of the underlying API library
@@ -291,7 +291,7 @@ For accessFromTicket option, if you want use access via Kerberos ticket exchange
 
 By default, nifi-config uses the controller declared on the parent group that has the same name, if any then deletes the controller declaration on the child group, otherwise uses the controller of the group.
 
-If you want to use a controller declared on parent group without updating on it, just declared the controller with no properties on json file : 
+If you want to use a controller declared on parent group without updating it, just declare the controller with no property on json file : 
 
     "controllerServices": [
      {
@@ -299,9 +299,9 @@ If you want to use a controller declared on parent group without updating on it,
       }
 # TODO
 
-add version management that undeploy the old version automatically (with a version # in comment?)
+add version management that undeploys the old version automatically (with a version # in comment?)
 
-All idea are welcome.
+All ideas are welcome.
 
 # Troubleshooting
 
