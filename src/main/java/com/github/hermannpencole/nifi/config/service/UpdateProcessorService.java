@@ -200,11 +200,11 @@ public class UpdateProcessorService {
             for (ControllerServiceReferencingComponentEntity component : oldControllerService.getComponent().getReferencingComponents()) {
                 if (component.getComponent().getReferenceType().equals(PROCESSOR) ) {
                     ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
-                    updateProperty(newProc.getComponent().getConfig().getProperties(), oldControllerService.getId(), newControllerServiceId);
+                    newProc.getComponent().getConfig().setProperties(createUpdateProperty(newProc.getComponent().getConfig().getProperties(), oldControllerService.getId(), newControllerServiceId));
                     updateProcessor(newProc, newProc.getComponent(), true, clientId);
                 } else if (component.getComponent().getReferenceType().equals(CONTROLLERSERVICE) ) {
                     ControllerServiceEntity newControllerService = controllerServicesService.getControllerServices(component.getId());
-                    updateProperty(newControllerService.getComponent().getProperties(), oldControllerService.getId(), newControllerServiceId);
+                    newControllerService.getComponent().setProperties(createUpdateProperty(newControllerService.getComponent().getProperties(), oldControllerService.getId(), newControllerServiceId));
                     controllerServicesService.updateControllerService(newControllerService.getComponent(), newControllerService, true);
                 }// else TODO for reporting task ??
             }
@@ -247,14 +247,14 @@ public class UpdateProcessorService {
         }
     }
 
-    private void updateProperty(Map<String, String> properties, String oldValue, String newValue) {
+    private Map<String, String> createUpdateProperty(Map<String, String> properties, String oldValue, String newValue) {
+        Map<String, String> newProperties = new HashMap<>();
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             if (oldValue.equals(entry.getValue())) {
-                properties.put(entry.getKey(), newValue);
-            } else {
-                properties.remove(entry.getKey());
+                newProperties.put(entry.getKey(), newValue);
             }
         }
+        return newProperties;
     }
 
     /**
