@@ -112,14 +112,17 @@ public class TemplateService {
         //disable controllers
         ControllerServicesEntity controllerServicesEntity = flowApi.getControllerServicesFromGroup(processGroupFlow.get().getProcessGroupFlow().getId());
         for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
-            //stopping referencing processors and reporting tasks
-            controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
+            //stop only controller on the same group
+            if (controllerServiceEntity.getComponent().getParentGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId())) {
+                //stopping referencing processors and reporting tasks
+                controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
 
-            //Disabling referencing controller services
-            controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+                //Disabling referencing controller services
+                controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
 
-            //Disabling this controller service
-            ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+                //Disabling this controller service
+                ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+            }
         }
 
         processGroupService.delete(processGroupFlow.get().getProcessGroupFlow().getId());

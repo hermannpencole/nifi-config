@@ -119,11 +119,12 @@ public class Main {
                     throw new ConfigException("The branch address must begin with the element 'root' ( sample : root > branch > sub-branch)");
                 }
 
-                setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout, readTimeout, writeTimeout);
                 Injector injector = getInjector(timeout, interval, placeWidth, createPosition(startPlace), forceMode);
 
                 //start
                 AccessService accessService = injector.getInstance(AccessService.class);
+                accessService.setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout, readTimeout, writeTimeout);
+
                 accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
 
                 InformationService infoService = injector.getInstance(InformationService.class);
@@ -185,29 +186,5 @@ public class Main {
                 bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(placeWidth);
             }
         });
-    }
-
-
-    /**
-     * Configure the default http client
-     *
-     * @param basePath
-     * @param verifySsl
-     * @param debugging
-     * @param connectionTimeout
-     * @param readTimeout
-     * @param writeTimeout
-     * @throws ApiException
-     */
-    public static void setConfiguration(String basePath, boolean verifySsl, boolean debugging,
-                                        int connectionTimeout, int readTimeout, int writeTimeout) throws ApiException {
-        ApiClient client = new ApiClient()
-                .setBasePath(basePath)
-                .setVerifyingSsl(verifySsl)
-                .setConnectTimeout(connectionTimeout)
-                .setReadTimeout(readTimeout)
-                .setWriteTimeout(writeTimeout)
-                .setDebugging(debugging);
-        Configuration.setDefaultApiClient(client);
     }
 }

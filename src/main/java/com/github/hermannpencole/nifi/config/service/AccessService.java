@@ -38,4 +38,28 @@ public class AccessService {
         }
         Configuration.setDefaultApiClient(client);
     }
+
+    /**
+     * Configure the default http client
+     *
+     * @param basePath
+     * @param verifySsl
+     * @param debugging
+     * @param connectionTimeout
+     * @param readTimeout
+     * @param writeTimeout
+     * @throws ApiException
+     */
+    public void setConfiguration(String basePath, boolean verifySsl, boolean debugging,
+                                        int connectionTimeout, int readTimeout, int writeTimeout) throws ApiException {
+        ApiClient client = Configuration.getDefaultApiClient()
+        //ApiClient client = new ApiClient()
+                .setBasePath(basePath)
+                .setVerifyingSsl(verifySsl)
+                .setConnectTimeout(connectionTimeout)
+                .setReadTimeout(readTimeout)
+                .setWriteTimeout(writeTimeout)
+                .setDebugging(debugging);
+        Configuration.setDefaultApiClient(client);
+    }
 }

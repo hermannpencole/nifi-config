@@ -148,7 +148,7 @@ public class UpdateProcessorService {
             //update new reference for ReferencingComponents on oldControllersService
             updateOldReference(oldControllersService.values(), controllerServiceEntityFind.getId(), clientId);
             controllerDeleted.addAll(oldControllersService.values());
-
+            controllerUpdated.add(controllerServiceEntityFind);
             if (controllerServiceDTO.getProperties() != null && !controllerServiceDTO.getProperties().isEmpty()) {
                 //stopping referencing processors and reporting tasks
                 controllerServicesService.setStateReferenceProcessors(controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
@@ -159,7 +159,6 @@ public class UpdateProcessorService {
                 //Disabling this controller service
                 ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntityFind, ControllerServiceDTO.StateEnum.DISABLED);
                 controllerServiceEntityUpdate = controllerServicesService.updateControllerService(controllerServiceDTO, controllerServiceEntityUpdate, false);
-                controllerUpdated.add(controllerServiceEntityUpdate);
             }
         }
 
@@ -182,6 +181,12 @@ public class UpdateProcessorService {
             controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
         }
 
+        //must we start all controller referencing on the group ?
+       // for (ControllerServiceEntity controllerServiceEntity :  controllerServicesEntity.getControllerServices()) {
+            //Enabling this controller service
+        //    controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.ENABLED);
+        //    controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
+        //}
     }
 
     /**
@@ -195,11 +200,11 @@ public class UpdateProcessorService {
             for (ControllerServiceReferencingComponentEntity component : oldControllerService.getComponent().getReferencingComponents()) {
                 if (component.getComponent().getReferenceType().equals(PROCESSOR) ) {
                     ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
-                    updateProperties(newProc.getComponent().getConfig().getProperties(), oldControllerService.getId(), newControllerServiceId);
+                    updateProperty(newProc.getComponent().getConfig().getProperties(), oldControllerService.getId(), newControllerServiceId);
                     updateProcessor(newProc, newProc.getComponent(), true, clientId);
                 } else if (component.getComponent().getReferenceType().equals(CONTROLLERSERVICE) ) {
                     ControllerServiceEntity newControllerService = controllerServicesService.getControllerServices(component.getId());
-                    updateProperties(newControllerService.getComponent().getProperties(), oldControllerService.getId(), newControllerServiceId);
+                    updateProperty(newControllerService.getComponent().getProperties(), oldControllerService.getId(), newControllerServiceId);
                     controllerServicesService.updateControllerService(newControllerService.getComponent(), newControllerService, true);
                 }// else TODO for reporting task ??
             }
@@ -242,10 +247,12 @@ public class UpdateProcessorService {
         }
     }
 
-    private void updateProperties(Map<String, String> properties, String oldValue, String newValue) {
+    private void updateProperty(Map<String, String> properties, String oldValue, String newValue) {
         for (Map.Entry<String, String> entry : properties.entrySet()) {
             if (oldValue.equals(entry.getValue())) {
                 properties.put(entry.getKey(), newValue);
+            } else {
+                properties.remove(entry.getKey());
             }
         }
     }

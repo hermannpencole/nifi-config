@@ -124,12 +124,12 @@ public class ControllerServicesService {
     }
 
     public void setStateReferencingControllerServices(String id, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
-        //Get fresh references
-        Map<String, RevisionDTO> referencingControllerServices = getReferencingServices(id, CONTROLLERSERVICE, state.toString());
-        if (referencingControllerServices.isEmpty()) return;
         FunctionUtils.runWhile(()-> {
             ControllerServiceReferencingComponentsEntity controllerServiceReferencingComponentsEntity = null;
             try {
+                //Get fresh references
+                Map<String, RevisionDTO> referencingControllerServices = getReferencingServices(id, CONTROLLERSERVICE, state.toString());
+                if (referencingControllerServices.isEmpty()) return false;
                 UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
                 updateControllerServiceReferenceRequestEntity.setId(id);
                 updateControllerServiceReferenceRequestEntity.setState(state);
@@ -137,8 +137,11 @@ public class ControllerServicesService {
                 controllerServiceReferencingComponentsEntity = controllerServicesApi.updateControllerServiceReferences(id, updateControllerServiceReferenceRequestEntity);
             } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
-                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
+                //how obtain the real state of controllerServiceReference and don't have this bullshit trick
+                if (e.getResponseBody() == null || (!e.getResponseBody().endsWith("Current state is STOPPING") && !e.getResponseBody().endsWith("Current state is RUNNING"))) {
                     throw e;
+                } else {
+                    return false;
                 }
             }
             return controllerServiceReferencingComponentsEntity == null;
@@ -161,14 +164,12 @@ public class ControllerServicesService {
     }
 
     public void setStateReferenceProcessors(ControllerServiceEntity controllerServiceEntityFind, UpdateControllerServiceReferenceRequestEntity.StateEnum state) throws ApiException {
-        //how obtain state of controllerServiceReference and don't have this bullshit trick
-
-        //Get fresh references
-        Map<String, RevisionDTO> referencingProcessorsServices = getReferencingServices(controllerServiceEntityFind.getId(), PROCESSOR, state.toString());
-        if (referencingProcessorsServices.isEmpty()) return;
         FunctionUtils.runWhile(()-> {
             ControllerServiceEntity controllerServiceEntity = null;
             try {
+                //Get fresh references
+                Map<String, RevisionDTO> referencingProcessorsServices = getReferencingServices(controllerServiceEntityFind.getId(), PROCESSOR, state.toString());
+                if (referencingProcessorsServices.isEmpty()) return false; //not continue
                 UpdateControllerServiceReferenceRequestEntity updateControllerServiceReferenceRequestEntity = new UpdateControllerServiceReferenceRequestEntity();
                 updateControllerServiceReferenceRequestEntity.setId(controllerServiceEntityFind.getId());
                 updateControllerServiceReferenceRequestEntity.setReferencingComponentRevisions(referencingProcessorsServices);
@@ -177,8 +178,11 @@ public class ControllerServicesService {
                 controllerServiceEntity = controllerServicesApi.getControllerService(controllerServiceEntityFind.getId());
             } catch (ApiException e) {
                 LOG.info(e.getResponseBody());
-                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
+                //how obtain the real state of controllerServiceReference and don't have this bullshit trick
+                if (e.getResponseBody() == null || (!e.getResponseBody().endsWith("Current state is STOPPING") && !e.getResponseBody().endsWith("Current state is RUNNING"))) {
                     throw e;
+                } else {
+                    return false;
                 }
             }
             return (controllerServiceEntity == null);
@@ -207,20 +211,9 @@ public class ControllerServicesService {
     public void remove(ControllerServiceEntity controllerServiceToRemove) throws ApiException {
         //Disabling this controller service
         ControllerServiceEntity controllerServiceEntityUpdate = setStateControllerService(controllerServiceToRemove, ControllerServiceDTO.StateEnum.DISABLED);
-        LOG.info(" {} ({}) trying removing" , controllerServiceEntityUpdate.getComponent().getName(), controllerServiceEntityUpdate.getId());
-        //how obtain state of controllerServiceReference and don't have this bullshit trick
-        FunctionUtils.runWhile(()-> {
-            ControllerServiceEntity controllerServiceEntity = null;
-            try {
-                controllerServiceEntity = controllerServicesApi.removeControllerService(controllerServiceEntityUpdate.getId(), controllerServiceEntityUpdate.getRevision().getVersion().toString(), controllerServiceEntityUpdate.getRevision().getClientId());
-                LOG.info(" {} ({}) is removed" , controllerServiceEntity.getComponent().getName(), controllerServiceEntity.getId());
-            } catch (ApiException e) {
-                LOG.info(e.getResponseBody());
-                if (e.getResponseBody() == null || !e.getResponseBody().endsWith("Current state is STOPPING")){
-                    throw e;
-                }
-            }
-            return controllerServiceEntity == null;
-        }, interval, timeout);    }
+        LOG.info(" {} ({}) trying removing", controllerServiceEntityUpdate.getComponent().getName(), controllerServiceEntityUpdate.getId());
+        ControllerServiceEntity controllerServiceEntity = controllerServicesApi.removeControllerService(controllerServiceEntityUpdate.getId(), controllerServiceEntityUpdate.getRevision().getVersion().toString(), controllerServiceEntityUpdate.getRevision().getClientId());
+        LOG.info(" {} ({}) is removed", controllerServiceEntity.getComponent().getName(), controllerServiceEntity.getId());
+    }
 
 }

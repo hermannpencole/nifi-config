@@ -62,7 +62,7 @@ public class PortService {
         //how obtain state of and don't have this bullshit trick
         //trick for don't have error : xxxx cannot be started because it is not stopped. Current state is STOPPING
         if (port.getComponent().getState().equals(state)) {
-            LOG.info(" {} ({}) is already ", port.getComponent().getName() ,port.getId(), port.getComponent().getState());
+            LOG.info(" {} ({}) is already {}", port.getComponent().getName() ,port.getId(), port.getComponent().getState());
             return;
         }
 
