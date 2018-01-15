@@ -1,5 +1,7 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
@@ -114,14 +116,19 @@ public class TemplateService {
         for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
             //stop only controller on the same group
             if (controllerServiceEntity.getComponent().getParentGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId())) {
-                //stopping referencing processors and reporting tasks
-                controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
+                try {
+                    //stopping referencing processors and reporting tasks
+                    controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
 
-                //Disabling referencing controller services
-                controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+                    //Disabling referencing controller services
+                    controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
 
-                //Disabling this controller service
-                ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+                    //Disabling this controller service
+                    ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+                } catch (ApiException | TimeoutException | ConfigException e) {
+                    //continue, try to delete process group without disable controller
+                    LOG.warn(e.getMessage(), e);
+                }
             }
         }
 

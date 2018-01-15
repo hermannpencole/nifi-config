@@ -136,13 +136,15 @@ public class UpdateProcessorService {
                         controllerServiceEntityFind = controllerServiceEntity;
                     }
                 }
+                if (controllerServiceEntityFind == null) {
+                    throw new ConfigException("Cannot choose controller, multiple controller find with the same name " + controllerServiceDTO.getName() + " on the same group " + idComponent);
+                }
             } else if (all.size() == 1) {
                 //find controller for have id
                 controllerServiceEntityFind = all.get(0);
             } else {
-                throw new ConfigException(("cannot find " + controllerServiceDTO.getName()));
+                throw new ConfigException("Cannot find controller " + controllerServiceDTO.getName());
             }
-
             //remove old
             stopOldReference(oldControllersService.values());
             //update new reference for ReferencingComponents on oldControllersService
