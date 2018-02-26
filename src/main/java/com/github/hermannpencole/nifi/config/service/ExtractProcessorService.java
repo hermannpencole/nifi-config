@@ -6,6 +6,7 @@ import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.ControllerApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
@@ -14,10 +15,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Class that offer service for nifi processor
@@ -49,7 +48,7 @@ public class ExtractProcessorService {
      * @throws IOException
      * @throws ApiException
      */
-    public void extractByBranch(List<String> branch, String fileConfiguration) throws IOException, ApiException {
+    public void extractByBranch(List<String> branch, String fileConfiguration, boolean failOnDuplicateNames) throws IOException, ApiException {
         File file = new File(fileConfiguration);
 
         ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
@@ -67,6 +66,8 @@ public class ExtractProcessorService {
             result.getControllerServicesDTO().add(extractController(controllerServiceEntity));
         }
 
+        checkDuplicateProcessorNames(result.getProcessors(), failOnDuplicateNames);
+
         //convert to json
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         LOG.debug("saving in file {}", fileConfiguration);
@@ -75,6 +76,34 @@ public class ExtractProcessorService {
         } finally {
             LOG.debug("extractByBranch end");
         }
+    }
+
+    private void checkDuplicateProcessorNames(List<ProcessorDTO> processors, boolean failOnDuplicateNames) {
+        //warn or fail on duplicate processor names
+        if (processors == null || processors.isEmpty()) {
+            return;
+        }
+
+        Map<String, Integer> duplicateProcessorNames = detectDuplicateProcessorNames(processors);
+        if (!duplicateProcessorNames.isEmpty()) {
+            String messageFormatted = "Duplicate processor names detected: "
+                    + Joiner.on(", ").withKeyValueSeparator(" used times: ").join(duplicateProcessorNames);
+
+            if (failOnDuplicateNames) {
+                throw new ConfigException(messageFormatted);
+            } else {
+                LOG.warn(messageFormatted);
+            }
+        }
+    }
+
+    private Map<String, Integer> detectDuplicateProcessorNames(List<ProcessorDTO> processorList) {
+        Map<String, Integer> processorNameCountMap = new HashMap<>();
+        processorList.forEach(proc -> processorNameCountMap.merge(proc.getName(), 1, Integer::sum));
+
+        return processorNameCountMap.entrySet().stream()
+                .filter(entry -> entry.getValue() > 1)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
