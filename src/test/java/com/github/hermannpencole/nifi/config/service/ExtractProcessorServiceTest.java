@@ -41,7 +41,7 @@ public class ExtractProcessorServiceTest {
         List<String> branch = Arrays.asList("root", "elt1");
         File temp = File.createTempFile("tempfile", ".tmp");
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.empty());
-        extractService.extractByBranch(branch, temp.getAbsolutePath());
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), false);
     }
 
     @Test(expected = FileNotFoundException.class)
@@ -52,7 +52,7 @@ public class ExtractProcessorServiceTest {
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(new ControllerServicesEntity());
 
         File temp = File.createTempFile("tempfile", ".tmp");
-        extractService.extractByBranch(branch, temp.getParent());
+        extractService.extractByBranch(branch, temp.getParent(), false);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class ExtractProcessorServiceTest {
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(new ControllerServicesEntity());
 
-        extractService.extractByBranch(branch, temp.getAbsolutePath());
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), false);
 
         //evaluate response
         Gson gson = new Gson();
@@ -98,7 +98,7 @@ public class ExtractProcessorServiceTest {
         ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
         when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
 
-        extractService.extractByBranch(branch, temp.getAbsolutePath());
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), false);
         Gson gson = new Gson();
         try (Reader reader = new InputStreamReader(new FileInputStream(temp), "UTF-8")) {
             GroupProcessorsEntity result = gson.fromJson(reader, GroupProcessorsEntity.class);
@@ -112,7 +112,39 @@ public class ExtractProcessorServiceTest {
         }
     }
 
+    @Test(expected = ConfigException.class)
+    public void extractDuplicateProcessorNamesTest() throws ApiException, IOException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        File temp = File.createTempFile("tempfile", ".tmp");
 
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc1","nameProcA") );
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProcA") );
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProcB") );
 
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(new ControllerServicesEntity());
 
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
+    }
+
+    @Test
+    public void extractNonDuplicateProcessorNamesTest() throws ApiException, IOException {
+        List<String> branch = Arrays.asList("root", "elt1");
+        File temp = File.createTempFile("tempfile", ".tmp");
+
+        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc1","nameProcA") );
+        response.getProcessGroupFlow().getFlow()
+                .getProcessors().add(TestUtils.createProcessorEntity("idProc2","nameProcB") );
+
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(new ControllerServicesEntity());
+
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
+    }
 }

@@ -2,9 +2,7 @@ package com.github.hermannpencole.nifi.config;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
 import com.github.hermannpencole.nifi.config.service.*;
-import com.github.hermannpencole.nifi.swagger.ApiClient;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.Configuration;
 import com.github.hermannpencole.nifi.swagger.client.model.PositionDTO;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -79,6 +77,7 @@ public class Main {
             options.addOption("keepTemplate", false, "Keep template after installation (default false)");
             options.addOption("placeWidth", true, "Width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)");
             options.addOption("startPosition", true, "Starting position for the place for installing group, format x,y (default : 0,0)");
+            options.addOption("failOnDuplicateNames", false, "Fail if template contains duplicate processor names in extractConfig mode");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -139,7 +138,7 @@ public class Main {
                 } else if ("extractConfig".equals(cmd.getOptionValue("m"))) {
                     //Get an instance of the bean from the context
                     ExtractProcessorService processorService = injector.getInstance(ExtractProcessorService.class);
-                    processorService.extractByBranch(branchList, fileConfiguration);
+                    processorService.extractByBranch(branchList, fileConfiguration, cmd.hasOption("failOnDuplicateNames"));
                     LOG.info("The group configuration {} is extrated on file {}", branch, fileConfiguration);
                 } else if ("deployTemplate".equals(cmd.getOptionValue("m"))) {
                     TemplateService templateService = injector.getInstance(TemplateService.class);
