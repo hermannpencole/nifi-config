@@ -164,7 +164,69 @@ public class ProcessGroupServiceTest {
         ArgumentCaptor<ConnectionEntity> connectionCapture = ArgumentCaptor.forClass(ConnectionEntity.class);
         verify(connectionServiceMock).waitEmptyQueue(connectionCapture.capture());
         assertEquals("idProc", connectionCapture.getValue().getSourceId());
+    }
 
+    @Test
+    public void deleteTest() throws ApiException, IOException, URISyntaxException {
+        final ProcessGroupEntity processGroupEntity = TestUtils.createProcessGroupEntity("idElt1", "elt1");
+        when(processGroupsApiMock.getProcessGroup(eq("123"))).thenReturn(processGroupEntity);
+        when(processGroupsApiMock.removeProcessGroup(eq("123"), any(), any())).thenReturn(processGroupEntity);
+
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(ProcessGroupService.class).toInstance(processGroupService);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(Main.createPosition("0,0"));
+            }
+        });
+        ProcessGroupService service = injector.getInstance(ProcessGroupService.class);
+
+        service.delete("123");
+
+        verify(processGroupsApiMock).getProcessGroup(eq("123"));
+        verify(processGroupsApiMock).removeProcessGroup(eq("123"), any(), any());
+        verifyZeroInteractions(connectionServiceMock);
+    }
+
+    @Test
+    public void deleteExternalConnectionTest() throws ApiException, IOException, URISyntaxException {
+        final ProcessGroupEntity processGroupEntity = TestUtils.createProcessGroupEntity("idElt1", "elt1");
+        when(processGroupsApiMock.getProcessGroup(eq("123"))).thenReturn(processGroupEntity);
+        final ApiException externalConnectionException = new ApiException(1, "Error", null, "Cannot delete Process Group because " +
+                "Input Port 3d3a458f-7365-1c62-aa8f-864fe0bf3085 has at least one incoming connection from a " +
+                "component outside of the Process Group. Delete this connection first.");
+        when(processGroupsApiMock.removeProcessGroup(eq("123"), any(), any()))
+                .thenThrow(externalConnectionException)
+                .thenReturn(processGroupEntity);
+
+        Injector injector = Guice.createInjector(new AbstractModule() {
+            protected void configure() {
+                bind(ProcessGroupService.class).toInstance(processGroupService);
+                bind(ProcessGroupsApi.class).toInstance(processGroupsApiMock);
+                bind(ProcessorService.class).toInstance(processorServiceMock);
+                bind(ConnectionService.class).toInstance(connectionServiceMock);
+                bind(FlowApi.class).toInstance(flowApiMock);
+                bind(Integer.class).annotatedWith(Names.named("timeout")).toInstance(10);
+                bind(Integer.class).annotatedWith(Names.named("interval")).toInstance(1);
+                bind(Boolean.class).annotatedWith(Names.named("forceMode")).toInstance(false);
+                bind(Double.class).annotatedWith(Names.named("placeWidth")).toInstance(1200d);
+                bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(Main.createPosition("0,0"));
+            }
+        });
+        ProcessGroupService service = injector.getInstance(ProcessGroupService.class);
+
+        service.delete("123");
+
+        verify(processGroupsApiMock, times(2)).getProcessGroup(eq("123"));
+        verify(processGroupsApiMock, times(2)).removeProcessGroup(eq("123"), any(), any());
+        verify(connectionServiceMock).removeExternalConnections(eq(processGroupEntity));
     }
 
     @Test
