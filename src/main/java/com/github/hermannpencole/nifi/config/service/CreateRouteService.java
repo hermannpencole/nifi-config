@@ -136,7 +136,7 @@ public class CreateRouteService {
           final ConnectableDTO.TypeEnum connectableType)
           throws ApiException {
     List<PortEntity> connectableDTOs = new ArrayList<>();
-    int mergeLevel = branch.nextIndex();
+    int mergeLevel = branch.previousIndex();
     boolean createPorts = false;
 
     // Traverse back up to root and start examining the flow
@@ -161,8 +161,11 @@ public class CreateRouteService {
   }
 
   private void createConnections(final ListIterator<PortEntity> connectables) {
+    if (!connectables.hasNext()) return;
+
     PortEntity current;
     PortEntity next = connectables.next();
+
     while (connectables.hasNext()) {
       current = next;
       next = connectables.next();
@@ -197,7 +200,7 @@ public class CreateRouteService {
     ListIterator<String> destination = destinationPath.listIterator();
 
     // Find the lowest level in the process group hierarchy where the route can pass between two process groups
-    while (!source.next().equals(destination.next())) ;
+    while (source.next().equals(destination.next())) ;
 
     // Traverse the source branch, creating output ports down the hierarchy
     List<PortEntity> sourceConnectables = createPorts(source, name, ConnectableDTO.TypeEnum.OUTPUT_PORT);

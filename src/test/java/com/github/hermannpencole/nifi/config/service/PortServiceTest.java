@@ -5,6 +5,7 @@ import com.github.hermannpencole.nifi.swagger.client.InputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.OutputPortsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.PortDTO;
 import com.github.hermannpencole.nifi.swagger.client.model.PortEntity;
+import com.github.hermannpencole.nifi.swagger.client.model.PortStatusDTO;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -94,6 +95,8 @@ public class PortServiceTest {
         port.setComponent(new PortDTO());
         port.getComponent().setId("id");
         port.getComponent().setState(PortDTO.StateEnum.STOPPED);
+        port.setStatus(new PortStatusDTO());
+        port.getStatus().setRunStatus("Stopped");
         portService.setState(port, PortDTO.StateEnum.STOPPED);
         verify(inputPortsApiMock,never()).updateInputPort(eq("id"), any());
         verify(outputPortsApiMock,never()).updateOutputPort(eq("id"), any());
@@ -116,6 +119,8 @@ public class PortServiceTest {
         portStopped.getComponent().setName("name");
         portStopped.getComponent().setId("id");
         portStopped.getComponent().setState(PortDTO.StateEnum.STOPPED);
+        portStopped.setStatus(new PortStatusDTO());
+        portStopped.getStatus().setRunStatus("Stopped");
         when(inputPortsApiMock.updateInputPort(eq("id"),any())).thenReturn(portStopped);
         PortEntity port = new PortEntity();
         port.setId("id");
@@ -123,6 +128,8 @@ public class PortServiceTest {
         port.getComponent().setId("id");
         port.getComponent().setState(PortDTO.StateEnum.RUNNING);
         port.getComponent().setType(PortDTO.TypeEnum.INPUT_PORT);
+        port.setStatus(new PortStatusDTO());
+        port.getStatus().setRunStatus("Running");
         portService.setState(port, PortDTO.StateEnum.STOPPED);
         verify(inputPortsApiMock, times(1)).updateInputPort(eq("id"), any());
     }
@@ -144,6 +151,8 @@ public class PortServiceTest {
         portStopped.getComponent().setName("name");
         portStopped.getComponent().setId("id");
         portStopped.getComponent().setState(PortDTO.StateEnum.STOPPED);
+        portStopped.setStatus(new PortStatusDTO());
+        portStopped.getStatus().setRunStatus("Stopped");
         when(outputPortsApiMock.updateOutputPort(eq("id"),any())).thenReturn(portStopped);
         PortEntity port = new PortEntity();
         port.setId("id");
@@ -151,6 +160,8 @@ public class PortServiceTest {
         port.getComponent().setId("id");
         port.getComponent().setState(PortDTO.StateEnum.RUNNING);
         port.getComponent().setType(PortDTO.TypeEnum.OUTPUT_PORT);
+        port.setStatus(new PortStatusDTO());
+        port.getStatus().setRunStatus("Running");
         portService.setState(port, PortDTO.StateEnum.STOPPED);
         verify(outputPortsApiMock, times(1)).updateOutputPort(eq("id"), any());
     }

@@ -55,8 +55,12 @@ public class PortService {
      * @param state
      */
     public void setState(PortEntity port, PortDTO.StateEnum state) {
-        if (port.getComponent().getState().equals( PortDTO.StateEnum.DISABLED)) {
-            LOG.info(" {} ({}) is disabled ", port.getComponent().getName() ,port.getId(), port.getComponent().getState());
+        if (port.getComponent().getState().equals(PortDTO.StateEnum.DISABLED)) {
+            LOG.info(" {} ({}) is disabled ", port.getComponent().getName(), port.getId());
+            return;
+        }
+        if (port.getStatus().getRunStatus().equals("Invalid")) {
+            LOG.info(" {} ({}) is invalid ", port.getComponent().getName(), port.getId());
             return;
         }
         //how obtain state of and don't have this bullshit trick
@@ -80,7 +84,7 @@ public class PortService {
                 body.getComponent().setGroupAccessControl(null);
                 body.getComponent().setValidationErrors(null);
                 PortEntity portEntity;
-                if (port.getComponent().getType()== PortDTO.TypeEnum.INPUT_PORT)
+                if (port.getComponent().getType() == PortDTO.TypeEnum.INPUT_PORT)
                     portEntity = inputPortsApi.updateInputPort(port.getId(), body);
                 else
                     portEntity = outputPortsApi.updateOutputPort(port.getId(), body);
