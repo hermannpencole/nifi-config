@@ -41,12 +41,13 @@ public class TestUtils {
         return revision;
     }
 
-    public static ProcessorEntity createProcessorEntity(String id, String name) {
+    public static ProcessorEntity createProcessorEntity(String id, String name, ProcessorDTO.StateEnum state ) {
         ProcessorEntity proc = new ProcessorEntity();
         proc.setId(id);
         ProcessorDTO procDTO = new ProcessorDTO();
         procDTO.setName(name);
         procDTO.setId(id);
+        procDTO.setState(state);
         procDTO.setConfig(new ProcessorConfigDTO());
         proc.setComponent(procDTO);
         proc.setRevision(new RevisionDTO());
@@ -55,6 +56,10 @@ public class TestUtils {
         proc.getPosition().setX(0d);
         proc.getPosition().setY(0d);
         return proc;
+    }
+
+    public static ProcessorEntity createProcessorEntity(String id, String name) {
+        return createProcessorEntity(id, name, null);
     }
 
     public static ConnectionEntity createConnectionEntity(String id, String sourceId, String destinationId) {

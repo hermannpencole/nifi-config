@@ -141,6 +141,7 @@ public class ExtractProcessorService {
     private ProcessorDTO extractProcessor(ProcessorDTO processor) {
         ProcessorDTO result = new ProcessorDTO();
         result.setName(processor.getName());
+        result.setState(processor.getState());
         result.setConfig(processor.getConfig());
         //remove controller link
         for ( Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {

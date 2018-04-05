@@ -3,6 +3,7 @@
   "processors": [
     {
       "name": "nameProc",
+      "state": "RUNNING",
       "config": {
         "properties": {
           "Input Directory": "c:\\temp",
