@@ -13,6 +13,10 @@ public class ConnectionPort {
     @SerializedName("destination")
     private String destination;
 
+    private String backPressureDataSizeThreshold;
+
+    private Long backPressureObjectThreshold;
+
     public String getName() {
         return name;
     }
@@ -37,4 +41,19 @@ public class ConnectionPort {
         this.destination = destination;
     }
 
+    public String getBackPressureDataSizeThreshold() {
+        return backPressureDataSizeThreshold;
+    }
+
+    public void setBackPressureDataSizeThreshold(String backPressureDataSizeThreshold) {
+        this.backPressureDataSizeThreshold = backPressureDataSizeThreshold;
+    }
+
+    public Long getBackPressureObjectThreshold() {
+        return backPressureObjectThreshold;
+    }
+
+    public void setBackPressureObjectThreshold(Long backPressureObjectThreshold) {
+        this.backPressureObjectThreshold = backPressureObjectThreshold;
+    }
 }

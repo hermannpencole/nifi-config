@@ -1,9 +1,9 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.ConnectionPort;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ControllerApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.common.base.Joiner;
@@ -36,13 +36,9 @@ public class ExtractProcessorService {
     private ProcessGroupService processGroupService;
 
     @Inject
-    private ControllerApi controllerApi;
-
-    @Inject
     private FlowApi flowapi;
 
     /**
-     *
      * @param branch
      * @param fileConfiguration
      * @throws IOException
@@ -58,13 +54,17 @@ public class ExtractProcessorService {
         GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
 
         //add controllers
-        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(componentSearch.getProcessGroupFlow().getId());
-        if ( !controllerServicesEntity.getControllerServices().isEmpty() ) {
+        String processorGroupFlowId = componentSearch.getProcessGroupFlow().getId();
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(processorGroupFlowId);
+        if (!controllerServicesEntity.getControllerServices().isEmpty()) {
             result.setControllerServicesDTO(new ArrayList<>());
         }
         for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
             result.getControllerServicesDTO().add(extractController(controllerServiceEntity));
         }
+
+        List<ConnectionEntity> connections = componentSearch.getProcessGroupFlow().getFlow().getConnections();
+        result.setConnectionPorts(extractConnections(connections));
 
         checkDuplicateProcessorNames(result.getProcessors(), failOnDuplicateNames);
 
@@ -143,7 +143,7 @@ public class ExtractProcessorService {
         result.setName(processor.getName());
         result.setConfig(processor.getConfig());
         //remove controller link
-        for ( Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
+        for (Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
             if (entry.getValue().getIdentifiesControllerService() != null) {
                 result.getConfig().getProperties().remove(entry.getKey());
             }
@@ -174,5 +174,23 @@ public class ExtractProcessorService {
         result.setReferencingComponents(null);
         result.setValidationErrors(null);
         return result;
+    }
+
+    private List<ConnectionPort> extractConnections(List<ConnectionEntity> connections) {
+        return connections
+                .stream()
+                .map(ConnectionEntity::getComponent)
+                .map(this::toConnectionPort)
+                .collect(Collectors.toList());
+    }
+
+    private ConnectionPort toConnectionPort(ConnectionDTO dto) {
+        ConnectionPort connectionPort = new ConnectionPort();
+        connectionPort.setDestination(dto.getDestination().getName());
+        connectionPort.setSource(dto.getSource().getName());
+        connectionPort.setName(dto.getName());
+        connectionPort.setBackPressureDataSizeThreshold(dto.getBackPressureDataSizeThreshold());
+        connectionPort.setBackPressureObjectThreshold(dto.getBackPressureObjectThreshold());
+        return connectionPort;
     }
 }

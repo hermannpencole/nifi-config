@@ -57,6 +57,28 @@ public class TestUtils {
         return proc;
     }
 
+    public static ConnectionEntity createConnectionEntity(String name, String sourceName, String destinationName,
+                                                          String backPressureDataSizeThreshold,
+                                                          Long backPressureObjectThreshold) {
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+
+        ConnectionDTO connectionDTO = new ConnectionDTO();
+        connectionDTO.setName(name);
+        connectionEntity.setComponent(connectionDTO);
+
+        ConnectableDTO source = new ConnectableDTO();
+        source.setName(sourceName);
+        connectionDTO.setSource(source);
+
+        ConnectableDTO destination = new ConnectableDTO();
+        destination.setName(destinationName);
+        connectionDTO.setDestination(destination);
+
+        connectionDTO.setBackPressureDataSizeThreshold(backPressureDataSizeThreshold);
+        connectionDTO.setBackPressureObjectThreshold(backPressureObjectThreshold);
+        return connectionEntity;
+    }
+
     public static ConnectionEntity createConnectionEntity(String id, String sourceId, String destinationId) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
         connectionEntity.setId(id);
