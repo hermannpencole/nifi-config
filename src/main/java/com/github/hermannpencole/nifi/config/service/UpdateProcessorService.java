@@ -48,6 +48,9 @@ public class UpdateProcessorService {
     private FlowApi flowapi;
 
     @Inject
+    private ConnectionsUpdater connectionsUpdater;
+
+    @Inject
     private ProcessorsApi processorsApi;
 
     /**
@@ -64,54 +67,61 @@ public class UpdateProcessorService {
         }
 
         LOG.info("Processing : " + file.getName());
+
+        GroupProcessorsEntity configuration = loadConfiguration(file);
+
+        ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
+                .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
+
+        //Stop branch
+        processGroupService.stop(componentSearch);
+        LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
+
+        //Stop connexion ??
+
+        //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
+        String processGroupFlowId = componentSearch.getProcessGroupFlow().getId();
+        componentSearch = flowapi.getFlow(processGroupFlowId);
+
+        //generate clientID
+        String clientId = flowapi.generateClientId();
+        updateComponent(configuration, componentSearch, clientId);
+
+        //controller
+        //updateControllers(configuration, processGroupFlowId, clientId);
+
+        //connexion
+        connectionsUpdater.updateConnections(configuration.getConnections(), componentSearch);
+        createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
+
+        if (!optionNoStartProcessors) {
+            //Run all nifi processors
+            componentSearch = flowapi.getFlow(processGroupFlowId);
+            processGroupService.start(componentSearch);
+            //setState(componentSearch, ProcessorDTO.StateEnum.RUNNING);
+            LOG.info(Arrays.toString(branch.toArray()) + " is running");
+        }
+
+        LOG.debug("updateByBranch end");
+    }
+
+    private GroupProcessorsEntity loadConfiguration(File file) throws IOException {
+        GroupProcessorsEntity configuration;
         Gson gson = new GsonBuilder().serializeNulls().create();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
-            GroupProcessorsEntity configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
-            ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
-                    .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
-
-            //Stop branch
-            processGroupService.stop(componentSearch);
-            LOG.info(Arrays.toString(branch.toArray()) + " is stopped");
-
-            //Stop connexion ??
-
-            //the state change, then the revision also in nifi 1.3.0 (only?) reload processGroup
-            componentSearch = flowapi.getFlow(componentSearch.getProcessGroupFlow().getId());
-
-            //generate clientID
-            String clientId = flowapi.generateClientId();
-            updateComponent(configuration, componentSearch, clientId);
-
-            //controller
-            updateControllers(configuration, componentSearch.getProcessGroupFlow().getId(), clientId);
-
-            //connexion
-            createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
-
-            if (!optionNoStartProcessors) {
-                //Run all nifi processors
-                componentSearch = flowapi.getFlow(componentSearch.getProcessGroupFlow().getId());
-                processGroupService.start(componentSearch);
-                //setState(componentSearch, ProcessorDTO.StateEnum.RUNNING);
-                LOG.info(Arrays.toString(branch.toArray()) + " is running");
-            }
-        } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
-        } finally {
-            LOG.debug("updateByBranch end");
+            configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
         }
+        return configuration;
     }
 
 
     /**
-     *
      * @param configuration
      * @param idComponent
      * @throws ApiException
      */
-    private void updateControllers(GroupProcessorsEntity configuration, String idComponent, String clientId) throws ApiException, InterruptedException {
+    private void updateControllers(GroupProcessorsEntity configuration, String idComponent, String clientId) throws ApiException {
         ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(idComponent);
         //must we use flowapi.getControllerServicesFromController() ??
         /*ControllerServicesEntity controllerServiceController = flowapi.getControllerServicesFromController();
@@ -128,7 +138,7 @@ public class UpdateProcessorService {
             ControllerServiceEntity controllerServiceEntityFind = null;
             Map<String, ControllerServiceEntity> oldControllersService = new HashMap<>();
             if (all.size() > 1) {
-                for (ControllerServiceEntity controllerServiceEntity: all) {
+                for (ControllerServiceEntity controllerServiceEntity : all) {
                     if (idComponent.equals(controllerServiceEntity.getComponent().getParentGroupId())) {
                         //add to old
                         oldControllersService.put(controllerServiceEntity.getId(), controllerServiceEntity);
@@ -184,8 +194,8 @@ public class UpdateProcessorService {
         }
 
         //must we start all controller referencing on the group ?
-       // for (ControllerServiceEntity controllerServiceEntity :  controllerServicesEntity.getControllerServices()) {
-            //Enabling this controller service
+        // for (ControllerServiceEntity controllerServiceEntity :  controllerServicesEntity.getControllerServices()) {
+        //Enabling this controller service
         //    controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.ENABLED);
         //    controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.RUNNING);
         //}
@@ -198,24 +208,24 @@ public class UpdateProcessorService {
      * @param oldControllersService
      */
     private void updateOldReference(Collection<ControllerServiceEntity> oldControllersService, String newControllerServiceId, String clientId) {
-        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+        for (ControllerServiceEntity oldControllerService : oldControllersService) {
             for (ControllerServiceReferencingComponentEntity component : oldControllerService.getComponent().getReferencingComponents()) {
-                if (component.getComponent().getReferenceType().equals(PROCESSOR) ) {
+                if (component.getComponent().getReferenceType().equals(PROCESSOR)) {
                     ProcessorEntity newProc = processorsApi.getProcessor(component.getId());
                     newProc.getComponent().getConfig().setProperties(createUpdateProperty(newProc.getComponent().getConfig().getProperties(), oldControllerService.getId(), newControllerServiceId));
                     updateProcessor(newProc, newProc.getComponent(), true, clientId);
-                } else if (component.getComponent().getReferenceType().equals(CONTROLLERSERVICE) ) {
+                } else if (component.getComponent().getReferenceType().equals(CONTROLLERSERVICE)) {
                     ControllerServiceEntity newControllerService = controllerServicesService.getControllerServices(component.getId());
                     newControllerService.getComponent().setProperties(createUpdateProperty(newControllerService.getComponent().getProperties(), oldControllerService.getId(), newControllerServiceId));
                     controllerServicesService.updateControllerService(newControllerService.getComponent(), newControllerService, true);
                 }// else TODO for reporting task ??
             }
-            LOG.info(" {} ({}) is replaced by ({})" , oldControllerService.getComponent().getName(), oldControllerService.getComponent().getId(), newControllerServiceId);
+            LOG.info(" {} ({}) is replaced by ({})", oldControllerService.getComponent().getName(), oldControllerService.getComponent().getId(), newControllerServiceId);
         }
     }
 
     private void stopOldReference(Collection<ControllerServiceEntity> oldControllersService) {
-        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+        for (ControllerServiceEntity oldControllerService : oldControllersService) {
             try {
                 //maybe there are already remove
                 controllerServicesService.getControllerServices(oldControllerService.getId());
@@ -234,7 +244,7 @@ public class UpdateProcessorService {
     }
 
     private void removeOldReference(Collection<ControllerServiceEntity> oldControllersService) {
-        for (ControllerServiceEntity oldControllerService: oldControllersService) {
+        for (ControllerServiceEntity oldControllerService : oldControllersService) {
             try {
                 //maybe there are already remove
                 controllerServicesService.getControllerServices(oldControllerService.getId());
@@ -306,7 +316,7 @@ public class UpdateProcessorService {
             componentToPutInProc.setRestricted(null);//processorToUpdate.getComponent().getRestricted());
             componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
             //remove controller link if not forceBy controller
-            if (! forceByController) {
+            if (!forceByController) {
                 for (Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
                     if (entry.getValue().getIdentifiesControllerService() != null) {
                         componentToPutInProc.getConfig().getProperties().remove(entry.getKey());

@@ -1,7 +1,7 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.config.model.ConnectionPort;
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
@@ -64,7 +64,7 @@ public class ExtractProcessorService {
         }
 
         List<ConnectionEntity> connections = componentSearch.getProcessGroupFlow().getFlow().getConnections();
-        result.setConnectionPorts(extractConnections(connections));
+        result.setConnections(extractConnections(connections));
 
         checkDuplicateProcessorNames(result.getProcessors(), failOnDuplicateNames);
 
@@ -176,16 +176,16 @@ public class ExtractProcessorService {
         return result;
     }
 
-    private List<ConnectionPort> extractConnections(List<ConnectionEntity> connections) {
+    private List<Connection> extractConnections(List<ConnectionEntity> connections) {
         return connections
                 .stream()
                 .map(ConnectionEntity::getComponent)
-                .map(this::toConnectionPort)
+                .map(this::toConnection)
                 .collect(Collectors.toList());
     }
 
-    private ConnectionPort toConnectionPort(ConnectionDTO dto) {
-        ConnectionPort connectionPort = new ConnectionPort();
+    private Connection toConnection(ConnectionDTO dto) {
+        Connection connectionPort = new Connection();
         connectionPort.setDestination(dto.getDestination().getName());
         connectionPort.setSource(dto.getSource().getName());
         connectionPort.setName(dto.getName());

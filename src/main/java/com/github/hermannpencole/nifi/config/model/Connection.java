@@ -2,7 +2,7 @@ package com.github.hermannpencole.nifi.config.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class ConnectionPort {
+public class Connection {
 
     @SerializedName("name")
     private String name;
@@ -12,6 +12,10 @@ public class ConnectionPort {
 
     @SerializedName("destination")
     private String destination;
+
+    private String backPressureDataSizeThreshold;
+
+    private Long backPressureObjectThreshold;
 
     public String getName() {
         return name;
@@ -37,4 +41,19 @@ public class ConnectionPort {
         this.destination = destination;
     }
 
+    public String getBackPressureDataSizeThreshold() {
+        return backPressureDataSizeThreshold;
+    }
+
+    public void setBackPressureDataSizeThreshold(String backPressureDataSizeThreshold) {
+        this.backPressureDataSizeThreshold = backPressureDataSizeThreshold;
+    }
+
+    public Long getBackPressureObjectThreshold() {
+        return backPressureObjectThreshold;
+    }
+
+    public void setBackPressureObjectThreshold(Long backPressureObjectThreshold) {
+        this.backPressureObjectThreshold = backPressureObjectThreshold;
+    }
 }

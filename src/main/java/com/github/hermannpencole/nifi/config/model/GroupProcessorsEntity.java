@@ -24,6 +24,9 @@ public class GroupProcessorsEntity {
     @SerializedName("connections")
     private List<ConnectionPort> connectionPorts = new ArrayList<>();
 
+    @SerializedName("allConnections")
+    private List<Connection> connections = new ArrayList<>();
+
     @SerializedName("name")
     private String name;
 
@@ -71,5 +74,13 @@ public class GroupProcessorsEntity {
 
     public void setConnectionPorts(List<ConnectionPort> connectionPorts) {
         this.connectionPorts = connectionPorts;
+    }
+
+    public List<Connection> getConnections() {
+        return connections;
+    }
+
+    public void setConnections(List<Connection> connections) {
+        this.connections = connections;
     }
 }

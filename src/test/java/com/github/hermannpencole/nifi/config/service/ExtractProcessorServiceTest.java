@@ -1,7 +1,7 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
-import com.github.hermannpencole.nifi.config.model.ConnectionPort;
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
@@ -138,7 +138,7 @@ public class ExtractProcessorServiceTest {
         extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
 
         GroupProcessorsEntity result = loadOutputFileContent();
-        assertEquals(result.getConnectionPorts().size(), 3);
+        assertEquals(result.getConnections().size(), 3);
 
         assertEquals(asList("connectionOne", null, "connectionThree"), collect(result, connection -> connection.getName()));
         assertEquals(asList("sourceOne", "sourceTwo", "sourceTwo"), collect(result, connection -> connection.getSource()));
@@ -147,8 +147,8 @@ public class ExtractProcessorServiceTest {
         assertEquals(asList("1 GB", "2 GB", "1 GB"), collect(result, connection -> connection.getBackPressureDataSizeThreshold()));
     }
 
-    private <T> List<T> collect(GroupProcessorsEntity result, Function<ConnectionPort, T> mapper) {
-        return result.getConnectionPorts()
+    private <T> List<T> collect(GroupProcessorsEntity result, Function<Connection, T> mapper) {
+        return result.getConnections()
                 .stream()
                 .map(mapper)
                 .collect(Collectors.toList());
