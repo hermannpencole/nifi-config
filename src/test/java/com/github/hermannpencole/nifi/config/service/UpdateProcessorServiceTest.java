@@ -1,10 +1,12 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.ProcessorsApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -14,18 +16,21 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.github.hermannpencole.nifi.config.service.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
+
 /**
  * API tests for AccessApi
  */
 @RunWith(MockitoJUnitRunner.class)
 public class UpdateProcessorServiceTest {
+
     @Mock
     private ProcessGroupService processGroupServiceMock;
 
@@ -39,56 +44,63 @@ public class UpdateProcessorServiceTest {
     private ControllerServicesService controllerServicesServiceMock;
 
     @Mock
+    private ConnectionsUpdater connectionsUpdater;
+
+    @Mock
     private CreateRouteService createRouteServiceMock;
 
     @InjectMocks
     private UpdateProcessorService updateProcessorService;
 
+    private List<String> branch = Arrays.asList("root", "elt1");
+    ProcessGroupFlowEntity response;
+
+    @Before
+    public void setup() {
+        response = createProcessGroupFlowEntity("idComponent", "nameComponent");
+        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
+        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+    }
+
     @Test(expected = FileNotFoundException.class)
-    public void updateFileNotExitingBranchTest() throws ApiException, IOException, URISyntaxException {
-        List<String> branch = Arrays.asList("root", "elt1");
+    public void updateFileNotExitingBranchTest() throws ApiException, IOException {
         updateProcessorService.updateByBranch(branch, "not existing", false);
     }
 
     @Test
-    public void updateBranchTest() throws ApiException, IOException, URISyntaxException {
-        List<String> branch = Arrays.asList("root", "elt1");
-        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
-        response.getProcessGroupFlow().getFlow()
-                .getProcessors().add(TestUtils.createProcessorEntity("idProc", "nameProc"));
-        response.getProcessGroupFlow().getFlow()
-                .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
+    public void updateBranchTest() throws ApiException, IOException {
 
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+        processGroupFlowEntityHas(createProcessorEntity("idProc", "nameProc"));
+        processGroupFlowEntityHas(createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
-        ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
-        subGroupResponse.getProcessGroupFlow().getFlow()
-                .getProcessors().add(TestUtils.createProcessorEntity("idProc2", "nameProc2"));
+        ConnectionEntity connectionEntity = createConnectionEntity("idConnection", "sourceId", "destinationId");
+        processGroupFlowEntityHas(connectionEntity);
+
+        ProcessGroupFlowEntity subGroupResponse = createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
+        processGroupFlowEntityHas(subGroupResponse, createProcessorEntity("idProc2", "nameProc2"));
         when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
 
-        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
+        updateProcessorService.updateByBranch(branch, resourcePath("mytest1.json").getPath(), false);
 
         verify(processorsApiMock, times(2)).updateProcessor(any(), any());
         verify(processorsApiMock).updateProcessor(eq("idProc"), any());
         verify(processorsApiMock).updateProcessor(eq("idProc2"), any());
+
+        Connection connectionInConfigurationFile = createConnection("idConnection", "sourceOne", "destOne", "1 GB", 10L);
+        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(connectionInConfigurationFile), Arrays.asList(connectionEntity));
     }
 
     @Test
-    public void updateBranchWithAutoTerminateRelationshipTest() throws ApiException, IOException, URISyntaxException {
-        List<String> branch = Arrays.asList("root", "elt1");
-        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
-        ProcessorEntity proc = TestUtils.createProcessorEntity("idProc", "nameProc");
+    public void updateBranchWithAutoTerminateRelationshipTest() throws ApiException, IOException {
+        ProcessorEntity proc = createProcessorEntity("idProc", "nameProc");
+
         RelationshipDTO relationship = new RelationshipDTO();
         relationship.setAutoTerminate(true);
         relationship.setName("testRelation");
         proc.getComponent().getRelationships().add(relationship);
-        response.getProcessGroupFlow().getFlow().getProcessors().add(proc);
+        processGroupFlowEntityHas(proc);
 
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
-
-        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestAutoTerminateRelationShip.json").getPath(), false);
+        updateProcessorService.updateByBranch(branch, resourcePath("mytestAutoTerminateRelationShip.json").getPath(), false);
 
         verify(processorsApiMock, times(1)).updateProcessor(any(), any());
         ArgumentCaptor<ProcessorEntity> processorEntity = ArgumentCaptor.forClass(ProcessorEntity.class);
@@ -98,19 +110,14 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test
-    public void updateBranchControllershipTest() throws ApiException, IOException, URISyntaxException, InterruptedException {
-        List<String> branch = Arrays.asList("root", "elt1");
-        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
-
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+    public void updateBranchControllershipTest() throws ApiException, IOException {
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
         controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
         when(controllerServicesServiceMock.setStateControllerService(any(), any())).thenReturn(controllerServicesEntity.getControllerServices().get(0));
         when(controllerServicesServiceMock.updateControllerService(any(), any(), eq(false))).thenReturn(controllerServicesEntity.getControllerServices().get(0));
 
-        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytestController.json").getPath(), false);
+        updateProcessorService.updateByBranch(branch, resourcePath("mytestController.json").getPath(), false);
 
         ArgumentCaptor<ControllerServiceEntity> controllerServiceEntity = ArgumentCaptor.forClass(ControllerServiceEntity.class);
         ArgumentCaptor<ControllerServiceDTO> controllerServiceDTO = ArgumentCaptor.forClass(ControllerServiceDTO.class);
@@ -120,23 +127,31 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test(expected = ConfigException.class)
-    public void updateErrorBranchTest() throws ApiException, IOException, URISyntaxException {
-        List<String> branch = Arrays.asList("root", "elt1");
-        ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
-        response.getProcessGroupFlow().getFlow()
-                .getProcessors().add(TestUtils.createProcessorEntity("idProc", "nameProc"));
-        response.getProcessGroupFlow().getFlow()
-                .getProcessGroups().add(TestUtils.createProcessGroupEntity("idSubGroup", "nameSubGroup"));
-
-        when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
-        when(flowapiMock.getFlow(response.getProcessGroupFlow().getId())).thenReturn(response);
+    public void updateErrorBranchTest() throws ApiException, IOException {
+        processGroupFlowEntityHas(createProcessorEntity("idProc", "nameProc"));
+        processGroupFlowEntityHas(createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
         when(processorsApiMock.updateProcessor(any(), any())).thenThrow(new ApiException());
-        updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
-
+        updateProcessorService.updateByBranch(branch, resourcePath("mytest1.json").getPath(), false);
     }
 
+    private URL resourcePath(String resourceName) {
+        return getClass().getClassLoader().getResource(resourceName);
+    }
 
+    private boolean processGroupFlowEntityHas(ProcessGroupFlowEntity response, ProcessorEntity processorEntity) {
+        return response.getProcessGroupFlow().getFlow().getProcessors().add(processorEntity);
+    }
 
+    private boolean processGroupFlowEntityHas(ProcessGroupEntity groupEntity) {
+        return response.getProcessGroupFlow().getFlow().getProcessGroups().add(groupEntity);
+    }
 
+    private boolean processGroupFlowEntityHas(ConnectionEntity connectionEntity) {
+        return response.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
+    }
+
+    private boolean processGroupFlowEntityHas(ProcessorEntity processorEntity) {
+        return processGroupFlowEntityHas(response, processorEntity);
+    }
 }

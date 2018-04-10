@@ -1,21 +1,22 @@
 package com.github.hermannpencole.nifi.config.model;
 
-import com.google.gson.annotations.SerializedName;
+import java.util.Objects;
 
 public class Connection {
 
-    @SerializedName("name")
     private String name;
 
-    @SerializedName("source")
     private String source;
 
-    @SerializedName("destination")
     private String destination;
 
     private String backPressureDataSizeThreshold;
 
     private Long backPressureObjectThreshold;
+
+    public String getConnectionKey() {
+        return name + ":" + source + ":" + destination;
+    }
 
     public String getName() {
         return name;
@@ -55,5 +56,23 @@ public class Connection {
 
     public void setBackPressureObjectThreshold(Long backPressureObjectThreshold) {
         this.backPressureObjectThreshold = backPressureObjectThreshold;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Connection that = (Connection) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(source, that.source) &&
+                Objects.equals(destination, that.destination) &&
+                Objects.equals(backPressureDataSizeThreshold, that.backPressureDataSizeThreshold) &&
+                Objects.equals(backPressureObjectThreshold, that.backPressureObjectThreshold);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(name, source, destination, backPressureDataSizeThreshold, backPressureObjectThreshold);
     }
 }

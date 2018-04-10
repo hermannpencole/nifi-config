@@ -88,10 +88,10 @@ public class UpdateProcessorService {
         updateComponent(configuration, componentSearch, clientId);
 
         //controller
-        //updateControllers(configuration, processGroupFlowId, clientId);
+        updateControllers(configuration, processGroupFlowId, clientId);
 
         //connexion
-        connectionsUpdater.updateConnections(configuration.getConnections(), componentSearch);
+        connectionsUpdater.updateConnections(configuration.getConnections(), componentSearch.getProcessGroupFlow().getFlow().getConnections());
         createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
 
         if (!optionNoStartProcessors) {
@@ -277,8 +277,10 @@ public class UpdateProcessorService {
      */
     private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch, String clientId) throws ApiException {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
-        configuration.getProcessors().forEach(processorOnConfig -> updateProcessor(
-                findProcByComponentName(flow.getProcessors(), processorOnConfig.getName()), processorOnConfig, false, clientId));
+
+        configuration.getProcessors()
+                .forEach(processorOnConfig -> updateProcessor(findProcByComponentName(flow.getProcessors(), processorOnConfig.getName()), processorOnConfig, false, clientId));
+
         for (GroupProcessorsEntity procGroupInConf : configuration.getGroupProcessorsEntity()) {
             ProcessGroupEntity processorGroupToUpdate = findByComponentName(flow.getProcessGroups(), procGroupInConf.getName())
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));

@@ -50,5 +50,14 @@
       ],
       "name": "nameSubGroup"
     }
+  ],
+  "allConnections": [
+    {
+      "name": "idConnection",
+      "source": "sourceOne",
+      "destination": "destOne",
+      "backPressureDataSizeThreshold": "1 GB",
+      "backPressureObjectThreshold": 10
+    }
   ]
 }

@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 
 /**
@@ -61,6 +62,7 @@ public class TestUtils {
                                                           String backPressureDataSizeThreshold,
                                                           Long backPressureObjectThreshold) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setId(name + "id");
 
         ConnectionDTO connectionDTO = new ConnectionDTO();
         connectionDTO.setName(name);
@@ -86,6 +88,16 @@ public class TestUtils {
         connectionEntity.setSourceId(sourceId);
         connectionEntity.setRevision(createRevision(10L));
         return connectionEntity;
+    }
+
+    public static Connection createConnection(String name, String source, String destination, String dataSizeThreashold, Long objectThreshold) {
+        Connection connection = new Connection();
+        connection.setName(name);
+        connection.setSource(source);
+        connection.setDestination(destination);
+        connection.setBackPressureDataSizeThreshold(dataSizeThreashold);
+        connection.setBackPressureObjectThreshold(objectThreshold);
+        return connection;
     }
 
     public static ControllerServiceEntity createControllerServiceEntity(String id, String name) {
