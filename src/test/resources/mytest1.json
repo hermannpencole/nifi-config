@@ -51,7 +51,7 @@
       "name": "nameSubGroup"
     }
   ],
-  "allConnections": [
+  "namedConnections": [
     {
       "name": "idConnection",
       "source": "sourceOne",

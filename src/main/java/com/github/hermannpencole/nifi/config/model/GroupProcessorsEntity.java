@@ -24,7 +24,7 @@ public class GroupProcessorsEntity {
     @SerializedName("connections")
     private List<ConnectionPort> connectionPorts = new ArrayList<>();
 
-    @SerializedName("allConnections")
+    @SerializedName("namedConnections")
     private List<Connection> connections = new ArrayList<>();
 
     @SerializedName("name")

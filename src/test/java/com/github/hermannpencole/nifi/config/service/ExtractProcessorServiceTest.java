@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ExtractProcessorServiceTest {
+
     @Mock
     private ProcessGroupService processGroupServiceMock;
 
@@ -140,14 +141,14 @@ public class ExtractProcessorServiceTest {
         GroupProcessorsEntity result = loadOutputFileContent();
         assertEquals(result.getConnections().size(), 3);
 
-        assertEquals(asList("connectionOne", null, "connectionThree"), collect(result, connection -> connection.getName()));
-        assertEquals(asList("sourceOne", "sourceTwo", "sourceTwo"), collect(result, connection -> connection.getSource()));
-        assertEquals(asList("destOne", "destTwo", "destOne"), collect(result, connection -> connection.getDestination()));
-        assertEquals(asList(10L, 10L, 1L), collect(result, connection -> connection.getBackPressureObjectThreshold()));
-        assertEquals(asList("1 GB", "2 GB", "1 GB"), collect(result, connection -> connection.getBackPressureDataSizeThreshold()));
+        assertEquals(asList("connectionOne", null, "connectionThree"), mapAndCollect(result, connection -> connection.getName()));
+        assertEquals(asList("sourceOne", "sourceTwo", "sourceTwo"), mapAndCollect(result, connection -> connection.getSource()));
+        assertEquals(asList("destOne", "destTwo", "destOne"), mapAndCollect(result, connection -> connection.getDestination()));
+        assertEquals(asList(10L, 10L, 1L), mapAndCollect(result, connection -> connection.getBackPressureObjectThreshold()));
+        assertEquals(asList("1 GB", "2 GB", "1 GB"), mapAndCollect(result, connection -> connection.getBackPressureDataSizeThreshold()));
     }
 
-    private <T> List<T> collect(GroupProcessorsEntity result, Function<Connection, T> mapper) {
+    private <T> List<T> mapAndCollect(GroupProcessorsEntity result, Function<Connection, T> mapper) {
         return result.getConnections()
                 .stream()
                 .map(mapper)

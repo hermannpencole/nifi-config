@@ -106,13 +106,11 @@ public class UpdateProcessorService {
     }
 
     private GroupProcessorsEntity loadConfiguration(File file) throws IOException {
-        GroupProcessorsEntity configuration;
         Gson gson = new GsonBuilder().serializeNulls().create();
 
         try (Reader reader = new InputStreamReader(new FileInputStream(file), "UTF-8")) {
-            configuration = gson.fromJson(reader, GroupProcessorsEntity.class);
+            return gson.fromJson(reader, GroupProcessorsEntity.class);
         }
-        return configuration;
     }
 
 

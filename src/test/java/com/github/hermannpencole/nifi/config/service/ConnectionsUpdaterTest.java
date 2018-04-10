@@ -59,7 +59,7 @@ public class ConnectionsUpdaterTest {
 
     @Test
     public void shouldMakeNoUpdatesWhenConfigurationNotFound() {
-        ConnectionEntity connectionEntity = createConnectionEntity("connection", "sourceOne", "destOne", "1 GB", 10L);
+        ConnectionEntity connectionEntity = createConnectionEntity("connectionName", "sourceOne", "destOne", "1 GB", 10L);
         //when
         Connection connectionConfiguration = createConnection("connectionOtherName", "sourceOne", "destOne", "1 GB", 10L);
         connectionsUpdater.updateConnections(Arrays.asList(connectionConfiguration), Arrays.asList(connectionEntity));

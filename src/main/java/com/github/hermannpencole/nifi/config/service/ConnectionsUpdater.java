@@ -20,7 +20,9 @@ public class ConnectionsUpdater {
 
     public void updateConnections(List<Connection> connectionsConfiguration, List<ConnectionEntity> currentConnections) {
 
-        Map<String, Connection> connectionMap = connectionsConfiguration.stream().collect(Collectors.toMap(Connection::getConnectionKey, Function.identity()));
+        Map<String, Connection> connectionMap = connectionsConfiguration
+                .stream()
+                .collect(Collectors.toMap(Connection::getConnectionKey, Function.identity()));
 
         currentConnections.forEach(
                 entity -> {
