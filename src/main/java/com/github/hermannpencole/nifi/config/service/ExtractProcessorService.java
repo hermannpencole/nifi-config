@@ -63,9 +63,6 @@ public class ExtractProcessorService {
             result.getControllerServicesDTO().add(extractController(controllerServiceEntity));
         }
 
-        List<ConnectionEntity> connections = componentSearch.getProcessGroupFlow().getFlow().getConnections();
-        result.setConnections(extractConnections(connections));
-
         checkDuplicateProcessorNames(result.getProcessors(), failOnDuplicateNames);
 
         //convert to json
@@ -129,6 +126,10 @@ public class ExtractProcessorService {
             result.setProcessors(null);
         }
         result.setControllerServicesDTO(null);
+
+        List<ConnectionEntity> connections = idComponent.getProcessGroupFlow().getFlow().getConnections();
+        result.setConnections(extractConnections(connections));
+
         return result;
     }
 

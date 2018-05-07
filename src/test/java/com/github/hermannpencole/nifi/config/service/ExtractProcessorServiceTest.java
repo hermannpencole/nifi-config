@@ -148,6 +148,29 @@ public class ExtractProcessorServiceTest {
         assertEquals(asList("1 GB", "2 GB", "1 GB"), mapAndCollect(result, connection -> connection.getBackPressureDataSizeThreshold()));
     }
 
+    @Test
+    public void extractConnectionsFromSubFlowsTest() throws ApiException, IOException {
+        processGroupFlowEntityHas(createConnectionEntity("connectionOne", "sourceOne", "destOne", "1 GB", 10L));
+        processGroupFlowEntityHas(createProcessGroupEntity("subGroupId", "sub group"));
+
+        ProcessGroupFlowEntity subGroupEntity = createProcessGroupFlowEntity("subComponent", "subComponent");
+        when(flowapiMock.getFlow("subGroupId")).thenReturn(subGroupEntity);
+        processGroupFlowEntityHas(subGroupEntity, createConnectionEntity("subConnection", "sourceOne", "destOne", "2 GB", 12L));
+
+        extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
+
+        GroupProcessorsEntity result = loadOutputFileContent();
+        assertEquals(result.getConnections().size(), 1);
+
+        Connection subGroupConnection = result.getGroupProcessorsEntity().get(0).getConnections().get(0);
+
+        assertEquals("subConnection", subGroupConnection.getName());
+        assertEquals("sourceOne", subGroupConnection.getSource());
+        assertEquals("destOne", subGroupConnection.getDestination());
+        assertEquals(12L, subGroupConnection.getBackPressureObjectThreshold().longValue());
+        assertEquals("2 GB", subGroupConnection.getBackPressureDataSizeThreshold());
+    }
+
     private <T> List<T> mapAndCollect(GroupProcessorsEntity result, Function<Connection, T> mapper) {
         return result.getConnections()
                 .stream()
@@ -161,6 +184,14 @@ public class ExtractProcessorServiceTest {
 
     private void processGroupFlowEntityHas(ConnectionEntity entity) {
         response.getProcessGroupFlow().getFlow().getConnections().add(entity);
+    }
+
+    private void processGroupFlowEntityHas(ProcessGroupEntity processGroupEntity) {
+        response.getProcessGroupFlow().getFlow().getProcessGroups().add(processGroupEntity);
+    }
+
+    private void processGroupFlowEntityHas(ProcessGroupFlowEntity groupEntity, ConnectionEntity connectionEntity) {
+        groupEntity.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
     }
 
     private GroupProcessorsEntity loadOutputFileContent() throws IOException {
