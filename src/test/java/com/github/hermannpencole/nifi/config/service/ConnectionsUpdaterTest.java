@@ -30,14 +30,14 @@ public class ConnectionsUpdaterTest {
 
     @Test
     public void shouldUpdateConnections() {
-        ConnectionEntity connectionEntityOne = createConnectionEntity("connectionOne", "sourceOne", "destOne", "1 GB", 10L);
-        ConnectionEntity connectionEntityTwo = createConnectionEntity(null, "sourceTwo", "destTwo", "2 GB", 10L);
-        ConnectionEntity connectionEntityThee = createConnectionEntity("connectionThree", "sourceTwo", "destOne", "1 GB", 1L);
+        ConnectionEntity connectionEntityOne = createConnectionEntity("connectionOneId", "connectionOne", "sourceOne", "destOne", "1 GB", 10L);
+        ConnectionEntity connectionEntityTwo = createConnectionEntity("connectionTwoId", null, "sourceTwo", "destTwo", "2 GB", 10L);
+        ConnectionEntity connectionEntityThee = createConnectionEntity("connectionThreeId", "connectionThree", "sourceTwo", "destOne", "1 GB", 1L);
 
         List<Connection> connectionsConfiguration = Arrays.asList(
-                createConnection("connectionOne", "sourceOne", "destOne", "1 GB", 10L),
-                createConnection(null, "sourceTwo", "destTwo", "2 GB", 10L),
-                createConnection("connectionThree", "sourceTwo", "destOne", "12 GB", 1L)
+                createConnection("connectionOne", "sourceOne", "destOne", "1 GB", 10L, "connectionOneId"),
+                createConnection("connectionTwoId", "sourceTwo", "destTwo", "2 GB", 10L, "connectionTwoId"),
+                createConnection("connectionThree", "sourceTwo", "destOne", "12 GB", 1L, "connectionThreeId")
         );
         //when
         connectionsUpdater.updateConnections(connectionsConfiguration, Arrays.asList(connectionEntityOne, connectionEntityTwo, connectionEntityThee));
@@ -59,9 +59,9 @@ public class ConnectionsUpdaterTest {
 
     @Test
     public void shouldMakeNoUpdatesWhenConfigurationNotFound() {
-        ConnectionEntity connectionEntity = createConnectionEntity("connectionName", "sourceOne", "destOne", "1 GB", 10L);
+        ConnectionEntity connectionEntity = createConnectionEntity("Id", "connectionName", "sourceOne", "destOne", "1 GB", 10L);
         //when
-        Connection connectionConfiguration = createConnection("connectionOtherName", "sourceOne", "destOne", "1 GB", 10L);
+        Connection connectionConfiguration = createConnection("connectionOtherName", "sourceOne", "destOne", "1 GB", 10L, "IdOther");
         connectionsUpdater.updateConnections(Arrays.asList(connectionConfiguration), Arrays.asList(connectionEntity));
 
         //then

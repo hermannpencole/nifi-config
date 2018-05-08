@@ -78,16 +78,22 @@ public class UpdateProcessorServiceTest {
 
         ProcessGroupFlowEntity subGroupResponse = createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
         processGroupFlowEntityHas(subGroupResponse, createProcessorEntity("idProc2", "nameProc2"));
+        processGroupFlowEntityHas(subGroupResponse, createProcessorEntity("idProc3", "nameProc3"));
+        ConnectionEntity subConnection = createConnectionEntity("subConnection", "sourceId", "destinationId");
+        processGroupFlowEntityHas(subGroupResponse, subConnection);
         when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
 
         updateProcessorService.updateByBranch(branch, resourcePath("mytest1.json").getPath(), false);
 
-        verify(processorsApiMock, times(2)).updateProcessor(any(), any());
+        verify(processorsApiMock, times(3)).updateProcessor(any(), any());
         verify(processorsApiMock).updateProcessor(eq("idProc"), any());
         verify(processorsApiMock).updateProcessor(eq("idProc2"), any());
+        verify(processorsApiMock).updateProcessor(eq("idProc3"), any());
 
-        Connection connectionInConfigurationFile = createConnection("idConnection", "sourceOne", "destOne", "1 GB", 10L);
+        Connection connectionInConfigurationFile = createConnection("idConnection", "sourceOne", "destOne", "1 GB", 10L, "idConnection");
         verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(connectionInConfigurationFile), Arrays.asList(connectionEntity));
+        Connection subGroupConnection = createConnection("subGroupConnection", "nameProc2", "nameProc3", "4 GB", 4L, "idConnection");
+        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(subGroupConnection), Arrays.asList(subConnection));
     }
 
     @Test
@@ -110,7 +116,7 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test
-    public void updateBranchControllershipTest() throws ApiException, IOException {
+    public void updateBranchControllerTest() throws ApiException, IOException {
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
         controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
         when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
@@ -141,6 +147,10 @@ public class UpdateProcessorServiceTest {
 
     private boolean processGroupFlowEntityHas(ProcessGroupFlowEntity response, ProcessorEntity processorEntity) {
         return response.getProcessGroupFlow().getFlow().getProcessors().add(processorEntity);
+    }
+
+    private boolean processGroupFlowEntityHas(ProcessGroupFlowEntity response, ConnectionEntity connectionEntity) {
+        return response.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
     }
 
     private boolean processGroupFlowEntityHas(ProcessGroupEntity groupEntity) {

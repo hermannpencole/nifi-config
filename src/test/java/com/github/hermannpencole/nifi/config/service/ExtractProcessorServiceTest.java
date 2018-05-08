@@ -132,9 +132,9 @@ public class ExtractProcessorServiceTest {
 
     @Test
     public void extractConnectionsTest() throws ApiException, IOException {
-        processGroupFlowEntityHas(createConnectionEntity("connectionOne", "sourceOne", "destOne", "1 GB", 10L));
-        processGroupFlowEntityHas(createConnectionEntity(null, "sourceTwo", "destTwo", "2 GB", 10L));
-        processGroupFlowEntityHas(createConnectionEntity("connectionThree", "sourceTwo", "destOne", "1 GB", 1L));
+        processGroupFlowEntityHas(createConnectionEntity("connectionOneId", "connectionOne", "sourceOne", "destOne", "1 GB", 10L));
+        processGroupFlowEntityHas(createConnectionEntity("connectionTwoId", null, "sourceTwo", "destTwo", "2 GB", 10L));
+        processGroupFlowEntityHas(createConnectionEntity("connectionThreeId", "connectionThree", "sourceTwo", "destOne", "1 GB", 1L));
 
         extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
 
@@ -150,12 +150,12 @@ public class ExtractProcessorServiceTest {
 
     @Test
     public void extractConnectionsFromSubFlowsTest() throws ApiException, IOException {
-        processGroupFlowEntityHas(createConnectionEntity("connectionOne", "sourceOne", "destOne", "1 GB", 10L));
+        processGroupFlowEntityHas(createConnectionEntity("connectionOneId", "connectionOne", "sourceOne", "destOne", "1 GB", 10L));
         processGroupFlowEntityHas(createProcessGroupEntity("subGroupId", "sub group"));
 
         ProcessGroupFlowEntity subGroupEntity = createProcessGroupFlowEntity("subComponent", "subComponent");
         when(flowapiMock.getFlow("subGroupId")).thenReturn(subGroupEntity);
-        processGroupFlowEntityHas(subGroupEntity, createConnectionEntity("subConnection", "sourceOne", "destOne", "2 GB", 12L));
+        processGroupFlowEntityHas(subGroupEntity, createConnectionEntity("subConnectionId", "subConnection", "sourceOne", "destOne", "2 GB", 12L));
 
         extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
 
@@ -164,6 +164,7 @@ public class ExtractProcessorServiceTest {
 
         Connection subGroupConnection = result.getGroupProcessorsEntity().get(0).getConnections().get(0);
 
+        assertEquals("subConnectionId", subGroupConnection.getId());
         assertEquals("subConnection", subGroupConnection.getName());
         assertEquals("sourceOne", subGroupConnection.getSource());
         assertEquals("destOne", subGroupConnection.getDestination());

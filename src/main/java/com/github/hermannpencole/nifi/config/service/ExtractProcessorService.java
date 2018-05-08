@@ -180,18 +180,19 @@ public class ExtractProcessorService {
     private List<Connection> extractConnections(List<ConnectionEntity> connections) {
         return connections
                 .stream()
-                .map(ConnectionEntity::getComponent)
                 .map(this::toConnection)
                 .collect(Collectors.toList());
     }
 
-    private Connection toConnection(ConnectionDTO dto) {
-        Connection connectionPort = new Connection();
-        connectionPort.setDestination(dto.getDestination().getName());
-        connectionPort.setSource(dto.getSource().getName());
-        connectionPort.setName(dto.getName());
-        connectionPort.setBackPressureDataSizeThreshold(dto.getBackPressureDataSizeThreshold());
-        connectionPort.setBackPressureObjectThreshold(dto.getBackPressureObjectThreshold());
-        return connectionPort;
+    private Connection toConnection(ConnectionEntity entity) {
+        ConnectionDTO dto = entity.getComponent();
+        Connection connection = new Connection();
+        connection.setId(entity.getId());
+        connection.setDestination(dto.getDestination().getName());
+        connection.setSource(dto.getSource().getName());
+        connection.setName(dto.getName());
+        connection.setBackPressureDataSizeThreshold(dto.getBackPressureDataSizeThreshold());
+        connection.setBackPressureObjectThreshold(dto.getBackPressureObjectThreshold());
+        return connection;
     }
 }

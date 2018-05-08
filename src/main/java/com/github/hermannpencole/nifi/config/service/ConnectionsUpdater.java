@@ -22,22 +22,19 @@ public class ConnectionsUpdater {
 
         Map<String, Connection> connectionMap = connectionsConfiguration
                 .stream()
-                .collect(Collectors.toMap(Connection::getConnectionKey, Function.identity()));
+                .collect(Collectors.toMap(Connection::getId, Function.identity()));
 
         currentConnections.forEach(
                 entity -> {
                     ConnectionDTO connectionDTO = entity.getComponent();
-                    Connection config = connectionMap.getOrDefault(getConnectionDTOKey(connectionDTO), null);
+                    Connection config = connectionMap.getOrDefault(connectionDTO.getId(), null);
                     if (config != null) {
                         connectionDTO.setBackPressureObjectThreshold(config.getBackPressureObjectThreshold());
                         connectionDTO.setBackPressureDataSizeThreshold(config.getBackPressureDataSizeThreshold());
+                        connectionDTO.setSelectedRelationships(null);
                         connectionsApi.updateConnection(entity.getId(), entity);
                     }
                 });
-    }
-
-    private String getConnectionDTOKey(ConnectionDTO connectionDTO) {
-        return connectionDTO.getName() + ":" + connectionDTO.getSource().getName() + ":" + connectionDTO.getDestination().getName();
     }
 
 }

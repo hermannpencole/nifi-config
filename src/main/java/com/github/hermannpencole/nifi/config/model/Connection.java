@@ -4,6 +4,8 @@ import java.util.Objects;
 
 public class Connection {
 
+    private String id;
+
     private String name;
 
     private String source;
@@ -14,8 +16,12 @@ public class Connection {
 
     private Long backPressureObjectThreshold;
 
-    public String getConnectionKey() {
-        return name + ":" + source + ":" + destination;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -72,7 +78,6 @@ public class Connection {
 
     @Override
     public int hashCode() {
-
         return Objects.hash(name, source, destination, backPressureDataSizeThreshold, backPressureObjectThreshold);
     }
 }

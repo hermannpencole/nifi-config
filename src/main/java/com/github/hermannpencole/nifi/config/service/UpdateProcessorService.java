@@ -90,8 +90,6 @@ public class UpdateProcessorService {
         //controller
         updateControllers(configuration, processGroupFlowId, clientId);
 
-        //connexion
-        connectionsUpdater.updateConnections(configuration.getConnections(), componentSearch.getProcessGroupFlow().getFlow().getConnections());
         createRouteService.createRoutes(configuration.getConnectionPorts(), optionNoStartProcessors);
 
         if (!optionNoStartProcessors) {
@@ -284,6 +282,8 @@ public class UpdateProcessorService {
                     .orElseThrow(() -> new ConfigException(("cannot find " + procGroupInConf.getName())));
             updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()), clientId);
         }
+
+        connectionsUpdater.updateConnections(configuration.getConnections(), flow.getConnections());
     }
 
     /**

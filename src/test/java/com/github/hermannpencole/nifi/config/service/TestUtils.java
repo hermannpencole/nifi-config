@@ -58,13 +58,14 @@ public class TestUtils {
         return proc;
     }
 
-    public static ConnectionEntity createConnectionEntity(String name, String sourceName, String destinationName,
+    public static ConnectionEntity createConnectionEntity(String id, String name, String sourceName, String destinationName,
                                                           String backPressureDataSizeThreshold,
                                                           Long backPressureObjectThreshold) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
-        connectionEntity.setId(name + "id");
+        connectionEntity.setId(id);
 
         ConnectionDTO connectionDTO = new ConnectionDTO();
+        connectionDTO.setId(id);
         connectionDTO.setName(name);
         connectionEntity.setComponent(connectionDTO);
 
@@ -90,8 +91,9 @@ public class TestUtils {
         return connectionEntity;
     }
 
-    public static Connection createConnection(String name, String source, String destination, String dataSizeThreashold, Long objectThreshold) {
+    public static Connection createConnection(String name, String source, String destination, String dataSizeThreashold, Long objectThreshold, String id) {
         Connection connection = new Connection();
+        connection.setId(id);
         connection.setName(name);
         connection.setSource(source);
         connection.setDestination(destination);
