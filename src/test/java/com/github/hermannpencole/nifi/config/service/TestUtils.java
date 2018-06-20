@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 
 /**
@@ -57,6 +58,30 @@ public class TestUtils {
         return proc;
     }
 
+    public static ConnectionEntity createConnectionEntity(String id, String name, String sourceName, String destinationName,
+                                                          String backPressureDataSizeThreshold,
+                                                          Long backPressureObjectThreshold) {
+        ConnectionEntity connectionEntity = new ConnectionEntity();
+        connectionEntity.setId(id);
+
+        ConnectionDTO connectionDTO = new ConnectionDTO();
+        connectionDTO.setId(id);
+        connectionDTO.setName(name);
+        connectionEntity.setComponent(connectionDTO);
+
+        ConnectableDTO source = new ConnectableDTO();
+        source.setName(sourceName);
+        connectionDTO.setSource(source);
+
+        ConnectableDTO destination = new ConnectableDTO();
+        destination.setName(destinationName);
+        connectionDTO.setDestination(destination);
+
+        connectionDTO.setBackPressureDataSizeThreshold(backPressureDataSizeThreshold);
+        connectionDTO.setBackPressureObjectThreshold(backPressureObjectThreshold);
+        return connectionEntity;
+    }
+
     public static ConnectionEntity createConnectionEntity(String id, String sourceId, String destinationId) {
         ConnectionEntity connectionEntity = new ConnectionEntity();
         connectionEntity.setId(id);
@@ -64,6 +89,17 @@ public class TestUtils {
         connectionEntity.setSourceId(sourceId);
         connectionEntity.setRevision(createRevision(10L));
         return connectionEntity;
+    }
+
+    public static Connection createConnection(String name, String source, String destination, String dataSizeThreashold, Long objectThreshold, String id) {
+        Connection connection = new Connection();
+        connection.setId(id);
+        connection.setName(name);
+        connection.setSource(source);
+        connection.setDestination(destination);
+        connection.setBackPressureDataSizeThreshold(dataSizeThreashold);
+        connection.setBackPressureObjectThreshold(objectThreshold);
+        return connection;
     }
 
     public static ControllerServiceEntity createControllerServiceEntity(String id, String name) {

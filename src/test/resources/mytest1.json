@@ -46,9 +46,46 @@
             "comments": "",
             "lossTolerant": false
           }
+        },
+        {
+          "name": "nameProc3",
+          "config": {
+            "properties": {},
+            "schedulingPeriod": "1 sec",
+            "schedulingStrategy": "TIMER_DRIVEN",
+            "executionNode": "ALL",
+            "penaltyDuration": "30 sec",
+            "yieldDuration": "1 sec",
+            "bulletinLevel": "WARN",
+            "runDurationMillis": 0,
+            "concurrentlySchedulableTaskCount": 1,
+            "autoTerminatedRelationships": [],
+            "comments": "",
+            "lossTolerant": false
+          }
         }
       ],
-      "name": "nameSubGroup"
+      "name": "nameSubGroup",
+      "namedConnections": [
+        {
+          "id": "subGroupConnectionId",
+          "name": "subGroupConnection",
+          "source": "nameProc2",
+          "destination": "nameProc3",
+          "backPressureDataSizeThreshold": "4 GB",
+          "backPressureObjectThreshold": 4
+        }
+      ]
+    }
+  ],
+  "namedConnections": [
+    {
+      "id": "idConnectionId",
+      "name": "idConnection",
+      "source": "sourceOne",
+      "destination": "destOne",
+      "backPressureDataSizeThreshold": "1 GB",
+      "backPressureObjectThreshold": 10
     }
   ]
 }

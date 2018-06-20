@@ -1,9 +1,9 @@
 package com.github.hermannpencole.nifi.config.service;
 
 import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.config.model.GroupProcessorsEntity;
 import com.github.hermannpencole.nifi.swagger.ApiException;
-import com.github.hermannpencole.nifi.swagger.client.ControllerApi;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import com.google.common.base.Joiner;
@@ -36,13 +36,9 @@ public class ExtractProcessorService {
     private ProcessGroupService processGroupService;
 
     @Inject
-    private ControllerApi controllerApi;
-
-    @Inject
     private FlowApi flowapi;
 
     /**
-     *
      * @param branch
      * @param fileConfiguration
      * @throws IOException
@@ -58,8 +54,9 @@ public class ExtractProcessorService {
         GroupProcessorsEntity result = extractJsonFromComponent(componentSearch);
 
         //add controllers
-        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(componentSearch.getProcessGroupFlow().getId());
-        if ( !controllerServicesEntity.getControllerServices().isEmpty() ) {
+        String processorGroupFlowId = componentSearch.getProcessGroupFlow().getId();
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(processorGroupFlowId);
+        if (!controllerServicesEntity.getControllerServices().isEmpty()) {
             result.setControllerServicesDTO(new ArrayList<>());
         }
         for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
@@ -129,6 +126,10 @@ public class ExtractProcessorService {
             result.setProcessors(null);
         }
         result.setControllerServicesDTO(null);
+
+        List<ConnectionEntity> connections = idComponent.getProcessGroupFlow().getFlow().getConnections();
+        result.setConnections(extractConnections(connections));
+
         return result;
     }
 
@@ -143,7 +144,7 @@ public class ExtractProcessorService {
         result.setName(processor.getName());
         result.setConfig(processor.getConfig());
         //remove controller link
-        for ( Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
+        for (Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
             if (entry.getValue().getIdentifiesControllerService() != null) {
                 result.getConfig().getProperties().remove(entry.getKey());
             }
@@ -174,5 +175,24 @@ public class ExtractProcessorService {
         result.setReferencingComponents(null);
         result.setValidationErrors(null);
         return result;
+    }
+
+    private List<Connection> extractConnections(List<ConnectionEntity> connections) {
+        return connections
+                .stream()
+                .map(this::toConnection)
+                .collect(Collectors.toList());
+    }
+
+    private Connection toConnection(ConnectionEntity entity) {
+        ConnectionDTO dto = entity.getComponent();
+        Connection connection = new Connection();
+        connection.setId(entity.getId());
+        connection.setDestination(dto.getDestination().getName());
+        connection.setSource(dto.getSource().getName());
+        connection.setName(dto.getName());
+        connection.setBackPressureDataSizeThreshold(dto.getBackPressureDataSizeThreshold());
+        connection.setBackPressureObjectThreshold(dto.getBackPressureObjectThreshold());
+        return connection;
     }
 }
