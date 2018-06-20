@@ -93,6 +93,17 @@ public class ProcessGroupService {
      * @throws ApiException
      */
     public ProcessGroupFlowEntity createDirectory(List<String> branch) throws ApiException {
+        return  this.createDirectory(branch, null);
+    }
+
+    /**
+     * browse nifi on branch pass in parameter and create processgroup if necessary
+     * @param branch
+     * @param comments
+     * @return
+     * @throws ApiException
+     */
+    public ProcessGroupFlowEntity createDirectory(List<String> branch, String comments) throws ApiException {
         //generate clientID
         String clientId = flowapi.generateClientId();
         //find root
@@ -108,7 +119,8 @@ public class ProcessGroupService {
                 created.getRevision().setClientId(clientId);
                 created.getComponent().setName(processGroupName);
                 created.getComponent().setPosition(position);
-                created = processGroupsApi.createProcessGroup(flowEntity.getProcessGroupFlow().getId(), created);
+                created.getComponent().setComments(comments);
+                created = createProcessGroup(flowEntity.getProcessGroupFlow().getId(), created);
                 flowEntity = flowapi.getFlow(created.getId());
             } else {
                 flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
@@ -117,6 +129,25 @@ public class ProcessGroupService {
         return flowEntity;
     }
 
+    /**
+     *
+     * @param id
+     * @param entity
+     * @return
+     */
+    public ProcessGroupEntity createProcessGroup(String id, ProcessGroupEntity entity) {
+        return processGroupsApi.createProcessGroup(id, entity);
+    }
+
+    /**
+     *
+     * @param id
+     * @param entity
+     * @return
+     */
+    public ProcessGroupEntity updateProcessGroup(String id, ProcessGroupEntity entity) {
+        return processGroupsApi.updateProcessGroup(id, entity);
+    }
 
     /**
      * set state on entire process group (no report error if there is)
