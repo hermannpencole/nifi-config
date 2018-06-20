@@ -14,11 +14,11 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static com.github.hermannpencole.nifi.swagger.client.model.ProcessorDTO.StateEnum.RUNNING;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 /**
@@ -45,13 +45,13 @@ public class UpdateProcessorServiceTest {
     private UpdateProcessorService updateProcessorService;
 
     @Test(expected = FileNotFoundException.class)
-    public void updateFileNotExitingBranchTest() throws ApiException, IOException, URISyntaxException {
+    public void updateFileNotExitingBranchTest() throws ApiException, IOException {
         List<String> branch = Arrays.asList("root", "elt1");
         updateProcessorService.updateByBranch(branch, "not existing", false);
     }
 
     @Test
-    public void updateBranchTest() throws ApiException, IOException, URISyntaxException {
+    public void updateBranchTest() throws ApiException, IOException {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
         response.getProcessGroupFlow().getFlow()
@@ -70,12 +70,20 @@ public class UpdateProcessorServiceTest {
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
 
         verify(processorsApiMock, times(2)).updateProcessor(any(), any());
-        verify(processorsApiMock).updateProcessor(eq("idProc"), any());
+
+        ArgumentCaptor<ProcessorEntity> processorEntityArgumentCaptor = ArgumentCaptor.forClass(ProcessorEntity.class);
+
+        verify(processorsApiMock).updateProcessor(eq("idProc"), processorEntityArgumentCaptor.capture());
         verify(processorsApiMock).updateProcessor(eq("idProc2"), any());
+
+        ProcessorEntity processorEntity = processorEntityArgumentCaptor.getValue();
+        assertEquals(RUNNING.toString(), processorEntity.getStatus().getRunStatus());
+        assertEquals("idProc", processorEntity.getId());
+        assertEquals("nameProc", processorEntity.getComponent().getName());
     }
 
     @Test
-    public void updateBranchWithAutoTerminateRelationshipTest() throws ApiException, IOException, URISyntaxException {
+    public void updateBranchWithAutoTerminateRelationshipTest() throws ApiException, IOException {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
         ProcessorEntity proc = TestUtils.createProcessorEntity("idProc", "nameProc");
@@ -98,7 +106,7 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test
-    public void updateBranchControllershipTest() throws ApiException, IOException, URISyntaxException, InterruptedException {
+    public void updateBranchControllershipTest() throws ApiException, IOException {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
 
@@ -120,7 +128,7 @@ public class UpdateProcessorServiceTest {
     }
 
     @Test(expected = ConfigException.class)
-    public void updateErrorBranchTest() throws ApiException, IOException, URISyntaxException {
+    public void updateErrorBranchTest() throws ApiException, IOException {
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
         response.getProcessGroupFlow().getFlow()
@@ -135,8 +143,4 @@ public class UpdateProcessorServiceTest {
         updateProcessorService.updateByBranch(branch, getClass().getClassLoader().getResource("mytest1.json").getPath(), false);
 
     }
-
-
-
-
 }
