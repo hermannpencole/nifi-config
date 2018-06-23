@@ -119,8 +119,12 @@ public class ProcessGroupService {
                 created.getRevision().setClientId(clientId);
                 created.getComponent().setName(processGroupName);
                 created.getComponent().setPosition(position);
-                created.getComponent().setComments(comments);
                 created = createProcessGroup(flowEntity.getProcessGroupFlow().getId(), created);
+                if (comments != null) {
+                    //add comment
+                    created.getComponent().setComments(comments);
+                    created = updateProcessGroup(created.getId(), created);
+                }
                 flowEntity = flowapi.getFlow(created.getId());
             } else {
                 flowEntity = flowapi.getFlow(flowEntityChild.get().getId());
