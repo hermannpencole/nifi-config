@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,7 @@ public class Main {
     public static final int DEFAULT_WRITETIMEOUT = 10000;
     public static final double DEFAULT_PLACEWIDTH = 1935d;
     public static final String DEFAULT_PLACE = "0,0";
+    public static final String ENV_NIFI_PASSWORD = "nifi_password";
 
     /**
      * Print to the console the usage.
@@ -43,7 +45,7 @@ public class Main {
      */
     private static void printUsage(Options options) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("java -jar nifi-deploy-config-" + version +".jar [OPTIONS]", options);
+        formatter.printHelp("java -jar nifi-deploy-config-" + version + ".jar [OPTIONS]", options);
     }
 
     /**
@@ -62,7 +64,7 @@ public class Main {
             options.addOption("m", "mode", true, "Mandatory, possible values : updateConfig/extractConfig/deployTemplate/undeploy");
             options.addOption("c", "conf", true, "Mandatory if mode in [updateConfig, extractConfig, deployTemplate]  : configuration file");
             options.addOption("n", "nifi", true, "Mandatory : Nifi URL (ex : http://localhost:8080/nifi-api)");
-            options.addOption("user", true, "User name for access via username/password. If present, password is mandatory");
+            options.addOption("user", true, "User name for access via username/password.");
             options.addOption("password", true, "Password for access via username/password. If present, user is mandatory");
             options.addOption("f", "force", false, "Turn on force mode : empty queue after timeout");
             options.addOption("timeout", true, "Allow specifying the polling timeout in second (defaut 120 seconds); negative value indicates no timeout");
@@ -84,17 +86,20 @@ public class Main {
             if (cmd.hasOption("h")) {
                 printUsage(options);
                 System.exit(1);
-            } else if (!cmd.hasOption("n") || (!cmd.hasOption("c") && cmd.hasOption("m") && !cmd.getOptionValue("m").equals("undeploy") )) {
+            } else if (!cmd.hasOption("n") || (!cmd.hasOption("c") && cmd.hasOption("m") && !cmd.getOptionValue("m").equals("undeploy"))) {
                 printUsage(options);
                 System.exit(1);
             } else if (!"updateConfig".equals(cmd.getOptionValue("m")) && !"extractConfig".equals(cmd.getOptionValue("m"))
-                    && !"deployTemplate".equals(cmd.getOptionValue("m")) && !"undeploy".equals(cmd.getOptionValue("m")) ) {
+                    && !"deployTemplate".equals(cmd.getOptionValue("m")) && !"undeploy".equals(cmd.getOptionValue("m"))) {
                 printUsage(options);
                 System.exit(1);
-            } else if ( (cmd.hasOption("user") && !cmd.hasOption("password")) || (cmd.hasOption("password") && !cmd.hasOption("user")) ) {
+            } else if ((cmd.hasOption("password") && !cmd.hasOption("user"))) {
                 printUsage(options);
                 System.exit(1);
             } else {
+                String password = Optional.ofNullable(System.getenv(ENV_NIFI_PASSWORD))
+                        .orElseGet(() -> cmd.getOptionValue("password"));
+
                 //configure options
                 Integer timeout = cmd.hasOption("timeout") ? Integer.valueOf(cmd.getOptionValue("timeout")) : DEFAULT_TIMEOUT;
                 Integer interval = cmd.hasOption("interval") ? Integer.valueOf(cmd.getOptionValue("interval")) : DEFAULT_INTERVAL;
@@ -105,7 +110,7 @@ public class Main {
                 String startPlace = cmd.hasOption("startPosition") ? cmd.getOptionValue("startPosition") : DEFAULT_PLACE;
                 Boolean forceMode = cmd.hasOption("force");
 
-                LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")) );
+                LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")));
                 String addressNifi = cmd.getOptionValue("n");
                 String fileConfiguration = cmd.getOptionValue("c");
 
@@ -124,10 +129,10 @@ public class Main {
                 AccessService accessService = injector.getInstance(AccessService.class);
                 accessService.setConfiguration(addressNifi, !cmd.hasOption("noVerifySsl"), cmd.hasOption("enableDebugMode"), connectionTimeout, readTimeout, writeTimeout);
 
-                accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), cmd.getOptionValue("password"));
+                accessService.addTokenOnConfiguration(cmd.hasOption("accessFromTicket"), cmd.getOptionValue("user"), password);
 
                 InformationService infoService = injector.getInstance(InformationService.class);
-                String nifiVersion =  infoService.getVersion();
+                String nifiVersion = infoService.getVersion();
                 LOG.info(String.format("Communicate with nifi %s", nifiVersion));
 
                 if ("updateConfig".equals(cmd.getOptionValue("m"))) {
@@ -156,16 +161,17 @@ public class Main {
         }
     }
 
-    public static PositionDTO createPosition(String value){
+    public static PositionDTO createPosition(String value) {
         PositionDTO positionDTO = new PositionDTO();
         String[] split = value.split(",");
         if (split.length != 2) {
             throw new ConfigException("startPlace must have format x,y whre y and y are integer");
         }
-        positionDTO.setX( Double.valueOf(split[0]));
-        positionDTO.setY( Double.valueOf(split[1]));
+        positionDTO.setX(Double.valueOf(split[0]));
+        positionDTO.setY(Double.valueOf(split[1]));
         return positionDTO;
     }
+
     /**
      * create injector with the values pass in parameter
      *
