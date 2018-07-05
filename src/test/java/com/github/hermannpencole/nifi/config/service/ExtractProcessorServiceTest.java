@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.hermannpencole.nifi.config.service.TestUtils.*;
 import static java.util.Arrays.asList;
@@ -90,8 +91,7 @@ public class ExtractProcessorServiceTest {
     @Test
     public void extractBranchTest() throws ApiException, IOException {
         processGroupFlowEntityHas(createProcessorEntity("idProc", "nameProc"));
-        response.getProcessGroupFlow().getFlow()
-                .getProcessGroups().add(createProcessGroupEntity("idSubGroup", "nameSubGroup"));
+        processGroupFlowEntityHas(createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
         controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
@@ -123,11 +123,15 @@ public class ExtractProcessorServiceTest {
     }
 
     @Test
-    public void extractNonDuplicateProcessorNamesTest() throws ApiException, IOException {
-        processGroupFlowEntityHas(createProcessorEntity("idProc1", "nameProcA"));
-        processGroupFlowEntityHas(createProcessorEntity("idProc2", "nameProcB"));
+    public void shouldExtractProcessorsAndOrderThemByName() throws ApiException {
+        processGroupFlowEntityHas(createProcessorEntity("idProc1", "nameProcB"));
+        processGroupFlowEntityHas(createProcessorEntity("idProc2", "nameProcA"));
+        processGroupFlowEntityHas(createProcessorEntity("idProc3", "nameProcC"));
 
-        extractService.extractByBranch(branch, temp.getAbsolutePath(), true);
+        GroupProcessorsEntity result = extractService.extractByBranch(branch, true);
+
+        String processorsNames = result.getProcessors().stream().map(ProcessorDTO::getName).collect(Collectors.joining(","));
+        assertEquals(processorsNames, "nameProcA,nameProcB,nameProcC");
     }
 
     @Test

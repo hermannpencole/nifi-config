@@ -47,6 +47,24 @@ public class ExtractProcessorService {
     public void extractByBranch(List<String> branch, String fileConfiguration, boolean failOnDuplicateNames) throws IOException, ApiException {
         File file = new File(fileConfiguration);
 
+        GroupProcessorsEntity result = extractByBranch(branch, failOnDuplicateNames);
+        //convert to json
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        LOG.debug("saving in file {}", fileConfiguration);
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
+            gson.toJson(result, writer);
+        } finally {
+            LOG.debug("extractByBranch end");
+        }
+    }
+
+    /**
+     * @param branch
+     * @throws IOException
+     * @throws ApiException
+     */
+    public GroupProcessorsEntity extractByBranch(List<String> branch, boolean failOnDuplicateNames) {
+
         ProcessGroupFlowEntity componentSearch = processGroupService.changeDirectory(branch)
                 .orElseThrow(() -> new ConfigException(("cannot find " + Arrays.toString(branch.toArray()))));
 
@@ -64,15 +82,7 @@ public class ExtractProcessorService {
         }
 
         checkDuplicateProcessorNames(result.getProcessors(), failOnDuplicateNames);
-
-        //convert to json
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        LOG.debug("saving in file {}", fileConfiguration);
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8")) {
-            gson.toJson(result, writer);
-        } finally {
-            LOG.debug("extractByBranch end");
-        }
+        return result;
     }
 
     private void checkDuplicateProcessorNames(List<ProcessorDTO> processors, boolean failOnDuplicateNames) {
@@ -122,6 +132,9 @@ public class ExtractProcessorService {
         if (result.getGroupProcessorsEntity().isEmpty()) {
             result.setGroupProcessorsEntity(null);
         }
+
+        Collections.sort(result.getProcessors(), Comparator.comparing(ProcessorDTO::getName));
+
         if (result.getProcessors().isEmpty()) {
             result.setProcessors(null);
         }
