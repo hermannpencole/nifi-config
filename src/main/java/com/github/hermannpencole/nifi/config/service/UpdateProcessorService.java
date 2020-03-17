@@ -56,6 +56,8 @@ public class UpdateProcessorService {
     /**
      * @param branch the branch
      * @param fileConfiguration fileConfiguration
+     * @param optionNoStartProcessors if optionNoStartProcessors
+     * @throws IOException when io problem
      * @throws ApiException when api problem
      */
     public void updateByBranch(List<String> branch, String fileConfiguration, boolean optionNoStartProcessors) throws IOException, ApiException {

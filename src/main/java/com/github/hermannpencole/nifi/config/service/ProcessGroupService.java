@@ -247,7 +247,7 @@ public class ProcessGroupService {
     }
 
     /**
-     * reorder for have the processor that consume stream -> connection -> processor connected etc ...in the good order.
+     * reorder for have the processor that consume stream -&gt; connection -&gt; processor connected etc ...in the good order.
      *
      * Just put the first at the first and the other after trick for bypass cycle
      *

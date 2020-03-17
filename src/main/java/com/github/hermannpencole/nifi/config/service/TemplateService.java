@@ -27,8 +27,7 @@ import java.util.stream.Stream;
 
 /**
  * Class that offer service for nifi template
- * <p>
- * <p>
+ *
  * Created by SFRJ on 01/04/2017.
  */
 @Singleton
@@ -68,6 +67,7 @@ public class TemplateService {
     /**
      * @param branch the branch
      * @param fileConfiguration the fileConfiguration
+     * @param keepTemplate if keepTemplate
      * @throws ApiException when api problem
      */
     public void installOnBranch(List<String> branch, String fileConfiguration, boolean keepTemplate) throws ApiException {

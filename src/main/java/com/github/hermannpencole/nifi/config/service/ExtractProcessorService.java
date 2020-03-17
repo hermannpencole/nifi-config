@@ -41,6 +41,7 @@ public class ExtractProcessorService {
     /**
      * @param branch the branch
      * @param fileConfiguration fileConfiguration
+     * @param failOnDuplicateNames failOnDuplicateNames
      * @throws IOException when commmunication pb
      * @throws ApiException othe prblem
      */
