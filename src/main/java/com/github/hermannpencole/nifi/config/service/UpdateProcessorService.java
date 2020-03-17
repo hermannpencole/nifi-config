@@ -54,11 +54,9 @@ public class UpdateProcessorService {
     private ProcessorsApi processorsApi;
 
     /**
-     * @param branch
-     * @param fileConfiguration
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws ApiException
+     * @param branch the branch
+     * @param fileConfiguration fileConfiguration
+     * @throws ApiException when api problem
      */
     public void updateByBranch(List<String> branch, String fileConfiguration, boolean optionNoStartProcessors) throws IOException, ApiException {
         File file = new File(fileConfiguration);
@@ -113,9 +111,9 @@ public class UpdateProcessorService {
 
 
     /**
-     * @param configuration
-     * @param idComponent
-     * @throws ApiException
+     * @param configuration configuration
+     * @param idComponent idComponent
+     * @throws ApiException when api problem
      */
     private void updateControllers(GroupProcessorsEntity configuration, String idComponent, String clientId) throws ApiException {
         //TODO verify if must include ancestor and descendant
@@ -200,8 +198,8 @@ public class UpdateProcessorService {
     /**
      * Update controller to newControllerServiceId for ReferencingComponents on oldControllersService
      *
-     * @param newControllerServiceId
-     * @param oldControllersService
+     * @param newControllerServiceId newControllerServiceId
+     * @param oldControllersService oldControllersService
      */
     private void updateOldReference(Collection<ControllerServiceEntity> oldControllersService, String newControllerServiceId, String clientId) {
         for (ControllerServiceEntity oldControllerService : oldControllersService) {
@@ -266,10 +264,10 @@ public class UpdateProcessorService {
     }
 
     /**
-     * @param configuration
-     * @param componentSearch
-     * @param clientId
-     * @throws ApiException
+     * @param configuration configuration
+     * @param componentSearch componentSearch
+     * @param clientId clientId
+     * @throws ApiException when api problem
      */
     private void updateComponent(GroupProcessorsEntity configuration, ProcessGroupFlowEntity componentSearch, String clientId) throws ApiException {
         FlowDTO flow = componentSearch.getProcessGroupFlow().getFlow();
@@ -290,9 +288,9 @@ public class UpdateProcessorService {
      * update processor configuration with valueToPutInProc
      * at first find id of each processor and in second way update it
      *
-     * @param processorToUpdate
-     * @param componentToPutInProc
-     * @param clientId
+     * @param processorToUpdate processorToUpdate
+     * @param componentToPutInProc componentToPutInProc
+     * @param clientId clientId
      */
     private void updateProcessor(ProcessorEntity processorToUpdate, ProcessorDTO componentToPutInProc, boolean forceByController, String clientId) {
         try {

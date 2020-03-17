@@ -69,9 +69,9 @@ public class ProcessGroupService {
     /**
      * browse nifi on branch pass in parameter
      *
-     * @param branch
-     * @return
-     * @throws ApiException
+     * @param branch the branch
+     * @return a optionnal ProcessGroupFlowEntity
+     * @throws ApiException throw when api problem
      */
     public Optional<ProcessGroupFlowEntity> changeDirectory(List<String> branch) throws ApiException {
         ProcessGroupFlowEntity flowEntity = flowapi.getFlow("root");
@@ -88,9 +88,9 @@ public class ProcessGroupService {
     /**
      * browse nifi on branch pass in parameter
      *
-     * @param branch
-     * @return
-     * @throws ApiException
+     * @param branch the branch
+     * @return the ProcessGroupFlowEntity
+     * @throws ApiException when api problem
      */
     public ProcessGroupFlowEntity createDirectory(List<String> branch) throws ApiException {
         return  this.createDirectory(branch, null);
@@ -98,10 +98,10 @@ public class ProcessGroupService {
 
     /**
      * browse nifi on branch pass in parameter and create processgroup if necessary
-     * @param branch
-     * @param comments
-     * @return
-     * @throws ApiException
+     * @param branch the branch
+     * @param comments the comment
+     * @return the ProcessGroupFlowEntity
+     * @throws ApiException when api problem
      */
     public ProcessGroupFlowEntity createDirectory(List<String> branch, String comments) throws ApiException {
         //generate clientID
@@ -134,20 +134,21 @@ public class ProcessGroupService {
     }
 
     /**
+     * create ProcessGroupEntity
      *
-     * @param id
-     * @param entity
-     * @return
+     * @param id the id
+     * @param entity the entity
+     * @return the ProcessGroupEntity
      */
     public ProcessGroupEntity createProcessGroup(String id, ProcessGroupEntity entity) {
         return processGroupsApi.createProcessGroup(id, entity);
     }
 
     /**
-     *
-     * @param id
-     * @param entity
-     * @return
+     * update ProcessGroupEntity
+     * @param id the id
+     * @param entity the entity
+     * @return the ProcessGroupEntity
      */
     public ProcessGroupEntity updateProcessGroup(String id, ProcessGroupEntity entity) {
         return processGroupsApi.updateProcessGroup(id, entity);
@@ -156,9 +157,9 @@ public class ProcessGroupService {
     /**
      * set state on entire process group (no report error if there is)
      *
-     * @param id
-     * @param state
-     * @throws ApiException
+     * @param id the id
+     * @param state the state
+     * @throws ApiException when api problem
      */
     public void setState(String id, ScheduleComponentsEntity.StateEnum state) throws ApiException {
         ScheduleComponentsEntity body = new ScheduleComponentsEntity();
@@ -172,8 +173,8 @@ public class ProcessGroupService {
      * start the processor group.
      * Begin by processor that consumme flow and end with processor that consumme stream and create flow
      *
-     * @param processGroupFlow
-     * @throws ApiException
+     * @param processGroupFlow the processGroupFlow
+     * @throws ApiException when api problem
      */
     public void start(ProcessGroupFlowEntity processGroupFlow) throws ApiException {
         try {
@@ -203,8 +204,8 @@ public class ProcessGroupService {
      * stop the processor group.
      * Begin by processor that consumme stream and create flow and end with processor that consumme flow.
      *
-     * @param processGroupFlow
-     * @throws ApiException
+     * @param processGroupFlow the processGroupFlow
+     * @throws ApiException when api problem
      */
     public void stop(ProcessGroupFlowEntity processGroupFlow) throws ApiException {
         try {
@@ -250,8 +251,8 @@ public class ProcessGroupService {
      *
      * Just put the first at the first and the other after trick for bypass cycle
      *
-     * @param processGroupFlow
-     * @return
+     * @param processGroupFlow processGroupFlow
+     * @return the list of component reordered
      */
     public List<Set<?>> reorder(ProcessGroupFlowDTO processGroupFlow) {
         List<Set<?>> level = new ArrayList<>();
@@ -297,9 +298,9 @@ public class ProcessGroupService {
     /**
      * find processor, inputport, ouput port funnel or remote processor by id in allProcessGroupFlow
      *
-     * @param allProcessGroupFlow
-     * @param id
-     * @return
+     * @param allProcessGroupFlow allProcessGroupFlow
+     * @param id the id
+     * @return an optionnal find
      */
     public Optional<?> findById(Set<ProcessGroupFlowDTO> allProcessGroupFlow, String id){
         for (ProcessGroupFlowDTO processGroupFlowDTO : allProcessGroupFlow) {
@@ -314,9 +315,9 @@ public class ProcessGroupService {
     /**
      * find processor, inputport, ouput port funnel or remote processor by id in flow
      *
-     * @param flow
-     * @param id
-     * @return
+     * @param flow the flow
+     * @param id the id
+     * @return an optionnal find
      */
     public Optional<?> findById(FlowDTO flow, String id){
         Optional<?> result = flow.getProcessors().stream().filter(processor -> id.equals(processor.getId())).findFirst();
@@ -358,8 +359,8 @@ public class ProcessGroupService {
     /**
      * get the next free position to place the processor(or group processor) on this group processor
      *
-     * @param flowEntity
-     * @return
+     * @param flowEntity the flowEntity
+     * @return the position
      */
     public PositionDTO getNextPosition(ProcessGroupFlowEntity flowEntity) {
         PositionDTO nextPosition = new PositionDTO();

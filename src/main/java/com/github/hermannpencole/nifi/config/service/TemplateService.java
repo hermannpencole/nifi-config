@@ -66,11 +66,9 @@ public class TemplateService {
     public Integer interval;
 
     /**
-     * @param branch
-     * @param fileConfiguration
-     * @throws IOException
-     * @throws URISyntaxException
-     * @throws ApiException
+     * @param branch the branch
+     * @param fileConfiguration the fileConfiguration
+     * @throws ApiException when api problem
      */
     public void installOnBranch(List<String> branch, String fileConfiguration, boolean keepTemplate) throws ApiException {
         ProcessGroupFlowDTO processGroupFlow = processGroupService.createDirectory(branch).getProcessGroupFlow();

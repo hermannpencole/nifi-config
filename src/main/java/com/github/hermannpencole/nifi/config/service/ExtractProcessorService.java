@@ -39,10 +39,10 @@ public class ExtractProcessorService {
     private FlowApi flowapi;
 
     /**
-     * @param branch
-     * @param fileConfiguration
-     * @throws IOException
-     * @throws ApiException
+     * @param branch the branch
+     * @param fileConfiguration fileConfiguration
+     * @throws IOException when commmunication pb
+     * @throws ApiException othe prblem
      */
     public void extractByBranch(List<String> branch, String fileConfiguration, boolean failOnDuplicateNames) throws IOException, ApiException {
         File file = new File(fileConfiguration);
@@ -108,9 +108,9 @@ public class ExtractProcessorService {
     /**
      * extract from component
      *
-     * @param idComponent
-     * @return
-     * @throws ApiException
+     * @param idComponent idComponent
+     * @return the component extracted
+     * @throws ApiException when problem api
      */
     private GroupProcessorsEntity extractJsonFromComponent(ProcessGroupFlowEntity idComponent) throws ApiException {
         GroupProcessorsEntity result = new GroupProcessorsEntity();
@@ -141,8 +141,8 @@ public class ExtractProcessorService {
     /**
      * extract processor configuration
      *
-     * @param processor
-     * @return
+     * @param processor the processor to extract
+     * @return the processor extracted
      */
     private ProcessorDTO extractProcessor(ProcessorDTO processor) {
         ProcessorDTO result = new ProcessorDTO();

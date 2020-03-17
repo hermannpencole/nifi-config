@@ -51,8 +51,8 @@ public class PortService {
     /**
      * the the state of port
      *
-     * @param port
-     * @param state
+     * @param port the port
+     * @param state the state
      */
     public void setState(PortEntity port, PortDTO.StateEnum state) {
         if (port.getComponent().getState().equals(PortDTO.StateEnum.DISABLED)) {
@@ -154,7 +154,7 @@ public class PortService {
     /**
      * log the error reported by port
      *
-     * @param port
+     * @param port the port
      */
     private void logErrors(PortEntity port) {
         try {

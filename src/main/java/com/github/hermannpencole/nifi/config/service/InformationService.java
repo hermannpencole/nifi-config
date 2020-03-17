@@ -20,7 +20,7 @@ public class InformationService {
     /**
      * get the nifi version.
      *
-     * @throws ApiException
+     * @throws ApiException when api problem
      */
     public String getVersion() throws ApiException {
         return flowApi.getAboutInfo().getAbout().getVersion();

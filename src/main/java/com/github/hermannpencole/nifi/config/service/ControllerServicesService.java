@@ -50,9 +50,8 @@ public class ControllerServicesService {
      *
      * @param controllerServiceDTO component with properties to update
      * @param controllerServiceEntity controllerService with the last revision ()
-     * @return
-     * @throws ApiException
-     * @throws InterruptedException
+     * @return the ControllerServiceEntity updated
+     * @throws ApiException when communication problem
      */
     public ControllerServiceEntity updateControllerService(ControllerServiceDTO controllerServiceDTO, ControllerServiceEntity controllerServiceEntity, boolean forceByController) throws ApiException {
         //Disabling this controller service
@@ -86,10 +85,10 @@ public class ControllerServicesService {
     /**
      * Set the state of controller service
      *
-     * @param controllerServiceEntity
-     * @param state
-     * @return
-     * @throws ApiException
+     * @param controllerServiceEntity controllerServiceEntity
+     * @param state the state
+     * @return ControllerServiceEntity updated
+     * @throws ApiException when communication problem
      */
     public ControllerServiceEntity setStateControllerService(ControllerServiceEntity controllerServiceEntity, ControllerServiceDTO.StateEnum state) throws ApiException {
 

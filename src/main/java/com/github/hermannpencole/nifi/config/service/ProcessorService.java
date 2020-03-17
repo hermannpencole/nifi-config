@@ -41,8 +41,8 @@ public class ProcessorService {
     /**
      * the the state of processor
      *
-     * @param processor
-     * @param state
+     * @param processor the processor
+     * @param state the state
      */
     public void setState(ProcessorEntity processor, ProcessorDTO.StateEnum state) {
         //how obtain state of and don't have this bullshit trick
@@ -96,8 +96,8 @@ public class ProcessorService {
 
     /**
      * is really stopped when there are no active thread
-     * @param processor
-     * @return
+     * @param processor the processor
+     * @return if is really stopped
      */
     private boolean isReallyStopped(ProcessorEntity processor) {
         return processor.getStatus() == null || processor.getStatus().getAggregateSnapshot() == null || processor.getStatus().getAggregateSnapshot().getActiveThreadCount() == null
@@ -107,7 +107,7 @@ public class ProcessorService {
     /**
      * log the error reported by processor
      *
-     * @param processor
+     * @param processor the processor
      */
     private void logErrors(ProcessorEntity processor) {
         try {

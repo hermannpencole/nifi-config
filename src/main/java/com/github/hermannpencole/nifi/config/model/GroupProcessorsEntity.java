@@ -44,8 +44,8 @@ public class GroupProcessorsEntity {
     }
 
     /**
-     *
-     * @param groupProcessorsEntity
+     * set the groupProcessorsEntity
+     * @param groupProcessorsEntity the groupProcessorsEntity
      */
     public void setGroupProcessorsEntity(List<GroupProcessorsEntity> groupProcessorsEntity) {
         this.groupProcessorsEntity = groupProcessorsEntity;
