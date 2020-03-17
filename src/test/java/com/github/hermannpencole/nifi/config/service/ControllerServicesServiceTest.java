@@ -14,6 +14,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,6 +57,7 @@ public class ControllerServicesServiceTest {
         ControllerServicesService controllerServicesService = injector.getInstance(ControllerServicesService.class);
 
         ControllerServiceDTO component = new ControllerServiceDTO();
+        component.setProperties(new HashMap<>());
         component.getProperties().put("key", "value");
         controllerServicesService.updateControllerService(component, controllerService, false);
 

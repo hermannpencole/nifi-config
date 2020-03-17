@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,6 +65,7 @@ public class ControllerServicesService {
         controllerServiceEntityConf.setComponent(controllerServiceDTO);
         controllerServiceEntityConf.getComponent().setId(controllerServiceEntity.getId());
         controllerServiceEntityConf.getComponent().setRestricted(null);
+        if (controllerServiceEntityUpdate.getComponent().getDescriptors() == null) controllerServiceEntityUpdate.getComponent().setDescriptors(new HashMap<>());
         if (! forceByController) {
             //remove controller link
             for (Map.Entry<String, PropertyDescriptorDTO> entry : controllerServiceEntityUpdate.getComponent().getDescriptors().entrySet()) {

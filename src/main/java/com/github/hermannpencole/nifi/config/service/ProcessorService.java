@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 
 /**
  * Class that offer service for process group
@@ -111,6 +112,7 @@ public class ProcessorService {
     private void logErrors(ProcessorEntity processor) {
         try {
             ProcessorEntity procInError = processorsApi.getProcessor(processor.getId());
+            if (procInError.getComponent().getValidationErrors() == null) procInError.getComponent().setValidationErrors(new ArrayList<>());
             procInError.getComponent().getValidationErrors().stream().forEach(msg -> LOG.error(msg));
         } catch (ApiException e1) {
             LOG.error(e1.getMessage());

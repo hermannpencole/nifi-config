@@ -17,6 +17,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -103,6 +104,7 @@ public class UpdateProcessorServiceTest {
         RelationshipDTO relationship = new RelationshipDTO();
         relationship.setAutoTerminate(true);
         relationship.setName("testRelation");
+        proc.getComponent().setRelationships(new ArrayList<>());
         proc.getComponent().getRelationships().add(relationship);
         processGroupFlowEntityHas(proc);
 
@@ -118,8 +120,9 @@ public class UpdateProcessorServiceTest {
     @Test
     public void updateBranchControllerTest() throws ApiException, IOException {
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
+        controllerServicesEntity.setControllerServices(new ArrayList<>());
         controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
-        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
+        when(flowapiMock.getControllerServicesFromGroup("idComponent", true , false)).thenReturn(controllerServicesEntity);
         when(controllerServicesServiceMock.setStateControllerService(any(), any())).thenReturn(controllerServicesEntity.getControllerServices().get(0));
         when(controllerServicesServiceMock.updateControllerService(any(), any(), eq(false))).thenReturn(controllerServicesEntity.getControllerServices().get(0));
 
@@ -146,18 +149,22 @@ public class UpdateProcessorServiceTest {
     }
 
     private boolean processGroupFlowEntityHas(ProcessGroupFlowEntity response, ProcessorEntity processorEntity) {
+        if (response.getProcessGroupFlow().getFlow().getProcessors() == null) response.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
         return response.getProcessGroupFlow().getFlow().getProcessors().add(processorEntity);
     }
 
     private boolean processGroupFlowEntityHas(ProcessGroupFlowEntity response, ConnectionEntity connectionEntity) {
+        if (response.getProcessGroupFlow().getFlow().getConnections() == null) response.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         return response.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
     }
 
     private boolean processGroupFlowEntityHas(ProcessGroupEntity groupEntity) {
+        if (response.getProcessGroupFlow().getFlow().getProcessGroups() == null) response.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         return response.getProcessGroupFlow().getFlow().getProcessGroups().add(groupEntity);
     }
 
     private boolean processGroupFlowEntityHas(ConnectionEntity connectionEntity) {
+        if (response.getProcessGroupFlow().getFlow().getConnections() == null) response.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         return response.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
     }
 

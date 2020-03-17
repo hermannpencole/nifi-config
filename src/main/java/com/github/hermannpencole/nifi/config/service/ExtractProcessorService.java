@@ -55,7 +55,9 @@ public class ExtractProcessorService {
 
         //add controllers
         String processorGroupFlowId = componentSearch.getProcessGroupFlow().getId();
-        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(processorGroupFlowId);
+        //TODO verify if must include ancestor and descendant
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(processorGroupFlowId, true, false);
+        if (controllerServicesEntity.getControllerServices() == null) controllerServicesEntity.setControllerServices(new ArrayList<>());
         if (!controllerServicesEntity.getControllerServices().isEmpty()) {
             result.setControllerServicesDTO(new ArrayList<>());
         }
@@ -114,6 +116,8 @@ public class ExtractProcessorService {
         GroupProcessorsEntity result = new GroupProcessorsEntity();
         ProcessGroupFlowDTO processGroupFlow = idComponent.getProcessGroupFlow();
         result.setName(processGroupFlow.getBreadcrumb().getBreadcrumb().getName());
+        if (processGroupFlow.getFlow().getProcessors() == null) processGroupFlow.getFlow().setProcessors(new ArrayList<>());
+        if (processGroupFlow.getFlow().getProcessGroups() == null) processGroupFlow.getFlow().setProcessGroups(new ArrayList<>());
         processGroupFlow.getFlow().getProcessors()
                 .forEach(processor -> result.getProcessors().add(extractProcessor(processor.getComponent())));
         for (ProcessGroupEntity processGroups : processGroupFlow.getFlow().getProcessGroups()) {
@@ -127,6 +131,7 @@ public class ExtractProcessorService {
         }
         result.setControllerServicesDTO(null);
 
+        if (idComponent.getProcessGroupFlow().getFlow().getConnections() == null) idComponent.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         List<ConnectionEntity> connections = idComponent.getProcessGroupFlow().getFlow().getConnections();
         result.setConnections(extractConnections(connections));
 
@@ -144,6 +149,7 @@ public class ExtractProcessorService {
         result.setName(processor.getName());
         result.setConfig(processor.getConfig());
         //remove controller link
+        if (processor.getConfig().getDescriptors() == null) processor.getConfig().setDescriptors(new HashMap<>());
         for (Map.Entry<String, PropertyDescriptorDTO> entry : processor.getConfig().getDescriptors().entrySet()) {
             if (entry.getValue().getIdentifiesControllerService() != null) {
                 result.getConfig().getProperties().remove(entry.getKey());

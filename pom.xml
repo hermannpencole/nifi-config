@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.hermannpencole</groupId>
     <artifactId>nifi-deploy-config</artifactId>
-    <version>1.1.37-SNAPSHOT</version>
+    <version>1.5.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Deploy Nifi Configuration</name>
     <url>https://github.com/hermannpencole/nifi-config</url>
@@ -19,7 +19,7 @@
 		<dependency>
             <groupId>com.github.hermannpencole</groupId>
             <artifactId>nifi-swagger-client</artifactId>
-            <version>1.1.0.7</version>
+            <version>1.5.0.0</version>
         </dependency>
 
         <dependency>
@@ -186,7 +186,31 @@
                     <check />
                 </configuration>
             </plugin>
-
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 	

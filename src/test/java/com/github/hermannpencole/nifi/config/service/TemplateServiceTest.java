@@ -123,7 +123,7 @@ public class TemplateServiceTest {
         template.getTemplate().setId("templateId");
         templates.addTemplatesItem(template);
         when(flowApiMock.getTemplates()).thenReturn(templates);
-        when(flowApiMock.getControllerServicesFromGroup("idProcessGroupFlow")).thenReturn(new ControllerServicesEntity());
+        when(flowApiMock.getControllerServicesFromGroup("idProcessGroupFlow", true, false)).thenReturn(new ControllerServicesEntity());
 
         ProcessGroupEntity processGroupEntity = TestUtils.createProcessGroupEntity("idProcessGroupFlow", "nameProcessGroupFlow");
         when(processGroupsApiMock.getProcessGroup(processGroupFlow.get().getProcessGroupFlow().getId())).thenReturn(processGroupEntity);

@@ -3,6 +3,8 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 
+import java.util.HashMap;
+
 /**
  * Created by SFRJ2737 on 2017-05-29.
  */
@@ -108,6 +110,7 @@ public class TestUtils {
         controllerService.setComponent(new ControllerServiceDTO());
         controllerService.getComponent().setName(name);
         controllerService.getComponent().setId(id);
+        if (controllerService.getComponent().getProperties() == null) controllerService.getComponent().setProperties(new HashMap<>());
         controllerService.getComponent().getProperties().put("key", "value");
         controllerService.setRevision(createRevision(10L));
         return controllerService;

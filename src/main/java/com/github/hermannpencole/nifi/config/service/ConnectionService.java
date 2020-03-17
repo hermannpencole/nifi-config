@@ -107,7 +107,7 @@ public class ConnectionService {
                 DropRequestEntity dropRequest = flowfileQueuesApi.createDropRequest(connectionEntity.getId());
                 FunctionUtils.runWhile(() -> {
                     DropRequestEntity drop = flowfileQueuesApi.getDropRequest(connectionEntity.getId(), dropRequest.getDropRequest().getId());
-                    return !drop.getDropRequest().getFinished();
+                    return !drop.getDropRequest().isFinished();
                 }, interval, timeout);
                 LOG.info(" {} : {} FlowFile ({} bytes) were removed from the queue", connectionEntity.getId(), dropRequest.getDropRequest().getCurrentCount(), dropRequest.getDropRequest().getCurrentSize());
                 flowfileQueuesApi.removeDropRequest(connectionEntity.getId(), dropRequest.getDropRequest().getId());

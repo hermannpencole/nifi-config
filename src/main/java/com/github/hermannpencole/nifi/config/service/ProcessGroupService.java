@@ -287,6 +287,7 @@ public class ProcessGroupService {
     private Set<ProcessGroupFlowDTO> getAllProcessGroupFlow(ProcessGroupFlowDTO processGroupFlow) {
         Set<ProcessGroupFlowDTO> result = new HashSet<>();
         result.add(processGroupFlow);
+        if (processGroupFlow.getFlow().getProcessGroups() == null) processGroupFlow.getFlow().setProcessGroups(new ArrayList<>());
         for (ProcessGroupEntity processGroup : processGroupFlow.getFlow().getProcessGroups()) {
             result.add(flowapi.getFlow(processGroup.getId()).getProcessGroupFlow());
         }
@@ -363,21 +364,27 @@ public class ProcessGroupService {
     public PositionDTO getNextPosition(ProcessGroupFlowEntity flowEntity) {
         PositionDTO nextPosition = new PositionDTO();
         List<PositionDTO> positions = new ArrayList<>();
+        if (flowEntity.getProcessGroupFlow().getFlow().getProcessors() == null) flowEntity.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
         for (ProcessorEntity processor : flowEntity.getProcessGroupFlow().getFlow().getProcessors()) {
             addPosition(positions, processor.getPosition());
         }
+        if (flowEntity.getProcessGroupFlow().getFlow().getProcessGroups() == null) flowEntity.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         for (ProcessGroupEntity processGroup : flowEntity.getProcessGroupFlow().getFlow().getProcessGroups()) {
             addPosition(positions, processGroup.getPosition());
         }
+        if (flowEntity.getProcessGroupFlow().getFlow().getInputPorts() == null) flowEntity.getProcessGroupFlow().getFlow().setInputPorts(new ArrayList<>());
         for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getInputPorts()) {
             addPosition(positions, port.getPosition());
         }
+        if (flowEntity.getProcessGroupFlow().getFlow().getOutputPorts() == null) flowEntity.getProcessGroupFlow().getFlow().setOutputPorts(new ArrayList<>());
         for (PortEntity port : flowEntity.getProcessGroupFlow().getFlow().getOutputPorts()) {
             addPosition(positions, port.getPosition());
         }
+        if (flowEntity.getProcessGroupFlow().getFlow().getConnections() == null) flowEntity.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         for (ConnectionEntity conn : flowEntity.getProcessGroupFlow().getFlow().getConnections()) {
             addPosition(positions, conn.getPosition());
         }
+        if (flowEntity.getProcessGroupFlow().getFlow().getFunnels() == null) flowEntity.getProcessGroupFlow().getFlow().setFunnels(new ArrayList<>());
         for (FunnelEntity funnel : flowEntity.getProcessGroupFlow().getFlow().getFunnels()) {
             addPosition(positions, funnel.getPosition());
         }

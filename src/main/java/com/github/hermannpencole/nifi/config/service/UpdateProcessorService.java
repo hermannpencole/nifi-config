@@ -118,7 +118,8 @@ public class UpdateProcessorService {
      * @throws ApiException
      */
     private void updateControllers(GroupProcessorsEntity configuration, String idComponent, String clientId) throws ApiException {
-        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(idComponent);
+        //TODO verify if must include ancestor and descendant
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(idComponent, true, false);
         //must we use flowapi.getControllerServicesFromController() ??
         /*ControllerServicesEntity controllerServiceController = flowapi.getControllerServicesFromController();
         for (ControllerServiceEntity controllerServiceEntity: controllerServiceController.getControllerServices()) {
@@ -153,7 +154,6 @@ public class UpdateProcessorService {
             }
             //remove old
             stopOldReference(oldControllersService.values());
-            //update new reference for ReferencingComponents on oldControllersService
             updateOldReference(oldControllersService.values(), controllerServiceEntityFind.getId(), clientId);
             controllerDeleted.addAll(oldControllersService.values());
             controllerUpdated.add(controllerServiceEntityFind);
@@ -300,8 +300,9 @@ public class UpdateProcessorService {
             LOG.info("Update config processor {} ({}) ", processorToUpdate.getComponent().getName(), processorToUpdate.getId());
             //update on nifi
             List<String> autoTerminatedRelationships = new ArrayList<>();
+            if (processorToUpdate.getComponent().getRelationships() == null) processorToUpdate.getComponent().setRelationships(new ArrayList<>());
             processorToUpdate.getComponent().getRelationships().stream()
-                    .filter(relationships -> relationships.getAutoTerminate())
+                    .filter(relationships -> relationships.isAutoTerminate())
                     .forEach(relationships -> autoTerminatedRelationships.add(relationships.getName()));
             componentToPutInProc.getConfig().setAutoTerminatedRelationships(autoTerminatedRelationships);
             componentToPutInProc.getConfig().setDescriptors(processorToUpdate.getComponent().getConfig().getDescriptors());
@@ -309,14 +310,15 @@ public class UpdateProcessorService {
             componentToPutInProc.getConfig().setDefaultSchedulingPeriod(processorToUpdate.getComponent().getConfig().getDefaultSchedulingPeriod());
             componentToPutInProc.setRelationships(processorToUpdate.getComponent().getRelationships());
             componentToPutInProc.setStyle(processorToUpdate.getComponent().getStyle());
-            componentToPutInProc.setSupportsBatching(processorToUpdate.getComponent().getSupportsBatching());
-            componentToPutInProc.setSupportsEventDriven(processorToUpdate.getComponent().getSupportsEventDriven());
-            componentToPutInProc.setSupportsParallelProcessing(processorToUpdate.getComponent().getSupportsParallelProcessing());
-            componentToPutInProc.setPersistsState(processorToUpdate.getComponent().getPersistsState());
+            componentToPutInProc.setSupportsBatching(processorToUpdate.getComponent().isSupportsBatching());
+            componentToPutInProc.setSupportsEventDriven(processorToUpdate.getComponent().isSupportsEventDriven());
+            componentToPutInProc.setSupportsParallelProcessing(processorToUpdate.getComponent().isSupportsParallelProcessing());
+            componentToPutInProc.setPersistsState(processorToUpdate.getComponent().isPersistsState());
             componentToPutInProc.setRestricted(null);//processorToUpdate.getComponent().getRestricted());
             componentToPutInProc.setValidationErrors(processorToUpdate.getComponent().getValidationErrors());
             //remove controller link if not forceBy controller
             if (!forceByController) {
+                if (processorToUpdate.getComponent().getConfig().getDescriptors() == null) processorToUpdate.getComponent().getConfig().setDescriptors(new HashMap<>());
                 for (Map.Entry<String, PropertyDescriptorDTO> entry : processorToUpdate.getComponent().getConfig().getDescriptors().entrySet()) {
                     if (entry.getValue().getIdentifiesControllerService() != null) {
                         componentToPutInProc.getConfig().getProperties().remove(entry.getKey());

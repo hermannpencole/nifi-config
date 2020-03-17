@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -56,7 +57,7 @@ public class ExtractProcessorServiceTest {
         response = TestUtils.createProcessGroupFlowEntity("idComponent", "nameComponent");
 
         when(processGroupsApiMock.getConnections(anyString())).thenReturn(new ConnectionsEntity());
-        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(new ControllerServicesEntity());
+        when(flowapiMock.getControllerServicesFromGroup("idComponent", true, false)).thenReturn(new ControllerServicesEntity());
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(Optional.of(response));
     }
 
@@ -90,12 +91,14 @@ public class ExtractProcessorServiceTest {
     @Test
     public void extractBranchTest() throws ApiException, IOException {
         processGroupFlowEntityHas(createProcessorEntity("idProc", "nameProc"));
+        if (response.getProcessGroupFlow().getFlow().getProcessGroups() == null) response.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         response.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(createProcessGroupEntity("idSubGroup", "nameSubGroup"));
 
         ControllerServicesEntity controllerServicesEntity = new ControllerServicesEntity();
+        controllerServicesEntity.setControllerServices(new ArrayList<>());
         controllerServicesEntity.getControllerServices().add(TestUtils.createControllerServiceEntity("idCtrl", "nameCtrl"));
-        when(flowapiMock.getControllerServicesFromGroup("idComponent")).thenReturn(controllerServicesEntity);
+        when(flowapiMock.getControllerServicesFromGroup("idComponent", true, false)).thenReturn(controllerServicesEntity);
 
         ProcessGroupFlowEntity subGroupResponse = TestUtils.createProcessGroupFlowEntity("idSubGroup", "nameSubGroup");
         when(flowapiMock.getFlow(subGroupResponse.getProcessGroupFlow().getId())).thenReturn(subGroupResponse);
@@ -180,18 +183,22 @@ public class ExtractProcessorServiceTest {
     }
 
     private void processGroupFlowEntityHas(ProcessorEntity entity) {
+        if ( response.getProcessGroupFlow().getFlow().getProcessors() == null)  response.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
         response.getProcessGroupFlow().getFlow().getProcessors().add(entity);
     }
 
     private void processGroupFlowEntityHas(ConnectionEntity entity) {
+        if ( response.getProcessGroupFlow().getFlow().getConnections() == null)  response.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         response.getProcessGroupFlow().getFlow().getConnections().add(entity);
     }
 
     private void processGroupFlowEntityHas(ProcessGroupEntity processGroupEntity) {
+        if ( response.getProcessGroupFlow().getFlow().getProcessGroups() == null)  response.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         response.getProcessGroupFlow().getFlow().getProcessGroups().add(processGroupEntity);
     }
 
     private void processGroupFlowEntityHas(ProcessGroupFlowEntity groupEntity, ConnectionEntity connectionEntity) {
+        if ( groupEntity.getProcessGroupFlow().getFlow().getConnections() == null)  groupEntity.getProcessGroupFlow().getFlow().setConnections(new ArrayList<>());
         groupEntity.getProcessGroupFlow().getFlow().getConnections().add(connectionEntity);
     }
 

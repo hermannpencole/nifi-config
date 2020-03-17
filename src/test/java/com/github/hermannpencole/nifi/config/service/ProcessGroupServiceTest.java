@@ -48,6 +48,7 @@ public class ProcessGroupServiceTest {
         List<String> branch = Arrays.asList("root", "elt2");
 
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
         when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
@@ -61,6 +62,7 @@ public class ProcessGroupServiceTest {
         List<String> branch = Arrays.asList("root", "elt1");
 
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
         when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
@@ -77,6 +79,7 @@ public class ProcessGroupServiceTest {
         List<String> branch = Arrays.asList("root", "elt2");
 
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
         when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
@@ -107,6 +110,7 @@ public class ProcessGroupServiceTest {
         List<String> branch = Arrays.asList("root", "elt1");
 
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
         when(flowApiMock.getFlow(responseRoot.getProcessGroupFlow().getId())).thenReturn(responseRoot);
@@ -134,6 +138,8 @@ public class ProcessGroupServiceTest {
         List<ConnectionEntity> connections = new ArrayList<>();
         connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
         responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        responseRoot.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
         responseRoot.getProcessGroupFlow().getFlow()
@@ -151,6 +157,8 @@ public class ProcessGroupServiceTest {
         List<ConnectionEntity> connections = new ArrayList<>();
         connections.add(TestUtils.createConnectionEntity("idCnx", "idProc","idProc2"));
         responseRoot.getProcessGroupFlow().getFlow().setConnections(connections);
+        responseRoot.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessors().add(TestUtils.createProcessorEntity("idProc","nameProc") );
         responseRoot.getProcessGroupFlow().getFlow()
@@ -264,7 +272,7 @@ public class ProcessGroupServiceTest {
         assertEquals(5, result.get(2).size());
         assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
         assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
-        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("5", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
         assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
     }
 
@@ -304,7 +312,7 @@ public class ProcessGroupServiceTest {
         assertEquals(5, result.get(2).size());
         assertEquals("3", ((ProcessorEntity)result.get(0).toArray()[0]).getId());
         assertEquals("1", ((ProcessorEntity)result.get(0).toArray()[1]).getId());
-        assertEquals("6", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
+        assertEquals("5", ((ProcessorEntity)result.get(2).toArray()[0]).getId());
         assertEquals("7", ((ProcessorEntity)result.get(2).toArray()[1]).getId());
     }
 
@@ -312,6 +320,8 @@ public class ProcessGroupServiceTest {
     @Test
     public void getNextPositionTest() throws ApiException, IOException, URISyntaxException {
         ProcessGroupFlowEntity responseRoot = TestUtils.createProcessGroupFlowEntity("root", "root");
+        responseRoot.getProcessGroupFlow().getFlow().setProcessGroups(new ArrayList<>());
+        responseRoot.getProcessGroupFlow().getFlow().setProcessors(new ArrayList<>());
         responseRoot.getProcessGroupFlow().getFlow()
                 .getProcessGroups().add(TestUtils.createProcessGroupEntity("idElt1", "elt1"));
         responseRoot.getProcessGroupFlow().getFlow()

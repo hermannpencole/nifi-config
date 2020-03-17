@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -77,6 +78,7 @@ public class TemplateService {
 
         TemplatesEntity templates = flowApi.getTemplates();
         String name = FilenameUtils.getBaseName(file.getName());
+        if (templates.getTemplates() == null) templates.setTemplates(new ArrayList<>());
         Optional<TemplateEntity> oldTemplate = templates.getTemplates().stream().filter(templateParse -> templateParse.getTemplate().getName().equals(name)).findFirst();
         if (oldTemplate.isPresent()) {
             templatesApi.removeTemplate(oldTemplate.get().getTemplate().getId());
@@ -112,7 +114,9 @@ public class TemplateService {
         }
 
         //disable controllers
-        ControllerServicesEntity controllerServicesEntity = flowApi.getControllerServicesFromGroup(processGroupFlow.get().getProcessGroupFlow().getId());
+        //TODO verify if must include ancestor and descendant
+        ControllerServicesEntity controllerServicesEntity = flowApi.getControllerServicesFromGroup(processGroupFlow.get().getProcessGroupFlow().getId(), true ,false);
+        if (controllerServicesEntity.getControllerServices() == null) controllerServicesEntity.setControllerServices(new ArrayList<>());
         for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
             //stop only controller on the same group
             if (controllerServiceEntity.getComponent().getParentGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId())) {
