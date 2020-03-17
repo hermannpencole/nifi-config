@@ -16,6 +16,7 @@ Deploy, undeploy, connect template
 | ---------------------------------------- | ---------------------------------------- |
 | -                                        | 0.X                                      |
 | version 1.1.X  [download it from Maven Central](http://central.maven.org/maven2/com/github/hermannpencole/nifi-deploy-config/) | 1.0.X : to test <br/>1.1.X : OK, Build on api nifi  1.1.0 with [nifi-swagger-client](https://github.com/hermannpencole/nifi-swagger-client) 1.1.0.x <br/> 1.2.X : OK<br/> 1.3.X : OK<br/> 1.4.X : OK |
+| version 1.5.X  [download it from Maven Central](http://central.maven.org/maven2/com/github/hermannpencole/nifi-deploy-config/) | 1.5.X : OK, Build on api nifi  1.5.0 with [nifi-swagger-client](https://github.com/hermannpencole/nifi-swagger-client) 1.5.0.x|
 
 ## How to :
 
