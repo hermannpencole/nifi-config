@@ -85,7 +85,7 @@ public class ProcessorService {
             ProcessorEntity processorEntity= processorsApi.getProcessor(processor.getId());
             boolean reallyStopped = isReallyStopped(processorEntity);
             LOG.info(" {} ({}) is {} (have thread active : {}) ", processorEntity.getComponent().getName(), processorEntity.getId(), processorEntity.getComponent().getState(), !reallyStopped);
-            if ( (state.equals(ProcessorDTO.StateEnum.STOPPED) && state.equals(processorEntity.getComponent().getState()) && isReallyStopped(processorEntity))
+            if ( (!state.equals(ProcessorDTO.StateEnum.RUNNING) && state.equals(processorEntity.getComponent().getState()) && isReallyStopped(processorEntity))
                 || (state.equals(ProcessorDTO.StateEnum.RUNNING) && state.equals(processorEntity.getComponent().getState())) ) {
                 return false;
             }
