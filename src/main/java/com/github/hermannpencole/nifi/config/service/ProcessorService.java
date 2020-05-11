@@ -47,7 +47,7 @@ public class ProcessorService {
     public void setState(ProcessorEntity processor, ProcessorDTO.StateEnum state) {
         //how obtain state of and don't have this bullshit trick
         //trick for don't have error : xxxx cannot be started because it is not stopped. Current state is STOPPING
-        if (processor.getComponent().getState().equals(ProcessorDTO.StateEnum.DISABLED)) {
+        if (processor.getComponent().getState().equals(ProcessorDTO.StateEnum.DISABLED) && !state.equals(ProcessorDTO.StateEnum.STOPPED) ) {
             LOG.info(" {} ({}) is already disabled nifi-config make no update", processor.getComponent().getName() ,processor.getId());
             return;
         }
