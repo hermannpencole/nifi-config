@@ -20,6 +20,7 @@ public class InformationService {
     /**
      * get the nifi version.
      *
+     * @return the version of nifi
      * @throws ApiException when api problem
      */
     public String getVersion() throws ApiException {

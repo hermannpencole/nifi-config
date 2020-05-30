@@ -50,6 +50,7 @@ public class ControllerServicesService {
      *
      * @param controllerServiceDTO component with properties to update
      * @param controllerServiceEntity controllerService with the last revision ()
+     * @param forceByController if remove controller link
      * @return the ControllerServiceEntity updated
      * @throws ApiException when communication problem
      */

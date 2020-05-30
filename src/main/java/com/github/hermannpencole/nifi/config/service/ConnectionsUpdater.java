@@ -27,6 +27,12 @@ public class ConnectionsUpdater {
     @Inject
     private FlowApi flowapi;
 
+    /**
+     * update connection and create if not exist
+     *
+     * @param connectionsConfiguration
+     * @param componentSearch
+     */
     public void updateConnections(List<Connection> connectionsConfiguration, ProcessGroupFlowEntity componentSearch) { //List<ConnectionEntity> currentConnections, List<ProcessorEntity> processors, String id) {
         List<ConnectionEntity> currentConnections = componentSearch.getProcessGroupFlow().getFlow().getConnections();
         Map<String, Connection> connectionMap = connectionsConfiguration
@@ -72,8 +78,8 @@ public class ConnectionsUpdater {
     /**
      * find processor, inputport, ouput port funnel or remote processor by id in flow
      *
-     * @param flow the flow
-     * @param name the id
+     * @param componentSearch the compenant whre search
+     * @param name the name to find
      * @return an optionnal find
      */
     public Optional<ConnectableDTO> findByName(ProcessGroupFlowEntity componentSearch, String name){
