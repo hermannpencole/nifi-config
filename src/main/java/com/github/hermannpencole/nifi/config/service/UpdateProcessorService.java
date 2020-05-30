@@ -283,7 +283,7 @@ public class UpdateProcessorService {
             updateComponent(procGroupInConf, flowapi.getFlow(processorGroupToUpdate.getId()), clientId);
         }
 
-        connectionsUpdater.updateConnections(configuration.getConnections(), flow.getConnections());
+        connectionsUpdater.updateConnections(configuration.getConnections(), componentSearch);
     }
 
     /**

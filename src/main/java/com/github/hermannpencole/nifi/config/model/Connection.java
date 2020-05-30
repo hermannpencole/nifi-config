@@ -1,5 +1,6 @@
 package com.github.hermannpencole.nifi.config.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Connection {
@@ -13,6 +14,10 @@ public class Connection {
     private String destination;
 
     private String backPressureDataSizeThreshold;
+
+    private String flowFileExpiration;
+
+    private List<String> relationShips;
 
     private Long backPressureObjectThreshold;
 
@@ -62,6 +67,22 @@ public class Connection {
 
     public void setBackPressureObjectThreshold(Long backPressureObjectThreshold) {
         this.backPressureObjectThreshold = backPressureObjectThreshold;
+    }
+
+    public String getFlowFileExpiration() {
+        return flowFileExpiration;
+    }
+
+    public void setFlowFileExpiration(String flowFileExpiration) {
+        this.flowFileExpiration = flowFileExpiration;
+    }
+
+    public List<String> getRelationShips() {
+        return relationShips;
+    }
+
+    public void setRelationShips(List<String> relationShips) {
+        this.relationShips = relationShips;
     }
 
     @Override

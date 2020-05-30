@@ -92,9 +92,9 @@ public class UpdateProcessorServiceTest {
         verify(processorsApiMock).updateProcessor(eq("idProc3"), any());
 
         Connection connectionInConfigurationFile = createConnection("idConnection", "sourceOne", "destOne", "1 GB", 10L, "idConnection");
-        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(connectionInConfigurationFile), Arrays.asList(connectionEntity));
+        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(connectionInConfigurationFile), response);
         Connection subGroupConnection = createConnection("subGroupConnection", "nameProc2", "nameProc3", "4 GB", 4L, "idConnection");
-        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(subGroupConnection), Arrays.asList(subConnection));
+        verify(connectionsUpdater, times(1)).updateConnections(Arrays.asList(subGroupConnection), subGroupResponse);
     }
 
     @Test
