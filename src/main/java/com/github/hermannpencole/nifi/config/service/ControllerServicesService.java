@@ -1,8 +1,11 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.ControllerServicesApi;
+import com.github.hermannpencole.nifi.swagger.client.FlowApi;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +42,9 @@ public class ControllerServicesService {
     @Named("interval")
     @Inject
     public Integer interval;
+
+    @Inject
+    private FlowApi flowapi;
 
     @Inject
     private ControllerServicesApi controllerServicesApi;
@@ -199,6 +206,34 @@ public class ControllerServicesService {
                 processorService.setState(processorEntity, ProcessorDTO.StateEnum.RUNNING);
         }
     }
+
+    public void disableController(ProcessGroupFlowEntity processGroupFlow) {
+        for (ProcessGroupEntity procGroupInConf : processGroupFlow.getProcessGroupFlow().getFlow().getProcessGroups()) {
+            ProcessGroupFlowEntity processGroupFlowEntity = flowapi.getFlow(procGroupInConf.getId());
+            disableController(processGroupFlowEntity);
+        }
+        ControllerServicesEntity controllerServicesEntity = flowapi.getControllerServicesFromGroup(processGroupFlow.getProcessGroupFlow().getId(), true ,false);
+        if (controllerServicesEntity.getControllerServices() == null) controllerServicesEntity.setControllerServices(new ArrayList<>());
+        for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
+            //stop only controller on the same group
+            if (controllerServiceEntity.getComponent().getParentGroupId().equals(processGroupFlow.getProcessGroupFlow().getId())) {
+                try {
+                    //stopping referencing processors and reporting tasks
+                    setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
+
+                    //Disabling referencing controller services
+                    setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
+
+                    //Disabling this controller service
+                    ControllerServiceEntity controllerServiceEntityUpdate = setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
+                } catch (ApiException | TimeoutException | ConfigException e) {
+                    //continue, try to delete process group without disable controller
+                    LOG.warn(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
 
     public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type, String filteredState) throws ApiException {
         ControllerServiceEntity controllerServiceEntityFresh = getControllerServices(id);

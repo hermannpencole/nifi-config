@@ -3,6 +3,7 @@ package com.github.hermannpencole.nifi.config.service;
 import com.github.hermannpencole.nifi.config.model.Connection;
 import com.github.hermannpencole.nifi.swagger.client.model.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -19,6 +20,7 @@ public class TestUtils {
 
         FlowDTO flow = new FlowDTO();
         ProcessGroupFlowEntity response = new ProcessGroupFlowEntity();
+        flow.setProcessGroups(new ArrayList<>());
         response.setProcessGroupFlow(componentSearch);
         response.getProcessGroupFlow().setFlow(flow);
         return response;

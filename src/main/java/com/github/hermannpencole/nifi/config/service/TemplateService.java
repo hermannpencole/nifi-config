@@ -113,26 +113,7 @@ public class TemplateService {
 
         //disable controllers
         //TODO verify if must include ancestor and descendant
-        ControllerServicesEntity controllerServicesEntity = flowApi.getControllerServicesFromGroup(processGroupFlow.get().getProcessGroupFlow().getId(), true ,false);
-        if (controllerServicesEntity.getControllerServices() == null) controllerServicesEntity.setControllerServices(new ArrayList<>());
-        for (ControllerServiceEntity controllerServiceEntity : controllerServicesEntity.getControllerServices()) {
-            //stop only controller on the same group
-            if (controllerServiceEntity.getComponent().getParentGroupId().equals(processGroupFlow.get().getProcessGroupFlow().getId())) {
-                try {
-                    //stopping referencing processors and reporting tasks
-                    controllerServicesService.setStateReferenceProcessors(controllerServiceEntity, UpdateControllerServiceReferenceRequestEntity.StateEnum.STOPPED);
-
-                    //Disabling referencing controller services
-                    controllerServicesService.setStateReferencingControllerServices(controllerServiceEntity.getId(), UpdateControllerServiceReferenceRequestEntity.StateEnum.DISABLED);
-
-                    //Disabling this controller service
-                    ControllerServiceEntity controllerServiceEntityUpdate = controllerServicesService.setStateControllerService(controllerServiceEntity, ControllerServiceDTO.StateEnum.DISABLED);
-                } catch (ApiException | TimeoutException | ConfigException e) {
-                    //continue, try to delete process group without disable controller
-                    LOG.warn(e.getMessage(), e);
-                }
-            }
-        }
+        controllerServicesService.disableController(processGroupFlow.get());
 
         processGroupService.delete(processGroupFlow.get().getProcessGroupFlow().getId());
 

@@ -1,5 +1,7 @@
 package com.github.hermannpencole.nifi.config.service;
 
+import com.github.hermannpencole.nifi.config.model.ConfigException;
+import com.github.hermannpencole.nifi.config.model.TimeoutException;
 import com.github.hermannpencole.nifi.config.utils.FunctionUtils;
 import com.github.hermannpencole.nifi.swagger.ApiException;
 import com.github.hermannpencole.nifi.swagger.client.FlowApi;
