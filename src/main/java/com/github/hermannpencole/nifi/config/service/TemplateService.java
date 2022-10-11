@@ -92,7 +92,7 @@ public class TemplateService {
         }
     }
 
-    public void undeploy(List<String> branch) throws ApiException {
+    public void undeploy(List<String> branch, Boolean removeControllers) throws ApiException {
         Optional<ProcessGroupFlowEntity> processGroupFlow = processGroupService.changeDirectory(branch);
         if (!processGroupFlow.isPresent()) {
             LOG.warn("cannot find " + Arrays.toString(branch.toArray()));
@@ -111,9 +111,13 @@ public class TemplateService {
             templatesApi.removeTemplate(templateInGroup.getId());
         }
 
-        //disable controllers
-        //TODO verify if must include ancestor and descendant
-        controllerServicesService.disableController(processGroupFlow.get());
+        if (removeControllers.booleanValue()) {
+            controllerServicesService.removeControllers(processGroupFlow.get());
+        } else {
+            //disable controllers
+            //TODO verify if must include ancestor and descendant
+            controllerServicesService.disableController(processGroupFlow.get());
+        }
 
         processGroupService.delete(processGroupFlow.get().getProcessGroupFlow().getId());
 
