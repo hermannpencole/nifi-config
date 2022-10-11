@@ -234,6 +234,16 @@ public class ControllerServicesService {
         }
     }
 
+    public void removeControllers(ProcessGroupFlowEntity processGroupFlow) {
+        // Controller Service must be disabled before it can be removed
+        disableController(processGroupFlow);
+        ControllerServicesEntity controllerServicesEntity = flowapi
+                .getControllerServicesFromGroup(processGroupFlow.getProcessGroupFlow().getId(), true, false);
+        List<ControllerServiceEntity> controllerServices = controllerServicesEntity.getControllerServices();
+        for (ControllerServiceEntity controllerService : controllerServices) {
+            remove(controllerService);
+        }
+    }
 
     public Map<String, RevisionDTO> getReferencingServices(String id, ControllerServiceReferencingComponentDTO.ReferenceTypeEnum type, String filteredState) throws ApiException {
         ControllerServiceEntity controllerServiceEntityFresh = getControllerServices(id);

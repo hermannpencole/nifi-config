@@ -109,6 +109,7 @@ public class TemplateServiceTest {
 
     @Test
     public void undeployTest() throws ApiException {
+        Boolean removeControllers = false;
         List<String> branch = Arrays.asList("root", "elt1");
         ProcessGroupFlowEntity response = TestUtils.createProcessGroupFlowEntity("idProcessGroupFlow", "nameProcessGroupFlow");
         Optional<ProcessGroupFlowEntity> processGroupFlow = Optional.of(response);
@@ -143,7 +144,7 @@ public class TemplateServiceTest {
                 bind(PositionDTO.class).annotatedWith(Names.named("startPosition")).toInstance(new PositionDTO());
             }
         });
-        injector.getInstance(TemplateService.class).undeploy(branch);
+        injector.getInstance(TemplateService.class).undeploy(branch, removeControllers);
         verify(templatesApiMock).removeTemplate(template.getId());
         verify(processGroupServiceMock).stop(processGroupFlow.get());
         verify(processGroupServiceMock).delete(processGroupFlow.get().getProcessGroupFlow().getId());
@@ -151,10 +152,11 @@ public class TemplateServiceTest {
 
     @Test
     public void undeployNoExistTest() throws ApiException {
+        Boolean removeControllers = false;
         List<String> branch = Arrays.asList("root", "elt1");
         Optional<ProcessGroupFlowEntity> processGroupFlow = Optional.empty();
         when(processGroupServiceMock.changeDirectory(branch)).thenReturn(processGroupFlow);
-        templateService.undeploy(branch);
+        templateService.undeploy(branch, removeControllers);
         verify(flowApiMock, never()).getTemplates();
     }
 }

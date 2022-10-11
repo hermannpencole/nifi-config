@@ -55,6 +55,7 @@ public class MainTest {
 
     @Test
     public void mainUndeployTest() throws Exception {
+        Boolean removeControllers = false;
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
@@ -72,11 +73,12 @@ public class MainTest {
         Mockito.when(Guice.createInjector((AbstractModule) anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi", "http://localhost:8080/nifi-api", "-branch", "\"root>N2\"", "-conf", "adr", "-m", "undeploy"});
-        verify(templateServiceMock).undeploy(Arrays.asList("root", "N2"));
+        verify(templateServiceMock).undeploy(Arrays.asList("root", "N2"), removeControllers);
     }
 
     @Test
     public void mainHttpsUndeployTest() throws Exception {
+        Boolean removeControllers = false;
         Injector injector = Guice.createInjector(new AbstractModule() {
             protected void configure() {
                 bind(AccessService.class).toInstance(accessServiceMock);
@@ -94,7 +96,7 @@ public class MainTest {
         Mockito.when(Guice.createInjector((AbstractModule) anyObject())).thenReturn(injector);
 
         Main.main(new String[]{"-nifi", "https://localhost:8080/nifi-api", "-branch", "\"root>N2\"", "-m", "undeploy", "-noVerifySsl"});
-        verify(templateServiceMock).undeploy(Arrays.asList("root", "N2"));
+        verify(templateServiceMock).undeploy(Arrays.asList("root", "N2"), removeControllers);
     }
 
     @Test
