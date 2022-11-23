@@ -80,6 +80,7 @@ public class Main {
             options.addOption("placeWidth", true, "Width of place for installing group (default 1935 : 430 * (4 + 1/2) = 4 pro line)");
             options.addOption("startPosition", true, "Starting position for the place for installing group, format x,y (default : 0,0)");
             options.addOption("failOnDuplicateNames", false, "Fail if template contains duplicate processor names in extractConfig mode");
+            options.addOption("removeControllers", false, "Remove controller services from Processor Groups when undeploy(ing) NiFi templates");
 
             // parse the command line arguments
             CommandLine cmd = commandLineParser.parse(options, args);
@@ -109,6 +110,7 @@ public class Main {
                 Double placeWidth = cmd.hasOption("placeWidth") ? Double.valueOf(cmd.getOptionValue("placeWidth")) : DEFAULT_PLACEWIDTH;
                 String startPlace = cmd.hasOption("startPosition") ? cmd.getOptionValue("startPosition") : DEFAULT_PLACE;
                 Boolean forceMode = cmd.hasOption("force");
+                Boolean removeControllers = cmd.hasOption("removeControllers");
 
                 LOG.info(String.format("Starting config_nifi %s on mode %s", version, cmd.getOptionValue("m")));
                 String addressNifi = cmd.getOptionValue("n");
@@ -151,7 +153,7 @@ public class Main {
                     LOG.info("Template {} is installed on the group {}", fileConfiguration, branch);
                 } else {
                     TemplateService templateService = injector.getInstance(TemplateService.class);
-                    templateService.undeploy(branchList);
+                    templateService.undeploy(branchList, removeControllers);
                     LOG.info("The group {} is deleted", branch);
                 }
             }
